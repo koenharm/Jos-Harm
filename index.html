@@ -551,6 +551,8 @@
     .clock-time { font-size: 17px; }
   }
   .toast-undo:hover { text-decoration: underline; }
+  .mobile-topbar { display: none; }
+  .tabbar { display: none; }
 
   @media (max-width: 980px) {
     .kanban { grid-template-columns: 1fr 1fr; }
@@ -560,20 +562,112 @@
   }
   @media (max-width: 780px) {
     .app { grid-template-columns: 1fr; }
-    .sidebar { position: static; height: auto; flex-direction: row; align-items: center; padding: 14px 16px; overflow-x: auto; }
-    .nav { flex-direction: row; }
-    .sidebar-foot { display: none; }
-    .main { padding: 22px 18px 50px; }
+    .sidebar { display: none; }
+    .main { padding: 14px 14px calc(96px + env(safe-area-inset-bottom)); max-width: 100%; }
     .task-cols { grid-template-columns: 1fr; }
     .field-row, .field-row-3 { grid-template-columns: 1fr; }
     .kanban { grid-template-columns: 1fr; }
     .board { min-height: 900px; }
     .import-row { flex-direction: column; }
     .ai-side { flex-direction: column; }
+    .view-title { font-size: 18px; padding: 8px 16px; }
+
+    /* Touch targets */
+    .btn { min-height: 44px; padding: 11px 18px; font-size: 14px; }
+    .btn-sm { min-height: 38px; }
+    .field input, .field textarea, .field select,
+    .task-add input, .import-row textarea { min-height: 44px; padding: 12px 14px; font-size: 15px; }
+    .task-check, .board-check { width: 22px; height: 22px; }
+    .subtask-check { width: 18px; height: 18px; }
+    .checkbox-box { width: 22px; height: 22px; }
+    .task-add { flex-direction: column; }
+    .task-add input[type="date"], .task-add input[type="time"] { flex: 1 1 auto; width: 100%; }
+    .reminder-settings { flex-wrap: wrap; }
+
+    /* Mobile top bar */
+    .mobile-topbar {
+      display: flex; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+      background: linear-gradient(180deg, #FBFAF8, #F1EBE1); border-bottom: 1px solid var(--hairline);
+      position: sticky; top: 0; z-index: 40;
+    }
+    .mobile-topbar .brand-mark { width: 30px; height: 30px; }
+    .mobile-topbar .brand-text { font-size: 15px; }
+    .mobile-topbar .save-status { margin-left: auto; font-size: 10px; }
+
+    /* Bottom tab bar */
+    .tabbar {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+      background: linear-gradient(180deg, #FBFAF8, #F1EBE1); border-top: 1px solid var(--hairline);
+      padding: 7px 4px calc(7px + env(safe-area-inset-bottom));
+    }
+    .tabbar-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 4px 2px; color: var(--paper-dim); cursor: pointer; position: relative;
+    }
+    .tabbar-icon {
+      width: 26px; height: 26px; border: 2px solid var(--hairline); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10.5px; color: var(--paper-dim);
+    }
+    .tabbar-item.active .tabbar-icon { border-color: var(--ember-dim); background: var(--panel-raised); color: var(--paper); }
+    .tabbar-item.active .tabbar-label { color: var(--paper); font-weight: 600; }
+    .tabbar-label { font-family: 'League Spartan', sans-serif; font-size: 9.5px; }
+    .tabbar-badge {
+      position: absolute; top: -2px; right: 14%; background: var(--ember); color: #2B2B2B;
+      font-family: 'League Spartan', sans-serif; font-size: 8.5px; font-weight: 700; border-radius: 8px;
+      padding: 1px 4px; min-width: 14px; text-align: center; line-height: 1.4;
+    }
+
+    /* Modals as bottom sheets */
+    .modal-backdrop { align-items: flex-end; padding: 0; }
+    .modal {
+      max-width: 100%; width: 100%; border-radius: 16px 16px 0 0; max-height: 92vh; overflow-y: auto;
+      padding: 18px 20px calc(26px + env(safe-area-inset-bottom));
+      animation: sheetUp 0.26s ease-out;
+    }
+    .modal::before { content: ''; display: block; width: 36px; height: 4px; background: var(--hairline); border-radius: 3px; margin: 0 auto 16px; }
+
+    /* Compact AI chat */
+    .ai-msg { padding: 10px 13px; font-size: 13.5px; }
+    .ai-wrap { height: calc(100vh - 340px); min-height: 320px; }
+    .ai-side-card { padding: 12px 13px; }
+    .clock-widget { display: none; }
   }
+  @keyframes sheetUp { from { transform: translateY(60px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
 </style>
 </head>
 <body>
+
+<div class="mobile-topbar">
+  <img class="brand-mark" id="mobile-brand-mark" src="" />
+  <div>
+    <div class="brand-text">Werkplaats</div>
+  </div>
+  <div class="save-status" id="save-status-m"><div class="save-status-dot"></div><span id="save-status-text-m">Alles opgeslagen</span></div>
+</div>
+
+<div class="tabbar">
+  <div class="nav-item tabbar-item active" data-view="home">
+    <div class="tabbar-icon">H</div><div class="tabbar-label">Home</div>
+  </div>
+  <div class="nav-item tabbar-item" data-view="taken">
+    <div class="tabbar-icon">T</div><div class="tabbar-label">Taken</div>
+    <div class="tabbar-badge" id="count-taken-m" style="display:none">0</div>
+  </div>
+  <div class="nav-item tabbar-item" data-view="klanten">
+    <div class="tabbar-icon">K</div><div class="tabbar-label">Klanten</div>
+    <div class="tabbar-badge" id="count-klanten-m" style="display:none">0</div>
+  </div>
+  <div class="nav-item tabbar-item" data-view="afgeronde-projecten">
+    <div class="tabbar-icon">P</div><div class="tabbar-label">Projecten</div>
+  </div>
+  <div class="nav-item tabbar-item" data-view="haarden">
+    <div class="tabbar-icon">D</div><div class="tabbar-label">Haarden</div>
+  </div>
+  <div class="nav-item tabbar-item" data-view="assistent">
+    <div class="tabbar-icon">AI</div><div class="tabbar-label">Advies</div>
+  </div>
+</div>
 
 <div class="app">
   <div class="sidebar">
@@ -618,14 +712,21 @@
           <div class="view-title">Taken</div>
           <div class="view-desc">Houd bij wat er nog moet gebeuren en wat al klaar is. Voeg subtaken toe om een taak op te splitsen.</div>
         </div>
-        <div class="reminder-settings">
-          <label for="reminder-minutes-input">Herinner me</label>
-          <input type="number" id="reminder-minutes-input" min="1" max="10080" value="30" />
-          <select id="reminder-unit-select">
-            <option value="1">minuten</option>
-            <option value="60">uur</option>
-          </select>
-          <span>voor de deadline</span>
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end">
+          <div class="reminder-settings">
+            <label for="reminder-minutes-input">Herinner me</label>
+            <input type="number" id="reminder-minutes-input" min="1" max="10080" value="30" />
+            <select id="reminder-unit-select">
+              <option value="1">minuten</option>
+              <option value="60">uur</option>
+            </select>
+            <span>voor de deadline</span>
+          </div>
+          <div class="reminder-settings" id="notif-settings">
+            <span id="notif-status-text">Meldingen: uit</span>
+            <button class="btn btn-sm" id="notif-toggle-btn">Aanzetten</button>
+          </div>
+          <div class="import-status" style="margin:0">Op je iPhone: zet de app eerst op je beginscherm (Delen &rarr; Zet op beginscherm) voordat je meldingen aanzet.</div>
         </div>
       </div>
       <div class="task-add">
@@ -818,7 +919,7 @@
       <div class="photo-upload-row" id="cf-photo-row">
         <div class="photo-add-btn" id="cf-photo-add">+</div>
       </div>
-      <input type="file" id="cf-photo-input" accept="image/*" multiple style="display:none" />
+      <input type="file" id="cf-photo-input" accept="image/*" capture="environment" multiple style="display:none" />
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger btn-ghost" id="client-delete-btn" style="display:none">Verwijderen</button>
@@ -878,7 +979,7 @@
       <div class="photo-upload-row">
         <div class="photo-add-btn" id="project-photo-add">+</div>
       </div>
-      <input type="file" id="project-photo-input" accept="image/*" multiple style="display:none" />
+      <input type="file" id="project-photo-input" accept="image/*" capture="environment" multiple style="display:none" />
       <div style="margin-top:14px">
         <button class="btn btn-primary btn-sm" id="generate-story-btn">Genereer verhaal met AI</button>
       </div>
@@ -1139,15 +1240,20 @@ window.addEventListener('beforeunload', (e) => {
   }
 });
 function setSaveStatus(state, message) {
-  const el = document.getElementById('save-status');
-  const text = document.getElementById('save-status-text');
-  if (!el || !text) return;
-  el.classList.remove('saving', 'error');
-  if (state !== 'saved') el.classList.add(state);
-  text.textContent = message;
+  [['save-status', 'save-status-text'], ['save-status-m', 'save-status-text-m']].forEach(([elId, textId]) => {
+    const el = document.getElementById(elId);
+    const text = document.getElementById(textId);
+    if (!el || !text) return;
+    el.classList.remove('saving', 'error');
+    if (state !== 'saved') el.classList.add(state);
+    text.textContent = message;
+  });
   if (state === 'saved') {
     clearTimeout(saveStatusTimer);
-    saveStatusTimer = setTimeout(() => { text.textContent = 'Alles opgeslagen'; }, 1500);
+    saveStatusTimer = setTimeout(() => {
+      const t1 = document.getElementById('save-status-text'); if (t1) t1.textContent = 'Alles opgeslagen';
+      const t2 = document.getElementById('save-status-text-m'); if (t2) t2.textContent = 'Alles opgeslagen';
+    }, 1500);
   }
 }
 async function saveTasks() {
@@ -1464,6 +1570,8 @@ function renderTasks() {
   const todo = tasks.filter(t => !t.done);
   const done = tasks.filter(t => t.done);
   document.getElementById('count-taken').textContent = todo.length;
+  const ctm = document.getElementById('count-taken-m');
+  if (ctm) { ctm.textContent = todo.length; ctm.style.display = todo.length > 0 ? 'block' : 'none'; }
 
   if (todo.length === 0) todoList.innerHTML = '<div class="empty-hint">Niets openstaand — mooi rustig.</div>';
   if (done.length === 0) doneList.innerHTML = '<div class="empty-hint">Nog niets afgerond vandaag.</div>';
@@ -1668,6 +1776,8 @@ function renderClients() {
   kanban.innerHTML = '';
   const activeClients = clients.filter(c => c.phase !== 'afgerond');
   document.getElementById('count-klanten').textContent = activeClients.length;
+  const ckm = document.getElementById('count-klanten-m');
+  if (ckm) { ckm.textContent = activeClients.length; ckm.style.display = activeClients.length > 0 ? 'block' : 'none'; }
 
   PHASES.filter(phase => phase.key !== 'afgerond').forEach(phase => {
     const col = document.createElement('div');
@@ -2345,11 +2455,7 @@ function showReminderPopup(t) {
   document.getElementById('reminder-modal-backdrop').dataset.taskId = t.id;
   document.getElementById('reminder-modal-backdrop').classList.add('open');
 
-  if (window.Notification && Notification.permission === 'granted') {
-    try {
-      new Notification('Deadline nadert — ' + t.text, { body: whenText || 'Bekijk je taken in de Werkplaats.' });
-    } catch (e) { /* stille fallback op de in-app popup */ }
-  }
+  fireNotification('Deadline nadert — ' + t.text, whenText || 'Bekijk je taken in de Werkplaats.');
 }
 function closeReminderPopup() {
   document.getElementById('reminder-modal-backdrop').classList.remove('open');
@@ -2363,11 +2469,6 @@ document.getElementById('reminder-done-btn').addEventListener('click', () => {
   if (t) { t.done = true; saveTasks(); renderTasks(); renderBoard(); }
   closeReminderPopup();
 });
-if (window.Notification && Notification.permission === 'default') {
-  // Vraag toestemming voor bureaubladmeldingen; de in-app popup werkt sowieso, dit is een extra kanaal.
-  try { Notification.requestPermission(); } catch (e) {}
-}
-
 // ---------- Clock ----------
 function updateClock() {
   const now = new Date();
@@ -2387,15 +2488,63 @@ setInterval(() => {
 }, 60000);
 
 // ---------- Init ----------
+const mobileLogo = document.getElementById('mobile-brand-mark');
+const desktopLogo = document.querySelector('.sidebar .brand-mark');
+if (mobileLogo && desktopLogo) mobileLogo.src = desktopLogo.src;
 loadData();
 
 if ('serviceWorker' in navigator) {
+  let swReloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (swReloaded) return;
+    swReloaded = true;
+    window.location.reload();
+  });
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      reg.update().catch(() => {});
+    }).catch(() => {
       // Geen probleem als dit niet lukt (bijv. in de Claude-preview of via een lokaal bestand zonder hosting) — de app werkt dan gewoon zonder offline-cache.
     });
   });
 }
+
+// ---------- Push/systeemmeldingen ----------
+async function fireNotification(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      reg.showNotification(title, { body, icon: 'icon-192.png', badge: 'icon-192.png' });
+      return;
+    }
+  } catch (e) { /* val terug op onderstaande */ }
+  try { new Notification(title, { body, icon: 'icon-192.png' }); } catch (e) {}
+}
+function updateNotifStatusUI() {
+  const el = document.getElementById('notif-status-text');
+  const btn = document.getElementById('notif-toggle-btn');
+  if (!el || !btn) return;
+  if (!('Notification' in window)) { el.textContent = 'Meldingen niet ondersteund in deze browser'; btn.style.display = 'none'; return; }
+  const perm = Notification.permission;
+  if (perm === 'granted') { el.textContent = 'Meldingen: aan'; btn.textContent = 'Test melding'; btn.style.display = ''; }
+  else if (perm === 'denied') { el.textContent = 'Meldingen geblokkeerd — zet aan bij systeeminstellingen'; btn.style.display = 'none'; }
+  else { el.textContent = 'Meldingen: uit'; btn.textContent = 'Aanzetten'; btn.style.display = ''; }
+}
+const notifToggleBtn = document.getElementById('notif-toggle-btn');
+if (notifToggleBtn) {
+  notifToggleBtn.addEventListener('click', async () => {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      fireNotification('Testmelding', 'Zo ziet een herinnering aan een deadline eruit.');
+      return;
+    }
+    const result = await Notification.requestPermission();
+    updateNotifStatusUI();
+    if (result === 'granted') fireNotification('Meldingen aan', 'Je krijgt vanaf nu een melding bij naderende deadlines.');
+  });
+}
+updateNotifStatusUI();
 </script>
 </body>
 </html>
