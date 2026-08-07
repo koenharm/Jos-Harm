@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Werkplaats</title>
 
+<!-- Cloud-sync (Firebase Realtime Database) — zorgt dat telefoon en computer dezelfde data zien -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 <!-- PWA / "Zet op beginscherm" ondersteuning -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#F7F6F4">
@@ -567,7 +571,7 @@
     .task-cols { grid-template-columns: 1fr; }
     .field-row, .field-row-3 { grid-template-columns: 1fr; }
     .kanban { grid-template-columns: 1fr; }
-    .board { min-height: 900px; }
+    .board { min-height: 560px; }
     .import-row { flex-direction: column; }
     .ai-side { flex-direction: column; }
     .view-title { font-size: 18px; padding: 8px 16px; }
@@ -581,7 +585,11 @@
     .subtask-check { width: 18px; height: 18px; }
     .checkbox-box { width: 22px; height: 22px; }
     .task-add { flex-direction: column; }
-    .task-add input[type="date"], .task-add input[type="time"] { flex: 1 1 auto; width: 100%; }
+    .task-add input[type="text"] { width: 100%; }
+    .task-add-datetime { display: flex; gap: 8px; }
+    .task-add input[type="date"], .task-add input[type="time"] { flex: 1 1 0; width: auto; min-width: 0; }
+    .task-due-edit-group { gap: 8px; }
+    .task-due-input { font-size: 13px; padding: 6px 12px; min-height: 34px; border-radius: 17px; }
     .reminder-settings { flex-wrap: wrap; }
 
     /* Mobile top bar */
@@ -621,9 +629,11 @@
     }
 
     /* Modals as bottom sheets */
+    body:has(.modal-backdrop.open) .tabbar { display: none; }
     .modal-backdrop { align-items: flex-end; padding: 0; }
     .modal {
-      max-width: 100%; width: 100%; border-radius: 16px 16px 0 0; max-height: 92vh; overflow-y: auto;
+      max-width: 100%; width: 100%; border-radius: 16px 16px 0 0; max-height: 100vh; overflow-y: auto;
+      -webkit-overflow-scrolling: touch; touch-action: pan-y;
       padding: 18px 20px calc(26px + env(safe-area-inset-bottom));
       animation: sheetUp 0.26s ease-out;
     }
@@ -733,8 +743,10 @@
       </div>
       <div class="task-add">
         <input type="text" id="new-task-input" placeholder="Nieuwe taak, bijv. 'Offerte Kalfire nasturen naar dhr. Jansen'…" />
-        <input type="date" id="new-task-date" title="Deadline datum (optioneel)" />
-        <input type="time" id="new-task-time" title="Deadline tijd (optioneel)" />
+        <div class="task-add-datetime">
+          <input type="date" id="new-task-date" title="Deadline datum (optioneel)" />
+          <input type="time" id="new-task-time" title="Deadline tijd (optioneel)" />
+        </div>
         <button class="btn btn-primary" id="add-task-btn">Toevoegen</button>
       </div>
       <div class="task-cols">
@@ -1175,8 +1187,43 @@ function waitForStorage(maxWaitMs, intervalMs) {
     })();
   });
 }
+// ---------- Firebase cloud sync ----------
+// Vul hier je eigen Firebase-configuratie in (zie stappenplan) om telefoon en computer te laten synchroniseren.
+const firebaseConfig = {
+  apiKey: "AIzaSyAlBj9lTKbI6I1Cl4HTGIVS9A5hiCzPQ14",
+  databaseURL: "https://jos-harm-werkplaats-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "jos-harm-werkplaats"
+};
+let fbDb = null;
+let fbReady = false;
+try {
+  if (firebaseConfig.apiKey !== "VUL_HIER_IN" && window.firebase) {
+    firebase.initializeApp(firebaseConfig);
+    fbDb = firebase.database();
+    fbReady = true;
+  }
+} catch (e) { console.error('Firebase init mislukt', e); }
+
+let suppressRemote = false;
+function listenRemote(key, onChange) {
+  if (!fbReady) return;
+  fbDb.ref('werkplaats/' + key).on('value', (snap) => {
+    if (suppressRemote) return;
+    const val = snap.val();
+    if (val === null || val === undefined) return;
+    onChange(val);
+  });
+}
+
 let storageMode = 'local';
 async function storageGet(key) {
+  if (fbReady) {
+    try {
+      const snap = await fbDb.ref('werkplaats/' + key).once('value');
+      const val = snap.val();
+      if (val !== null && val !== undefined) return { key, value: val };
+    } catch (e) { console.error('Firebase get mislukt', e); }
+  }
   if (storageMode === 'claude') {
     let lastErr = null;
     for (let i = 0; i < 3; i++) {
@@ -1190,6 +1237,13 @@ async function storageGet(key) {
   return { key, value: raw };
 }
 async function storageSet(key, value) {
+  if (fbReady) {
+    try {
+      suppressRemote = true;
+      await fbDb.ref('werkplaats/' + key).set(value);
+    } catch (e) { console.error('Firebase set mislukt', e); }
+    finally { setTimeout(() => { suppressRemote = false; }, 300); }
+  }
   if (storageMode === 'claude') {
     return await window.storage.set(key, value);
   }
@@ -1201,7 +1255,9 @@ async function loadData() {
   storageMode = await waitForStorage();
   const footText = document.getElementById('sidebar-foot-text');
   if (footText) {
-    footText.textContent = storageMode === 'claude'
+    footText.textContent = fbReady
+      ? 'Alles wat je hier invoert wordt automatisch gesynchroniseerd tussen al je apparaten.'
+      : storageMode === 'claude'
       ? 'Alles wat je hier invoert, wordt automatisch bewaard via Claude — je kunt dus altijd verder waar je gebleven was.'
       : 'Alles wat je hier invoert, wordt bewaard in deze browser op deze computer. Open je het bestand op een ander apparaat of in een andere browser, dan begin je daar opnieuw.';
   }
@@ -1231,6 +1287,24 @@ async function loadData() {
   renderFireplaces();
   migrateOversizedPhotos();
   checkTaskReminders();
+  setupRealtimeSync();
+}
+function setupRealtimeSync() {
+  if (!fbReady) return;
+  listenRemote('tasks-data', (val) => {
+    try { tasks = JSON.parse(val); } catch (e) { return; }
+    tasks.forEach(t => { if (!t.priority) t.priority = 3; if (!t.subtasks) t.subtasks = []; if (t.dueDate === undefined) t.dueDate = null; if (t.dueTime === undefined) t.dueTime = null; if (t.reminderFired === undefined) t.reminderFired = false; });
+    renderTasks(); renderBoard(); checkTaskReminders();
+  });
+  listenRemote('clients-data', (val) => {
+    try { clients = JSON.parse(val); } catch (e) { return; }
+    clients.forEach(c => { if (!c.phase) c.phase = 'lead'; if (!c.projectPhotos) c.projectPhotos = []; });
+    renderClients();
+  });
+  listenRemote('fireplace-catalog', (val) => {
+    try { fireplaces = JSON.parse(val); } catch (e) { return; }
+    renderFireplaces();
+  });
 }
 let saveStatusTimer = null;
 let pendingSaveCount = 0;
@@ -1384,6 +1458,7 @@ function renderBoard() {
   const bands = {
     5: [1, 12], 4: [12, 30], 3: [28, 48], 2: [46, 66], 1: [62, 82],
   };
+  const mScale = window.innerWidth <= 780 ? 0.62 : 1;
   open.forEach((t, idx) => {
     const h1 = (hashStr(t.id + 'x') % 1000) / 1000;
     const h2 = (hashStr(t.id + 'y') % 1000) / 1000;
@@ -1393,8 +1468,8 @@ function renderBoard() {
     const top = (typeof t.posY === 'number') ? t.posY : band[0] + h2 * (band[1] - band[0]);
     const left = (typeof t.posX === 'number') ? t.posX : 3 + h1 * 68;
     const rot = -7 + h3 * 14;
-    const fontSize = 11.5 + p * 0.9;
-    const width = 130 + p * 22;
+    const fontSize = (11.5 + p * 0.9) * mScale;
+    const width = (130 + p * 22) * mScale;
     const opacity = 0.5 + p * 0.1;
     const glow = p >= 4 ? `0 0 ${p * 4}px rgba(211,177,115,${0.25 + p * 0.04}), 0 8px 20px rgba(43,43,43,0.18)` : '0 8px 20px rgba(43,43,43,0.18)';
 
