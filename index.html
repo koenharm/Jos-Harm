@@ -8,6 +8,7 @@
 <!-- Cloud-sync (Firebase Realtime Database) — zorgt dat telefoon en computer dezelfde data zien -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 
 <!-- PWA / "Zet op beginscherm" ondersteuning -->
 <link rel="manifest" href="manifest.json">
@@ -580,7 +581,9 @@
     .btn { min-height: 44px; padding: 11px 18px; font-size: 14px; }
     .btn-sm { min-height: 38px; }
     .field input, .field textarea, .field select,
-    .task-add input, .import-row textarea { min-height: 44px; padding: 12px 14px; font-size: 15px; }
+    .task-add input, .import-row textarea { min-height: 44px; padding: 12px 14px; font-size: 16px; }
+    .task-edit-input, .task-due-input, .subtask-text-input, .ai-side-card select,
+    input[type="text"], input[type="date"], input[type="time"], input[type="email"], input[type="number"], textarea, select { font-size: 16px; }
     .task-check, .board-check { width: 22px; height: 22px; }
     .subtask-check { width: 18px; height: 18px; }
     .checkbox-box { width: 22px; height: 22px; }
@@ -1192,8 +1195,10 @@ function waitForStorage(maxWaitMs, intervalMs) {
 const firebaseConfig = {
   apiKey: "AIzaSyAlBj9lTKbI6I1Cl4HTGIVS9A5hiCzPQ14",
   databaseURL: "https://jos-harm-werkplaats-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "jos-harm-werkplaats"
+  projectId: "jos-harm-werkplaats",
+  messagingSenderId: "125238066819"
 };
+const VAPID_KEY = "BIVTIDcU0kKkT9HZPmgYWp8Lp9I5yo9nEgPccr2xNhtCxQU4s0IYc6dx2rsXC09fCja3jpZBwzSZGsI5RlK815k";
 let fbDb = null;
 let fbReady = false;
 try {
@@ -1213,6 +1218,16 @@ function listenRemote(key, onChange) {
     if (val === null || val === undefined) return;
     onChange(val);
   });
+}
+
+async function registerPushToken() {
+  try {
+    if (!fbReady || !firebase.messaging || VAPID_KEY === "VUL_HIER_IN" || firebaseConfig.messagingSenderId === "VUL_HIER_IN") return;
+    const reg = await navigator.serviceWorker.ready;
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+    if (token) await fbDb.ref('werkplaats/fcmTokens/' + token).set(true);
+  } catch (e) { console.error('Push-token registreren mislukt', e); }
 }
 
 let storageMode = 'local';
@@ -2618,10 +2633,11 @@ if (notifToggleBtn) {
     }
     const result = await Notification.requestPermission();
     updateNotifStatusUI();
-    if (result === 'granted') fireNotification('Meldingen aan', 'Je krijgt vanaf nu een melding bij naderende deadlines.');
+    if (result === 'granted') { fireNotification('Meldingen aan', 'Je krijgt vanaf nu een melding bij naderende deadlines.'); registerPushToken(); }
   });
 }
 updateNotifStatusUI();
+if ('Notification' in window && Notification.permission === 'granted') registerPushToken();
 </script>
 </body>
 </html>
