@@ -1,3 +1,21 @@
+// Firebase Cloud Messaging — ontvangt pushberichten terwijl de app dicht is
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+firebase.initializeApp({
+  apiKey: "AIzaSyAlBj9lTKbI6I1Cl4HTGIVS9A5hiCzPQ14",
+  databaseURL: "https://jos-harm-werkplaats-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "jos-harm-werkplaats",
+  messagingSenderId: "125238066819"
+});
+try {
+  const messaging = firebase.messaging();
+  messaging.onBackgroundMessage((payload) => {
+    const title = (payload.notification && payload.notification.title) || 'Werkplaats';
+    const body = (payload.notification && payload.notification.body) || '';
+    self.registration.showNotification(title, { body, icon: './icon-192.png', badge: './icon-192.png' });
+  });
+} catch (e) { /* messaging niet beschikbaar */ }
+
 const CACHE_NAME = 'werkplaats-v2';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
