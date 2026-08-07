@@ -1226,8 +1226,19 @@ async function registerPushToken() {
     const reg = await navigator.serviceWorker.ready;
     const messaging = firebase.messaging();
     const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-    if (token) await fbDb.ref('werkplaats/fcmTokens/' + token).set(true);
-  } catch (e) { console.error('Push-token registreren mislukt', e); }
+    if (token) {
+      await fbDb.ref('werkplaats/fcmTokens/' + token).set(true);
+      const el = document.getElementById('notif-status-text');
+      if (el) el.textContent = 'Meldingen: aan (token geregistreerd)';
+    } else {
+      const el = document.getElementById('notif-status-text');
+      if (el) el.textContent = 'Meldingen: geen token ontvangen';
+    }
+  } catch (e) {
+    console.error('Push-token registreren mislukt', e);
+    const el = document.getElementById('notif-status-text');
+    if (el) el.textContent = 'Push-fout: ' + (e && e.message ? e.message : e);
+  }
 }
 
 let storageMode = 'local';
