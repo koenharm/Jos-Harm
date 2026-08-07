@@ -5,7 +5,8 @@ firebase.initializeApp({
   apiKey: "AIzaSyAlBj9lTKbI6I1Cl4HTGIVS9A5hiCzPQ14",
   databaseURL: "https://jos-harm-werkplaats-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "jos-harm-werkplaats",
-  messagingSenderId: "125238066819"
+  messagingSenderId: "125238066819",
+  appId: "1:125238066819:web:942b468c85591691cc65b6"
 });
 try {
   const messaging = firebase.messaging();
