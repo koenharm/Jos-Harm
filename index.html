@@ -2840,8 +2840,6 @@ function showReminderPopup(t) {
   document.getElementById('reminder-text').querySelector('b').textContent = t.text;
   document.getElementById('reminder-modal-backdrop').dataset.taskId = t.id;
   document.getElementById('reminder-modal-backdrop').classList.add('open');
-
-  fireNotification('Deadline nadert — ' + t.text, whenText || 'Bekijk je taken in de Werkplaats.');
 }
 function closeReminderPopup() {
   document.getElementById('reminder-modal-backdrop').classList.remove('open');
