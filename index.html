@@ -597,8 +597,8 @@
       min-height: 0; overflow: visible; padding: 0; border: none; background: none;
     }
     .board-mobile .board-card {
-      position: static !important; aspect-ratio: auto; overflow: hidden;
-      padding: 13px 14px 11px; border-radius: 8px;
+      position: relative !important; aspect-ratio: auto; overflow: hidden;
+      padding: 13px 34px 11px 14px; border-radius: 8px;
     }
     .board-mobile .board-card::before { display: none; }
     .board-mobile .board-card-text { -webkit-line-clamp: unset; line-clamp: unset; overflow: visible; }
@@ -1747,7 +1747,7 @@ function renderBoard() {
     const card = document.createElement('div');
     card.className = 'board-card';
     if (isMobile) {
-      card.style.position = 'static';
+      card.style.position = 'relative';
       card.style.width = '100%';
       card.style.transform = 'none';
       card.style.fontSize = '14px';
