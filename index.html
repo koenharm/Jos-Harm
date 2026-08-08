@@ -592,6 +592,19 @@
     .field-row, .field-row-3 { grid-template-columns: 1fr; }
     .kanban { grid-template-columns: 1fr; }
     .board { min-height: 560px; }
+    .board.board-mobile {
+      position: static; display: flex; flex-direction: column; gap: 10px;
+      min-height: 0; overflow: visible; padding: 0; border: none; background: none;
+    }
+    .board-mobile .board-card {
+      position: static !important; aspect-ratio: auto; overflow: visible;
+      padding: 13px 14px 11px; border-radius: 8px;
+    }
+    .board-mobile .board-card::before { display: none; }
+    .board-mobile .board-card-text { -webkit-line-clamp: unset; line-clamp: unset; overflow: visible; }
+    .board-mobile .board-card:active { transform: scale(0.985) !important; }
+    .board-mobile .board-dots { gap: 9px; }
+    .board-mobile .board-dot { width: 18px; height: 18px; }
     .import-row { flex-direction: column; }
     .ai-side { flex-direction: column; }
     .view-title { font-size: 18px; padding: 8px 16px; }
@@ -629,7 +642,7 @@
 
     /* Bottom tab bar */
     .tabbar {
-      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;
       background: linear-gradient(180deg, #FBFAF8, #F1EBE1); border-top: 1px solid var(--hairline);
       padding: 7px 4px calc(7px + env(safe-area-inset-bottom));
     }
@@ -671,12 +684,78 @@
     .clock-widget { display: none; }
   }
   @keyframes sheetUp { from { transform: translateY(60px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
+  /* ---- Splash / opstartscherm ---- */
+  .splash-screen {
+    position: fixed; inset: 0; z-index: 999;
+    background: radial-gradient(circle at 50% 42%, #33302c, #1a1917 78%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    opacity: 1; transition: opacity 0.6s ease;
+  }
+  .splash-screen.hide { opacity: 0; pointer-events: none; }
+  .splash-logo {
+    width: 84px; height: 84px; object-fit: contain; opacity: 0; transform: scale(0.8);
+    animation: splashLogoIn 1.1s cubic-bezier(.2,.9,.25,1) forwards;
+    filter: drop-shadow(0 0 20px rgba(211,177,115,0.4));
+  }
+  @keyframes splashLogoIn { 0% { opacity: 0; transform: scale(0.8); } 60% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
+  .splash-brand { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.06em; color: #F7F6F4; opacity: 0; animation: splashTextIn 0.6s ease 0.7s forwards; margin-top: 4px; }
+  .splash-sub { font-family: 'League Spartan', sans-serif; font-size: 10.5px; color: var(--ember); text-transform: uppercase; letter-spacing: 0.2em; opacity: 0; animation: splashTextIn 0.6s ease 0.9s forwards; }
+  @keyframes splashTextIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .splash-line { width: 140px; height: 2px; background: rgba(255,255,255,0.12); position: relative; overflow: hidden; margin-top: 8px; border-radius: 2px; opacity: 0; animation: splashTextIn 0.4s ease 1.1s forwards; }
+  .splash-line::after {
+    content: ''; position: absolute; top: 0; left: -40%; width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, var(--ember), transparent);
+    animation: splashSweep 1.3s ease 1.2s forwards;
+  }
+  @keyframes splashSweep { from { left: -40%; } to { left: 100%; } }
+
+  /* ---- Home: begroeting & statistieken ---- */
+  .home-greeting { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 18px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 2px solid var(--hairline); }
+  .home-greeting-title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--paper); }
+  .home-greeting-sub { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+  .home-greeting-date { font-family: 'League Spartan', sans-serif; font-size: 12px; color: var(--smoke); text-transform: capitalize; letter-spacing: 0.02em; }
+  .home-weather {
+    display: inline-flex; align-items: center; gap: 7px; background: var(--panel); border: 1px solid var(--hairline);
+    border-radius: 20px; padding: 4px 12px 4px 8px; cursor: pointer; font-family: 'League Spartan', sans-serif;
+    color: var(--paper-dim); transition: border-color 0.15s, background 0.15s;
+  }
+  .home-weather:hover { border-color: var(--ember-dim); }
+  .home-weather svg { width: 17px; height: 17px; stroke: var(--ember-dim); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .home-weather-text { font-size: 12.5px; }
+  .home-weather-text b { font-weight: 700; color: var(--paper); }
+  .home-weather-sub { color: var(--smoke); font-size: 11px; margin-left: 3px; }
+  .home-stats { display: flex; gap: 10px; }
+  .home-stat { background: var(--panel); border: 1px solid var(--hairline); border-radius: 9px; padding: 10px 20px; text-align: center; min-width: 84px; box-shadow: 0 2px 6px rgba(139,131,120,0.12); }
+  .home-stat-num { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 22px; color: var(--ember-dim); line-height: 1; }
+  .home-stat-label { font-family: 'League Spartan', sans-serif; font-size: 9.5px; color: var(--smoke); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+  @media (max-width: 780px) {
+    .home-stats { width: 100%; justify-content: space-between; }
+    .home-stat { flex: 1; padding: 10px 6px; min-width: 0; }
+    .home-greeting-title { font-size: 21px; }
+  }
 </style>
 </head>
 <body>
 
+<div class="splash-screen" id="splash-screen">
+  <div class="splash-glow"></div>
+  <img class="splash-logo" id="splash-logo" />
+  <div class="splash-brand">Werkplaats</div>
+  <div class="splash-sub">Jos Harm</div>
+  <div class="splash-line"></div>
+</div>
+<script>
+(function(){
+  var today = new Date().toISOString().slice(0,10);
+  if (localStorage.getItem('werkplaats:lastSplashDate') === today) {
+    var s = document.getElementById('splash-screen');
+    if (s) s.style.display = 'none';
+  }
+})();
+</script>
+
 <div class="mobile-topbar">
-  <img class="brand-mark" id="mobile-brand-mark" src="" />
+  <img class="brand-mark" id="mobile-brand-mark" />
   <div>
     <div class="brand-text">Werkplaats</div>
   </div>
@@ -733,6 +812,20 @@
 
     <!-- HOME -->
     <div class="view active" id="view-home">
+      <div class="home-greeting">
+        <div>
+          <div class="home-greeting-title" id="home-greeting-title">Goedemorgen</div>
+          <div class="home-greeting-sub">
+            <span class="home-greeting-date" id="home-greeting-date">—</span>
+            <span class="home-weather" id="home-weather" title="Klik voor meer details"></span>
+          </div>
+        </div>
+        <div class="home-stats">
+          <div class="home-stat"><div class="home-stat-num" id="stat-open-taken">0</div><div class="home-stat-label">Open taken</div></div>
+          <div class="home-stat"><div class="home-stat-num" id="stat-deadlines">0</div><div class="home-stat-label">Deze week</div></div>
+          <div class="home-stat"><div class="home-stat-num" id="stat-klanten">0</div><div class="home-stat-label">Actieve klanten</div></div>
+        </div>
+      </div>
       <div class="view-header">
         <div>
           <div class="view-title">Prioriteitenbord</div>
@@ -1502,7 +1595,98 @@ function getEffectivePriority(t) {
   return base;
 }
 
+const WEATHER_ICONS = {
+  sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.2 4.2l1.9 1.9M17.9 17.9l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.2 19.8l1.9-1.9M17.9 6.1l1.9-1.9"/></svg>',
+  suncloud: '<svg viewBox="0 0 24 24"><circle cx="8.5" cy="8.5" r="3.2"/><path d="M8.5 2.8v2M8.5 12.2v0M2.8 8.5h2M13 5l-1.4 1.4M4 13l1.4-1.4"/><path d="M9 20h9.5a3.5 3.5 0 0 0 .5-6.96A5 5 0 0 0 9.4 15.1 3.2 3.2 0 0 0 9 20z"/></svg>',
+  cloud: '<svg viewBox="0 0 24 24"><path d="M6.5 19h11a3.8 3.8 0 0 0 .5-7.57A5.5 5.5 0 0 0 7 12.4 3.5 3.5 0 0 0 6.5 19z"/></svg>',
+  rain: '<svg viewBox="0 0 24 24"><path d="M6.5 14.5h11a3.8 3.8 0 0 0 .5-7.57A5.5 5.5 0 0 0 7 7.9 3.5 3.5 0 0 0 6.5 14.5z"/><path d="M8 18l-1 3M12.5 18l-1 3M17 18l-1 3"/></svg>',
+  snow: '<svg viewBox="0 0 24 24"><path d="M6.5 14.5h11a3.8 3.8 0 0 0 .5-7.57A5.5 5.5 0 0 0 7 7.9 3.5 3.5 0 0 0 6.5 14.5z"/><path d="M9 19l.01.01M12.5 20l.01.01M16 19l.01.01"/></svg>',
+  thunder: '<svg viewBox="0 0 24 24"><path d="M6.5 13.5h11a3.8 3.8 0 0 0 .5-7.57A5.5 5.5 0 0 0 7 6.9 3.5 3.5 0 0 0 6.5 13.5z"/><path d="M13 13l-3 5h3l-2 4"/></svg>'
+};
+function weatherMeta(code) {
+  if (code === 0) return { icon: WEATHER_ICONS.sun, label: 'Helder' };
+  if (code === 1 || code === 2) return { icon: WEATHER_ICONS.suncloud, label: 'Licht bewolkt' };
+  if (code === 3 || code === 45 || code === 48) return { icon: WEATHER_ICONS.cloud, label: code === 3 ? 'Bewolkt' : 'Mist' };
+  if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return { icon: WEATHER_ICONS.rain, label: 'Regen' };
+  if ([71,73,75,77,85,86].includes(code)) return { icon: WEATHER_ICONS.snow, label: 'Sneeuw' };
+  if ([95,96,99].includes(code)) return { icon: WEATHER_ICONS.thunder, label: 'Onweer' };
+  return { icon: WEATHER_ICONS.cloud, label: 'Bewolkt' };
+}
+let weatherExpanded = false;
+function renderWeather(current) {
+  const el = document.getElementById('home-weather');
+  if (!el || !current) return;
+  const meta = weatherMeta(current.weather_code);
+  const temp = Math.round(current.temperature_2m);
+  const feels = Math.round(current.apparent_temperature);
+  el.innerHTML = weatherExpanded
+    ? `${meta.icon}<span class="home-weather-text"><b>${temp}\u00b0</b> ${meta.label}<span class="home-weather-sub">gevoel ${feels}\u00b0</span></span>`
+    : `${meta.icon}<span class="home-weather-text"><b>${temp}\u00b0</b> Amsterdam</span>`;
+}
+async function fetchWeather() {
+  const el = document.getElementById('home-weather');
+  if (!el) return;
+  try {
+    const cacheRaw = localStorage.getItem('werkplaats:weatherCache');
+    if (cacheRaw) {
+      const cache = JSON.parse(cacheRaw);
+      if (Date.now() - cache.ts < 30 * 60000) { renderWeather(cache.data); return; }
+    }
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.3676&longitude=4.9041&current=temperature_2m,apparent_temperature,weather_code&timezone=Europe/Amsterdam');
+    const data = await res.json();
+    localStorage.setItem('werkplaats:weatherCache', JSON.stringify({ ts: Date.now(), data: data.current }));
+    renderWeather(data.current);
+  } catch (e) {
+    el.innerHTML = '<span class="home-weather-text">Weer niet beschikbaar</span>';
+  }
+}
+document.getElementById('home-weather').addEventListener('click', () => {
+  weatherExpanded = !weatherExpanded;
+  try {
+    const cacheRaw = localStorage.getItem('werkplaats:weatherCache');
+    if (cacheRaw) renderWeather(JSON.parse(cacheRaw).data);
+  } catch (e) {}
+});
+function renderHomeStats() {
+  const titleEl = document.getElementById('home-greeting-title');
+  const dateEl = document.getElementById('home-greeting-date');
+  if (titleEl) {
+    const h = new Date().getHours();
+    titleEl.textContent = h < 12 ? 'Goedemorgen' : h < 18 ? 'Goedemiddag' : 'Goedenavond';
+  }
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+  const openTaken = tasks.filter(t => !t.done).length;
+  const weekAhead = Date.now() + 7 * 24 * 3600000;
+  const deadlinesWeek = tasks.filter(t => {
+    if (t.done) return false;
+    const d = getTaskDeadline(t);
+    return d && d.getTime() <= weekAhead;
+  }).length;
+  const activeKlanten = clients.filter(c => c.phase !== 'afgerond').length;
+  const elA = document.getElementById('stat-open-taken'); if (elA) elA.textContent = openTaken;
+  const elB = document.getElementById('stat-deadlines'); if (elB) elB.textContent = deadlinesWeek;
+  const elC = document.getElementById('stat-klanten'); if (elC) elC.textContent = activeKlanten;
+}
+function initSplash() {
+  const splash = document.getElementById('splash-screen');
+  if (!splash || splash.style.display === 'none') return;
+  const desktopLogo = document.querySelector('.sidebar .brand-mark');
+  const splashLogo = document.getElementById('splash-logo');
+  if (desktopLogo && splashLogo) splashLogo.src = desktopLogo.src;
+  const today = new Date().toISOString().slice(0, 10);
+  let dismissed = false;
+  const dismiss = () => {
+    if (dismissed) return;
+    dismissed = true;
+    splash.classList.add('hide');
+    localStorage.setItem('werkplaats:lastSplashDate', today);
+    setTimeout(() => splash.remove(), 650);
+  };
+  splash.addEventListener('click', dismiss);
+  setTimeout(dismiss, 2400);
+}
 function renderBoard() {
+  renderHomeStats();
   const board = document.getElementById('board');
   board.innerHTML = '';
   const open = tasks.filter(t => !t.done);
@@ -1513,12 +1697,18 @@ function renderBoard() {
   const bands = {
     5: [1, 12], 4: [12, 30], 3: [28, 48], 2: [46, 66], 1: [62, 82],
   };
-  const mScale = window.innerWidth <= 780 ? 0.62 : 1;
-  open.forEach((t, idx) => {
+  const isMobile = window.innerWidth <= 780;
+  board.classList.toggle('board-mobile', isMobile);
+  const mScale = isMobile ? 0.62 : 1;
+  const ordered = isMobile
+    ? [...open].sort((a, b) => getEffectivePriority(b) - getEffectivePriority(a))
+    : open;
+  ordered.forEach((t, idx) => {
     const h1 = (hashStr(t.id + 'x') % 1000) / 1000;
     const h2 = (hashStr(t.id + 'y') % 1000) / 1000;
     const h3 = (hashStr(t.id + 'r') % 1000) / 1000;
     const p = getEffectivePriority(t);
+    const basePriority = t.priority || 3;
     const band = bands[p];
     const top = (typeof t.posY === 'number') ? t.posY : band[0] + h2 * (band[1] - band[0]);
     const left = (typeof t.posX === 'number') ? t.posX : 3 + h1 * 68;
@@ -1530,14 +1720,24 @@ function renderBoard() {
 
     const card = document.createElement('div');
     card.className = 'board-card';
-    card.style.top = top + '%';
-    card.style.left = left + '%';
-    card.style.transform = `rotate(${rot.toFixed(1)}deg)`;
-    card.style.fontSize = fontSize + 'px';
-    card.style.width = width + 'px';
-    card.style.opacity = opacity;
-    card.style.zIndex = 10 + p * 10 + idx;
-    card.style.boxShadow = glow;
+    if (isMobile) {
+      card.style.position = 'static';
+      card.style.width = '100%';
+      card.style.transform = 'none';
+      card.style.fontSize = '14px';
+      card.style.opacity = '1';
+      card.style.zIndex = '1';
+      card.style.boxShadow = '0 2px 6px rgba(139,131,120,0.15)';
+    } else {
+      card.style.top = top + '%';
+      card.style.left = left + '%';
+      card.style.transform = `rotate(${rot.toFixed(1)}deg)`;
+      card.style.fontSize = fontSize + 'px';
+      card.style.width = width + 'px';
+      card.style.opacity = opacity;
+      card.style.zIndex = 10 + p * 10 + idx;
+      card.style.boxShadow = glow;
+    }
 
     const doneSub = (t.subtasks || []).filter(s => s.done).length;
     const totalSub = (t.subtasks || []).length;
@@ -1551,7 +1751,7 @@ function renderBoard() {
       <div class="board-card-text"></div>
       <div class="board-card-foot">
         <div class="board-dots">
-          ${[1,2,3,4,5].map(n => `<div class="board-dot ${n <= p ? 'filled' : ''}" data-n="${n}"></div>`).join('')}
+          ${[1,2,3,4,5].map(n => `<div class="board-dot ${n <= basePriority ? 'filled' : ''}" data-n="${n}"></div>`).join('')}
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
           ${dueShort ? `<div class="board-due-badge${isOverdue ? ' overdue' : ''}">${dueShort}</div>` : ''}
@@ -1588,7 +1788,7 @@ function renderBoard() {
       burnCard(card);
       setTimeout(finishTask, 1150);
     });
-    makeCardDraggable(card, t, board);
+    if (!isMobile) makeCardDraggable(card, t, board);
     board.appendChild(card);
   });
 }
@@ -1736,7 +1936,7 @@ function taskCard(t) {
           <div class="subtask-link">${totalSub > 0 ? `Subtaken (${doneSub}/${totalSub})` : '+ subtaak toevoegen'}</div>
         </div>
         <div class="task-priority-row">
-          ${[1,2,3,4,5].map(n => `<div class="board-dot ${n <= effP ? 'filled' : ''}" data-n="${n}" title="Prioriteit ${n}"></div>`).join('')}
+          ${[1,2,3,4,5].map(n => `<div class="board-dot ${n <= (t.priority || 3) ? 'filled' : ''}" data-n="${n}" title="Prioriteit ${n}"></div>`).join('')}
         </div>
         <div class="subtask-block" style="display:none"></div>
       </div>
@@ -2623,6 +2823,8 @@ setInterval(() => {
 const mobileLogo = document.getElementById('mobile-brand-mark');
 const desktopLogo = document.querySelector('.sidebar .brand-mark');
 if (mobileLogo && desktopLogo) mobileLogo.src = desktopLogo.src;
+initSplash();
+fetchWeather();
 loadData();
 
 if ('serviceWorker' in navigator) {
