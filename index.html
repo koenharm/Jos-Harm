@@ -188,6 +188,8 @@
     border: 1.5px solid var(--smoke); cursor: pointer; display: flex; align-items: center; justify-content: center;
   }
   .board-check svg { display: none; width: 9px; height: 9px; }
+  .board-check.checked { background: radial-gradient(circle at 35% 30%, #EAD3A0, var(--ember)); border-color: var(--ember); box-shadow: 0 0 8px rgba(211,177,115,0.5); }
+  .board-check.checked svg { display: block; }
 
   /* ---- Burn effect ---- */
   .board-card.charring { pointer-events: none; }
@@ -415,6 +417,7 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   }
   .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-head h2 { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 17px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--paper); margin: 0; }
   .modal-close { color: var(--smoke); cursor: pointer; font-size: 20px; line-height: 1; padding: 4px; }
   .modal-close:hover { color: var(--paper); }
   .field { margin-bottom: 14px; }
@@ -679,6 +682,7 @@
       padding: 18px 20px calc(26px + env(safe-area-inset-bottom));
       animation: sheetUp 0.26s ease-out;
     }
+    .modal-head { position: sticky; top: -18px; margin: -18px -20px 20px; padding: 18px 20px 14px; background: var(--panel); z-index: 2; border-bottom: 1px solid var(--hairline); }
     .modal::before { content: ''; display: block; width: 36px; height: 4px; background: var(--hairline); border-radius: 3px; margin: 0 auto 16px; }
 
     /* Compact AI chat */
@@ -691,21 +695,31 @@
   /* ---- Splash / opstartscherm ---- */
   .splash-screen {
     position: fixed; inset: 0; z-index: 999;
-    background: radial-gradient(circle at 50% 42%, #33302c, #1a1917 78%);
+    background: #1a1917;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-    opacity: 1; transition: opacity 0.6s ease;
+    opacity: 1; transition: opacity 0.6s ease; overflow: hidden;
   }
   .splash-screen.hide { opacity: 0; pointer-events: none; }
+  .splash-photo {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    opacity: 0.55; transform: scale(1); animation: splashKenBurns 3.2s ease-out forwards;
+  }
+  @keyframes splashKenBurns { from { transform: scale(1.12); } to { transform: scale(1); } }
+  .splash-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(26,25,23,0.55) 0%, rgba(26,25,23,0.35) 40%, rgba(26,25,23,0.88) 100%);
+  }
   .splash-logo {
     width: 84px; height: 84px; object-fit: contain; opacity: 0; transform: scale(0.8);
     animation: splashLogoIn 1.1s cubic-bezier(.2,.9,.25,1) forwards;
     filter: drop-shadow(0 0 20px rgba(211,177,115,0.4));
+    position: relative; z-index: 1;
   }
   @keyframes splashLogoIn { 0% { opacity: 0; transform: scale(0.8); } 60% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
-  .splash-brand { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.06em; color: #F7F6F4; opacity: 0; animation: splashTextIn 0.6s ease 0.7s forwards; margin-top: 4px; }
-  .splash-sub { font-family: 'League Spartan', sans-serif; font-size: 10.5px; color: var(--ember); text-transform: uppercase; letter-spacing: 0.2em; opacity: 0; animation: splashTextIn 0.6s ease 0.9s forwards; }
+  .splash-brand { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.06em; color: #F7F6F4; opacity: 0; animation: splashTextIn 0.6s ease 0.7s forwards; margin-top: 4px; position: relative; z-index: 1; }
+  .splash-sub { font-family: 'League Spartan', sans-serif; font-size: 10.5px; color: var(--ember); text-transform: uppercase; letter-spacing: 0.2em; opacity: 0; animation: splashTextIn 0.6s ease 0.9s forwards; position: relative; z-index: 1; }
   @keyframes splashTextIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .splash-line { width: 140px; height: 2px; background: rgba(255,255,255,0.12); position: relative; overflow: hidden; margin-top: 8px; border-radius: 2px; opacity: 0; animation: splashTextIn 0.4s ease 1.1s forwards; }
+  .splash-line { width: 140px; height: 2px; background: rgba(255,255,255,0.12); position: relative; z-index: 1; overflow: hidden; margin-top: 8px; border-radius: 2px; opacity: 0; animation: splashTextIn 0.4s ease 1.1s forwards; }
   .splash-line::after {
     content: ''; position: absolute; top: 0; left: -40%; width: 40%; height: 100%;
     background: linear-gradient(90deg, transparent, var(--ember), transparent);
@@ -752,6 +766,8 @@
 <body>
 
 <div class="splash-screen" id="splash-screen">
+  <img class="splash-photo" src="showroom.png" alt="" />
+  <div class="splash-overlay"></div>
   <div class="splash-glow"></div>
   <img class="splash-logo" id="splash-logo" />
   <div class="splash-brand">Werkplaats</div>
@@ -1808,6 +1824,7 @@ function renderBoard() {
     });
     card.querySelector('.board-check').addEventListener('click', (e) => {
       e.stopPropagation();
+      e.currentTarget.classList.add('checked');
       const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const finishTask = () => {
         t.done = true;
