@@ -11,8 +11,8 @@ firebase.initializeApp({
 try {
   const messaging = firebase.messaging();
   messaging.onBackgroundMessage((payload) => {
-    const title = (payload.notification && payload.notification.title) || 'Werkplaats';
-    const body = (payload.notification && payload.notification.body) || '';
+    const title = (payload.data && payload.data.title) || (payload.notification && payload.notification.title) || 'Werkplaats';
+    const body = (payload.data && payload.data.body) || (payload.notification && payload.notification.body) || '';
     self.registration.showNotification(title, { body, icon: './icon-192.png', badge: './icon-192.png' });
   });
 } catch (e) { /* messaging niet beschikbaar */ }

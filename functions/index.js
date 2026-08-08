@@ -51,7 +51,7 @@ exports.checkTaskReminders = onSchedule('every 5 minutes', async () => {
       t.reminderFired = true;
       changed = true;
       const message = {
-        notification: {
+        data: {
           title: 'Deadline nadert — ' + t.text,
           body: `Moet af zijn op ${t.dueDate} om ${t.dueTime || '17:00'}.`,
         },
