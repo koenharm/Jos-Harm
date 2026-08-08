@@ -597,7 +597,7 @@
       min-height: 0; overflow: visible; padding: 0; border: none; background: none;
     }
     .board-mobile .board-card {
-      position: static !important; aspect-ratio: auto; overflow: visible;
+      position: static !important; aspect-ratio: auto; overflow: hidden;
       padding: 13px 14px 11px; border-radius: 8px;
     }
     .board-mobile .board-card::before { display: none; }
@@ -605,6 +605,8 @@
     .board-mobile .board-card:active { transform: scale(0.985) !important; }
     .board-mobile .board-dots { gap: 9px; }
     .board-mobile .board-dot { width: 18px; height: 18px; }
+    .board-mobile .flame-diag { transform: rotate(-45deg) scale(0.5); }
+    .board-mobile .char-layer { clip-path: polygon(100% 100%, 100% 97%, 98% 95%, 96% 98%, 95% 100%); }
     .import-row { flex-direction: column; }
     .ai-side { flex-direction: column; }
     .view-title { font-size: 18px; padding: 8px 16px; }
@@ -711,7 +713,12 @@
 
   /* ---- Home: begroeting & statistieken ---- */
   .home-greeting { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 18px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 2px solid var(--hairline); }
-  .home-greeting-title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--paper); }
+  .home-greeting-title { display: inline-flex; align-items: center; gap: 9px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--paper); animation: greetIn 0.5s ease; }
+  .home-greeting-title .name { color: var(--ember-dim); }
+  .greeting-flame { width: 22px; height: 22px; flex-shrink: 0; animation: greetFlicker 1.6s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+  @keyframes greetFlicker { 0% { transform: scaleY(1) rotate(-2deg); } 50% { transform: scaleY(1.08) rotate(2deg); } 100% { transform: scaleY(0.97) rotate(-1deg); } }
+  @keyframes greetIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .home-greeting-quip { font-family: 'League Spartan', sans-serif; font-size: 12px; font-style: italic; color: var(--brass); margin-top: 5px; }
   .home-greeting-sub { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
   .home-greeting-date { font-family: 'League Spartan', sans-serif; font-size: 12px; color: var(--smoke); text-transform: capitalize; letter-spacing: 0.02em; }
   .home-weather {
@@ -814,7 +821,11 @@
     <div class="view active" id="view-home">
       <div class="home-greeting">
         <div>
-          <div class="home-greeting-title" id="home-greeting-title">Goedemorgen</div>
+          <div class="home-greeting-title" id="home-greeting-title">
+            <svg class="greeting-flame" viewBox="0 0 24 24" fill="none" stroke="var(--ember)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s-6 5.5-6 10a6 6 0 0 0 12 0c0-1.6-.7-2.8-1.4-3.8.1 1.4-.6 2.3-1.4 2.3-1 0-1.2-1-1.2-1.8C13.8 7.4 12 5.5 12 3z"/></svg>
+            <span id="home-greeting-text">Goedemorgen</span>
+          </div>
+          <div class="home-greeting-quip" id="home-greeting-quip">&mdash;</div>
           <div class="home-greeting-sub">
             <span class="home-greeting-date" id="home-greeting-date">—</span>
             <span class="home-weather" id="home-weather" title="Klik voor meer details"></span>
@@ -1648,11 +1659,26 @@ document.getElementById('home-weather').addEventListener('click', () => {
   } catch (e) {}
 });
 function renderHomeStats() {
-  const titleEl = document.getElementById('home-greeting-title');
+  const titleEl = document.getElementById('home-greeting-text');
+  const quipEl = document.getElementById('home-greeting-quip');
   const dateEl = document.getElementById('home-greeting-date');
   if (titleEl) {
     const h = new Date().getHours();
-    titleEl.textContent = h < 12 ? 'Goedemorgen' : h < 18 ? 'Goedemiddag' : 'Goedenavond';
+    const greet = h < 12 ? 'Goedemorgen' : h < 18 ? 'Goedemiddag' : 'Goedenavond';
+    titleEl.innerHTML = `${greet} <span class="name">Koen</span>`;
+  }
+  if (quipEl) {
+    const quips = [
+      'Vandaag weer een mooi stuk vakwerk neerzetten.',
+      'Zet de kachel aan, de dag is begonnen.',
+      'Rustig aan beginnen, straks lekker doorstoken.',
+      'Tijd om het vuur op te stoken.',
+      'Weer een dag om trots op te zijn.',
+      'Warme haard, warme klanten.',
+      'Aan de slag \u2014 de werkplaats wacht.'
+    ];
+    const dayIdx = Math.floor(Date.now() / 86400000) % quips.length;
+    quipEl.textContent = quips[dayIdx];
   }
   if (dateEl) dateEl.textContent = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
   const openTaken = tasks.filter(t => !t.done).length;
