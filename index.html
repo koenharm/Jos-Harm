@@ -572,6 +572,7 @@
   }
   @media (max-width: 780px) {
     .clock-widget { bottom: 12px; right: 12px; padding: 8px 14px; }
+    .toast { bottom: calc(78px + env(safe-area-inset-bottom)); }
     .clock-time { font-size: 17px; }
   }
   .toast-undo:hover { text-decoration: underline; }
@@ -713,11 +714,16 @@
 
   /* ---- Home: begroeting & statistieken ---- */
   .home-greeting { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 18px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 2px solid var(--hairline); }
-  .home-greeting-title { display: inline-flex; align-items: center; gap: 9px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--paper); animation: greetIn 0.5s ease; }
+  .home-greeting-title { display: inline-flex; align-items: center; gap: 9px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 24px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--paper); opacity: 0; }
+  .home-greeting-title.reveal { animation: greetLuxeIn 0.85s cubic-bezier(.16,1,.3,1) both; }
   .home-greeting-title .name { color: var(--ember-dim); }
   .greeting-flame { width: 22px; height: 22px; flex-shrink: 0; animation: greetFlicker 1.6s ease-in-out infinite alternate; transform-origin: 50% 100%; }
   @keyframes greetFlicker { 0% { transform: scaleY(1) rotate(-2deg); } 50% { transform: scaleY(1.08) rotate(2deg); } 100% { transform: scaleY(0.97) rotate(-1deg); } }
-  @keyframes greetIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes greetLuxeIn {
+    0% { opacity: 0; transform: translateY(12px) scale(0.94); letter-spacing: 0.22em; filter: blur(2px); }
+    55% { opacity: 1; filter: blur(0); }
+    100% { opacity: 1; transform: none; letter-spacing: 0.02em; }
+  }
   .home-greeting-quip { font-family: 'League Spartan', sans-serif; font-size: 12px; font-style: italic; color: var(--brass); margin-top: 5px; }
   .home-greeting-sub { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
   .home-greeting-date { font-family: 'League Spartan', sans-serif; font-size: 12px; color: var(--smoke); text-transform: capitalize; letter-spacing: 0.02em; }
@@ -753,8 +759,7 @@
 </div>
 <script>
 (function(){
-  var today = new Date().toISOString().slice(0,10);
-  if (localStorage.getItem('werkplaats:lastSplashDate') === today) {
+  if (sessionStorage.getItem('werkplaats:splashShown') === '1') {
     var s = document.getElementById('splash-screen');
     if (s) s.style.display = 'none';
   }
@@ -1666,6 +1671,12 @@ function renderHomeStats() {
     const h = new Date().getHours();
     const greet = h < 12 ? 'Goedemorgen' : h < 18 ? 'Goedemiddag' : 'Goedenavond';
     titleEl.innerHTML = `${greet} <span class="name">Koen</span>`;
+    const titleBlock = document.getElementById('home-greeting-title');
+    if (titleBlock && !titleBlock.classList.contains('reveal')) {
+      titleBlock.classList.remove('reveal');
+      void titleBlock.offsetWidth;
+      titleBlock.classList.add('reveal');
+    }
   }
   if (quipEl) {
     const quips = [
@@ -1699,13 +1710,12 @@ function initSplash() {
   const desktopLogo = document.querySelector('.sidebar .brand-mark');
   const splashLogo = document.getElementById('splash-logo');
   if (desktopLogo && splashLogo) splashLogo.src = desktopLogo.src;
-  const today = new Date().toISOString().slice(0, 10);
   let dismissed = false;
   const dismiss = () => {
     if (dismissed) return;
     dismissed = true;
     splash.classList.add('hide');
-    localStorage.setItem('werkplaats:lastSplashDate', today);
+    sessionStorage.setItem('werkplaats:splashShown', '1');
     setTimeout(() => splash.remove(), 650);
   };
   splash.addEventListener('click', dismiss);
