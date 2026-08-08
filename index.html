@@ -2925,7 +2925,8 @@ if (notifToggleBtn) {
   notifToggleBtn.addEventListener('click', async () => {
     if (!('Notification' in window)) return;
     if (Notification.permission === 'granted') {
-      fireNotification('Testmelding', 'Zo ziet een herinnering aan een deadline eruit.');
+      await registerPushToken();
+      fireNotification('Testmelding', 'Zo ziet een herinnering aan een deadline eruit. (Token opnieuw geregistreerd.)');
       return;
     }
     const result = await Notification.requestPermission();
