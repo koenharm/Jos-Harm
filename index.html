@@ -672,10 +672,10 @@
 
     /* Modals as bottom sheets */
     body:has(.modal-backdrop.open) .tabbar { display: none; }
-    .modal-backdrop { align-items: flex-end; padding: 0; }
+    .modal-backdrop { align-items: flex-end; padding: 0; overflow: hidden; }
     .modal {
       max-width: 100%; width: 100%; border-radius: 16px 16px 0 0; max-height: 100vh; overflow-y: auto;
-      -webkit-overflow-scrolling: touch; touch-action: pan-y;
+      -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain;
       padding: 18px 20px calc(26px + env(safe-area-inset-bottom));
       animation: sheetUp 0.26s ease-out;
     }
