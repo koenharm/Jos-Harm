@@ -126,6 +126,8 @@
     display: inline-block; font-family: 'Poppins', sans-serif; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.02em; font-size: 21px; color: var(--paper);
     border: 3px solid var(--ember-dim); border-radius: 2px; padding: 10px 22px; line-height: 1.15;
+    background: linear-gradient(180deg, rgba(211,177,115,0.09), rgba(211,177,115,0.02));
+    box-shadow: 3px 3px 0 rgba(186,150,112,0.25);
   }
   .view-desc { color: var(--smoke); font-size: 13px; margin-top: 10px; max-width: 480px; }
 
@@ -137,6 +139,7 @@
     transition: border-color 0.15s, background 0.15s;
   }
   .btn:hover { border-color: var(--brass); }
+  .btn:active { transform: scale(0.97); }
   .btn-primary { background: linear-gradient(180deg, #E0C48F, var(--ember)); border-color: var(--ember-dim); color: #2B2B2B; font-weight: 600; }
   .btn-primary:hover { filter: brightness(1.08); }
   .btn-ghost { background: transparent; }
@@ -172,8 +175,9 @@
   }
   .board-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 7px; }
   .board-dots { display: flex; gap: 5px; }
-  .board-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--hairline); cursor: pointer; }
-  .board-dot.filled { background: var(--ember); }
+  .board-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--hairline); cursor: pointer; transition: transform 0.12s ease; }
+  .board-dot.filled { background: radial-gradient(circle at 35% 30%, #EAD3A0, var(--ember)); box-shadow: 0 0 4px rgba(211,177,115,0.6); }
+  .board-dot:hover { transform: scale(1.2); }
   .board-sub-badge { font-family: 'League Spartan', sans-serif; font-size: 10px; color: var(--smoke); }
   .board-due-badge {
     font-family: 'League Spartan', sans-serif; font-size: 9.5px; font-weight: 600; color: var(--ember-dim);
@@ -265,25 +269,40 @@
 
   /* ---- Tasks ---- */
   .task-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-  .task-col-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-family: 'League Spartan', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--smoke); }
+  .task-col-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--hairline); font-family: 'League Spartan', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--smoke); }
+  .task-col-head::before { content: ''; width: 12px; height: 2px; background: var(--ember); flex-shrink: 0; }
   .task-add { display: flex; gap: 8px; margin-bottom: 18px; }
   .task-add input {
     flex: 1; background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px;
     padding: 10px 12px; color: var(--paper); font-family: inherit; font-size: 13.5px;
   }
-  .task-add input[type="date"] { flex: 0 0 150px; color-scheme: light; }
-  .task-add input[type="time"] { flex: 0 0 110px; color-scheme: light; }
+  .task-add input[type="date"] { flex: 0 0 150px; color-scheme: light; padding-left: 32px; }
+  .task-add input[type="time"] { flex: 0 0 110px; color-scheme: light; padding-left: 32px; }
   .task-add input:focus { outline: none; border-color: var(--ember); }
+  .datetime-field { position: relative; flex: 1; }
+  .datetime-field svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--smoke); pointer-events: none; }
+  .datetime-field input { width: 100%; }
   .task-list { display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
-  .task-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: 7px; padding: 12px 14px; }
-  .task-card.done { opacity: 0.6; }
+  .task-card {
+    background: linear-gradient(155deg, var(--panel) 0%, #FBF8F2 100%);
+    border: 1px solid var(--hairline); border-left: 3px solid var(--ember-dim); border-radius: 9px; padding: 12px 14px 12px 12px;
+    box-shadow: 0 2px 6px rgba(139,131,120,0.12);
+    animation: taskCardIn 0.3s ease backwards;
+  }
+  .task-list .task-card:nth-child(1) { animation-delay: 0.02s; }
+  .task-list .task-card:nth-child(2) { animation-delay: 0.05s; }
+  .task-list .task-card:nth-child(3) { animation-delay: 0.08s; }
+  .task-list .task-card:nth-child(4) { animation-delay: 0.11s; }
+  .task-list .task-card:nth-child(n+5) { animation-delay: 0.14s; }
+  @keyframes taskCardIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  .task-card.done { opacity: 0.6; border-left-color: var(--smoke); }
   .task-main { display: flex; align-items: flex-start; gap: 10px; }
   .task-check {
     width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--smoke);
     flex-shrink: 0; margin-top: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: border-color 0.15s, background 0.15s;
   }
-  .task-check.checked { background: var(--ember); border-color: var(--ember); box-shadow: 0 0 8px rgba(211,177,115,0.5); }
+  .task-check.checked { background: radial-gradient(circle at 35% 30%, #EAD3A0, var(--ember)); border-color: var(--ember); box-shadow: 0 0 8px rgba(211,177,115,0.5); }
   .task-check svg { display: none; width: 11px; height: 11px; }
   .task-check.checked svg { display: block; }
   .task-body { flex: 1; }
@@ -592,6 +611,8 @@
     .task-add-datetime { display: flex; gap: 8px; }
     .task-add input[type="date"] { flex: 1 1 auto; width: auto; min-width: 130px; }
     .task-add input[type="time"] { flex: 0 0 100px; width: auto; min-width: 100px; }
+    .datetime-field { flex: 1; min-width: 0; }
+    .datetime-field input[type="time"] { flex: 1; }
     .task-due-edit-group { gap: 8px; }
     .task-due-input { font-size: 13px; padding: 6px 12px; min-height: 34px; border-radius: 17px; }
     .reminder-settings { flex-wrap: wrap; }
@@ -617,14 +638,14 @@
       padding: 4px 2px; color: var(--paper-dim); cursor: pointer; position: relative;
     }
     .tabbar-icon {
-      width: 30px; height: 30px; border: none; border-radius: 0;
-      display: flex; align-items: center; justify-content: center; transition: transform .15s ease;
+      width: 30px; height: 30px; border: none; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; transition: transform .18s cubic-bezier(.34,1.56,.64,1), background .18s ease;
     }
-    .tabbar-icon svg { width: 22px; height: 22px; stroke: var(--paper-dim); fill: none; stroke-width: 1.8; transition: stroke .15s ease; }
+    .tabbar-icon svg { width: 22px; height: 22px; stroke: var(--paper-dim); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke .15s ease; }
     .tabbar-item.active .tabbar-icon svg { stroke: var(--ember); transform: none; }
-    .tabbar-item.active .tabbar-icon { transform: translateY(-1px); }
+    .tabbar-item.active .tabbar-icon { background: radial-gradient(circle, rgba(211,177,115,0.16), transparent 72%); transform: translateY(-1px); }
     .tabbar-item.active .tabbar-label { color: var(--paper); font-weight: 600; }
-    .tabbar-item:active .tabbar-icon { transform: scale(0.9); }
+    .tabbar-item:active .tabbar-icon { transform: scale(0.88); }
     .tabbar-label { font-family: 'League Spartan', sans-serif; font-size: 9.5px; }
     .tabbar-badge {
       position: absolute; top: -2px; right: 14%; background: var(--ember); color: #2B2B2B;
@@ -748,8 +769,14 @@
       <div class="task-add">
         <input type="text" id="new-task-input" placeholder="Nieuwe taak, bijv. 'Offerte Kalfire nasturen naar dhr. Jansen'…" />
         <div class="task-add-datetime">
-          <input type="date" id="new-task-date" title="Deadline datum (optioneel)" />
-          <input type="time" id="new-task-time" title="Deadline tijd (optioneel)" />
+          <span class="datetime-field">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <input type="date" id="new-task-date" title="Deadline datum (optioneel)" />
+          </span>
+          <span class="datetime-field">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>
+            <input type="time" id="new-task-time" title="Deadline tijd (optioneel)" />
+          </span>
         </div>
         <button class="btn btn-primary" id="add-task-btn">Toevoegen</button>
       </div>
