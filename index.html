@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="omelette-owns-print">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Werkplaats</title>
 
 <!-- Cloud-sync (Firebase Realtime Database) — zorgt dat telefoon en computer dezelfde data zien -->
@@ -1133,6 +1133,18 @@
           <div class="field">
             <label>Snel toevoegen — pakketten</label>
             <div class="calc-presets-row" id="calc-presets-row"></div>
+          </div>
+          <div class="field">
+            <label>Kanaaldiameter filter</label>
+            <select id="calc-diam-filter">
+              <option value="">Alle diameters</option>
+              <option value="Ø125mm">Ø125mm</option>
+              <option value="Ø150mm">Ø150mm</option>
+              <option value="Ø200mm">Ø200mm</option>
+              <option value="Ø250mm">Ø250mm</option>
+              <option value="100/150mm">100/150mm (concentrisch)</option>
+              <option value="130/200mm">130/200mm (concentrisch)</option>
+            </select>
           </div>
           <details class="calc-section" open>
             <summary>Haard / model <span class="calc-section-sub" id="calc-sub-products">€ 0</span></summary>
@@ -3350,10 +3362,17 @@ function diamRows(rows, diamLabels) {
     const [label, prices] = r;
     diamLabels.forEach((d, di) => {
       const p = prices[di];
-      if (p != null) items.push({ key: 'i' + i + '_' + di, label: label + ' \u2014 ' + d, price: p });
+      if (p != null) items.push({ key: 'i' + i + '_' + di, label: label + ' \u2014 ' + d, price: p, diam: d });
     });
   });
   return items;
+}
+function splitFinishSection(keyPrefix, labelPrefix, items) {
+  const isZwart = it => /zwart|gespoten/i.test(it.label);
+  return [
+    { key: keyPrefix + '_rvs', label: labelPrefix + ' \u2014 RVS', items: items.filter(it => !isZwart(it)) },
+    { key: keyPrefix + '_zwart', label: labelPrefix + ' \u2014 zwart gespoten', items: items.filter(isZwart) },
+  ];
 }
 const CALC_CATALOG = [
   { key: 'maatwerk', label: 'Maatwerk Jos Harm', items: [
@@ -3384,7 +3403,7 @@ const CALC_CATALOG = [
     { key:'mw20', label:'Wand beugel voor zweefmontage', price:389 },
     { key:'mw21', label:'Spuiten kanaal (Dik Geurts kleur)', price:90 },
   ]},
-  { key: 'ew', label: 'Enkelwandig RVS / gespoten', items: diamRows([
+  ...splitFinishSection('ew', 'Enkelwandig kanaal', diamRows([
     ['Aansluit element 1 meter',[59,68,105]],
     ['Aansluit element 1 meter gespoten',[81,87,135]],
     ['Lengte 1 meter',[48,59,82,125]],
@@ -3411,8 +3430,8 @@ const CALC_CATALOG = [
     { key:'ewv1', label:'Verloopstuk 130-150', price:61 },
     { key:'ewv2', label:'Verloopstuk 150-200', price:80 },
     { key:'ewv3', label:'Verloopstuk 200-250', price:81 },
-  ])},
-  { key: 'dw', label: 'Dubbelwandig RVS', items: diamRows([
+  ])),
+  ...splitFinishSection('dw', 'Dubbelwandig kanaal', diamRows([
     ['Lengte 1000',[230,302,383]],
     ['Lengte 1000 zwart',[281,359,464]],
     ['Lengte 500',[138,187,269]],
@@ -3439,8 +3458,8 @@ const CALC_CATALOG = [
     ['Muurbeugel gespoten',[101,109,124]],
     ['Dakbeugel',[61,102,108]],
     ['Verdieping steun',[94,137,177]],
-  ], ['\u00d8150mm','\u00d8200mm','\u00d8250mm']) },
-  { key: 'cc', label: 'Concentrisch kanaal (CC) RVS', items: diamRows([
+  ], ['\u00d8150mm','\u00d8200mm','\u00d8250mm'])),
+  ...splitFinishSection('cc', 'Concentrisch kanaal (CC)', diamRows([
     ['Lengte 1000',[140,177]],
     ['Lengte 1000 zwart',[183,222]],
     ['Lengte 500',[102,131]],
@@ -3467,7 +3486,7 @@ const CALC_CATALOG = [
     ['Dakbeugel',[100,104]],
     ['Verdieping steun',[89,97]],
     ['Aansluitstuk Faber/DRU/Bellfires',[57,140]],
-  ], ['150/100mm','200/130mm']) },
+  ], ['100/150mm','130/200mm']) ),
   { key: 'beton', label: 'Boren van sparingen', items: [
     { key:'b1', label:'Beton \u00d8250 (DW 150)', price:283.5 },
     { key:'b2', label:'Beton \u00d8250 (DW 150) extra gat', price:106 },
@@ -3547,7 +3566,9 @@ function calcSectionTotal(calc, sectionKey) {
 }
 function calcProductsTotal(calc) { return (calc.products || []).reduce((s, p) => s + (parseFloat(p.price) || 0), 0); }
 function calcMaterialsBasis(calc) {
-  return calcProductsTotal(calc) + calcSectionTotal(calc,'maatwerk') + calcSectionTotal(calc,'ew') + calcSectionTotal(calc,'dw') + calcSectionTotal(calc,'cc');
+  let t = calcProductsTotal(calc);
+  CALC_CATALOG.forEach(s => { if (s.key !== 'installatie') t += calcSectionTotal(calc, s.key); });
+  return t;
 }
 function calcInstallatieAutoTotal(calc) {
   const basis = calcMaterialsBasis(calc);
@@ -3595,6 +3616,11 @@ function renderCalcSearchResults(query) {
   });
 }
 document.getElementById('calc-search-input').addEventListener('input', (e) => renderCalcSearchResults(e.target.value));
+document.getElementById('calc-diam-filter').addEventListener('change', (e) => {
+  calcDiamFilter = e.target.value;
+  renderCalcCatalogSections();
+  updateCalcTotals();
+});
 function newCalc() {
   return { id: 'calc-' + Date.now(), clientId: '', clientName: '', date: new Date().toISOString().slice(0,10), products: [{ label: 'Haard / model', price: 0 }], qty: {}, status: 'concept', createdAt: Date.now(), versions: [] };
 }
@@ -3727,15 +3753,15 @@ document.querySelectorAll('.calc-share-option').forEach(opt => {
       const text = buildCalcSummaryText(calc);
       if (channel === 'whatsapp') {
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'Calculatie', text });
+          await navigator.share({ files: [file], title: subjectFor(calc), text: subjectFor(calc) });
         } else {
           downloadBlob(blob, fileName);
           alert('PDF gedownload \u2014 je browser ondersteunt geen direct delen van bestanden. Open WhatsApp en voeg het gedownloade bestand handmatig toe.');
-          window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+          window.open('https://wa.me/?text=' + encodeURIComponent(subjectFor(calc)), '_blank');
         }
       } else {
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: subjectFor(calc), text });
+          await navigator.share({ files: [file], title: subjectFor(calc), text: subjectFor(calc) });
         } else {
           downloadBlob(blob, fileName);
           alert('PDF gedownload \u2014 je e-mailapp ondersteunt geen automatische bijlage vanuit de browser. Open je mailprogramma en voeg het gedownloade bestand handmatig toe.');
@@ -3749,7 +3775,7 @@ document.querySelectorAll('.calc-share-option').forEach(opt => {
     }
   });
 });
-function subjectFor(calc) { return `Calculatie${calc.clientName ? ' - ' + calc.clientName : ''}`; }
+function subjectFor(calc) { return `Calculatie Jos Harm${calc.clientName ? ' - ' + calc.clientName : ''}`; }
 function downloadBlob(blob, fileName) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); a.remove();
@@ -3824,6 +3850,7 @@ function renderCalcProducts() {
     wrap.appendChild(row);
   });
 }
+let calcDiamFilter = '';
 function renderCalcCatalogSections() {
   const wrap = document.getElementById('calc-catalog-sections');
   wrap.innerHTML = '';
@@ -3837,6 +3864,7 @@ function renderCalcCatalogSections() {
     det.innerHTML = `<summary>${section.label} <span class="calc-section-sub" data-sub="${section.key}">\u20ac 0</span></summary><div class="calc-rows"></div>`;
     wrap.appendChild(det);
     const rowsWrap = det.querySelector('.calc-rows');
+    let shown = 0;
     section.items.forEach(it => {
       if (it.group) {
         const g = document.createElement('div');
@@ -3845,6 +3873,8 @@ function renderCalcCatalogSections() {
         rowsWrap.appendChild(g);
         return;
       }
+      if (calcDiamFilter && it.diam && it.diam !== calcDiamFilter) return;
+      shown++;
       const row = document.createElement('div');
       row.className = 'calc-row';
       const q = calc.qty[section.key][it.key] || '';
@@ -3863,6 +3893,12 @@ function renderCalcCatalogSections() {
       });
       rowsWrap.appendChild(row);
     });
+    if (calcDiamFilter && !shown && /^(ew|dw|cc)_/.test(section.key)) {
+      const empty = document.createElement('div');
+      empty.className = 'calc-search-empty';
+      empty.textContent = 'Geen onderdelen met deze diameter in dit onderdeel.';
+      rowsWrap.appendChild(empty);
+    }
     if (section.key === 'installatie') {
       const auto = document.createElement('div');
       auto.className = 'calc-auto-row';
@@ -3891,6 +3927,20 @@ function updateCalcTotals() {
   const stickyEl = document.getElementById('calc-sticky-total-num');
   if (stickyEl) stickyEl.textContent = fmtEUR(calcGrandTotal(calc));
 }
+function migrateCalcQtySections(calc) {
+  const map = { ew: ['ew_rvs','ew_zwart'], dw: ['dw_rvs','dw_zwart'], cc: ['cc_rvs','cc_zwart'] };
+  Object.keys(map).forEach(oldKey => {
+    const oldQty = calc.qty && calc.qty[oldKey];
+    if (!oldQty) return;
+    map[oldKey].forEach(newKey => {
+      const section = CALC_CATALOG.find(s => s.key === newKey);
+      if (!section) return;
+      if (!calc.qty[newKey]) calc.qty[newKey] = {};
+      section.items.forEach(it => { if (it.key && oldQty[it.key]) calc.qty[newKey][it.key] = oldQty[it.key]; });
+    });
+    delete calc.qty[oldKey];
+  });
+}
 function openCalcEditor(calc) {
   editingCalcId = calc.id;
   document.getElementById('calc-list-panel').style.display = 'none';
@@ -3898,10 +3948,13 @@ function openCalcEditor(calc) {
   document.getElementById('calc-editor-title').textContent = calc.clientName ? 'Berekening \u2014 ' + calc.clientName : 'Nieuwe berekening';
   window.__editingCalc = JSON.parse(JSON.stringify(calc));
   if (!window.__editingCalc.qty) window.__editingCalc.qty = {};
+  migrateCalcQtySections(window.__editingCalc);
   if (!window.__editingCalc.products || !window.__editingCalc.products.length) window.__editingCalc.products = [{ label: 'Haard / model', price: 0 }];
   calcOpenSections = new Set();
   document.getElementById('calc-search-input').value = '';
   document.getElementById('calc-search-results').innerHTML = '';
+  document.getElementById('calc-diam-filter').value = '';
+  calcDiamFilter = '';
   renderCalcPresets();
   renderRecentProducts();
   populateCalcClientSelect();
