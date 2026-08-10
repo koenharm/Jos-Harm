@@ -2,6 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
+<meta name="omelette-owns-print">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Werkplaats</title>
 
@@ -21,7 +22,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=League+Spartan:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --soot: #F7F6F4;
@@ -51,8 +52,10 @@
       radial-gradient(ellipse 900px 500px at 15% -10%, rgba(211,177,115,0.10), transparent 60%),
       radial-gradient(ellipse 700px 500px at 100% 10%, rgba(184,147,90,0.06), transparent 60%);
   }
-  h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  h1, h2, h3 { font-family: 'Poppins', sans-serif; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
   ::selection { background: var(--ember); color: #2B2B2B; }
+  a { color: var(--ember-dim); text-decoration: none; }
+  a:hover { color: var(--danger); text-decoration: underline; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -71,7 +74,7 @@
   .brand-mark {
     width: 40px; height: 40px; flex-shrink: 0; object-fit: contain;
   }
-  .brand-text { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: var(--paper); line-height: 1.1; }
+  .brand-text { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: var(--paper); line-height: 1.1; }
   .brand-sub { font-family: 'League Spartan', sans-serif; font-weight: 500; font-size: 9.5px; color: var(--smoke); letter-spacing: 0.08em; text-transform: uppercase; }
 
   .nav { display: flex; flex-direction: column; gap: 2px; }
@@ -121,7 +124,7 @@
   }
   .reminder-modal { max-width: 420px; }
   .reminder-text { font-size: 14.5px; line-height: 1.6; color: var(--paper); }
-  .reminder-text b { font-family: 'Playfair Display', serif; }
+  .reminder-text b { font-family: 'Poppins', sans-serif; font-weight: 700; }
   .view-title {
     display: inline-block; font-family: 'Poppins', sans-serif; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.02em; font-size: 21px; color: var(--paper);
@@ -373,7 +376,7 @@
   .client-photo-row { display: flex; gap: 5px; }
   .client-thumb { width: 32px; height: 32px; border-radius: 5px; object-fit: cover; border: 1px solid var(--hairline); }
   .client-thumb-more { width: 32px; height: 32px; border-radius: 5px; background: var(--panel-raised); border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; font-family: 'League Spartan', sans-serif; font-size: 9.5px; color: var(--smoke); }
-  .client-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 600; }
+  .client-name { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; }
   .client-ref { font-family: 'League Spartan', sans-serif; font-size: 10px; color: var(--smoke); }
   .client-wishes-preview { font-size: 11.5px; color: var(--paper-dim); line-height: 1.4; max-height: 32px; overflow: hidden; }
   .client-advance-btn { align-self: flex-start; margin-top: 2px; }
@@ -384,7 +387,7 @@
     transition: border-color 0.15s, color 0.15s;
   }
   .client-add-card:hover { border-color: var(--ember-dim); color: var(--ember-dim); }
-  .client-add-card .plus { font-size: 20px; font-family: 'Playfair Display', serif; }
+  .client-add-card .plus { font-size: 20px; font-family: 'Poppins', sans-serif; font-weight: 700; }
 
   /* ---- Afgeronde projecten gallery ---- */
   .project-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
@@ -400,7 +403,7 @@
     background: var(--panel-raised); color: var(--smoke); font-size: 12px; font-style: italic;
   }
   .project-card-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 5px; }
-  .project-card-title { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 15px; }
+  .project-card-title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; }
   .project-card-meta { font-family: 'League Spartan', sans-serif; font-size: 10.5px; color: var(--smoke); letter-spacing: 0.03em; }
   .project-card-story { font-size: 11.5px; color: var(--paper-dim); line-height: 1.45; max-height: 46px; overflow: hidden; }
   .gallery-empty { color: var(--smoke); font-size: 13px; font-style: italic; grid-column: 1 / -1; padding: 20px 2px; }
@@ -472,7 +475,18 @@
     background: var(--panel-raised); border: 1px solid var(--hairline); padding: 4px 10px; border-radius: 20px; margin-bottom: 16px;
   }
   .detail-photos { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
-  .detail-photo { width: 90px; height: 90px; border-radius: 8px; object-fit: cover; border: 1px solid var(--hairline); }
+  .detail-photo { width: 90px; height: 90px; border-radius: 8px; object-fit: cover; border: 1px solid var(--hairline); cursor: zoom-in; transition: transform 0.15s; }
+  .detail-photo:hover { transform: scale(1.04); border-color: var(--brass); }
+  .lightbox-backdrop { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(20,19,17,0.88); align-items: center; justify-content: center; padding: 30px; }
+  .lightbox-backdrop.open { display: flex; }
+  .lightbox-backdrop img { max-width: 86vw; max-height: 84vh; object-fit: contain; border-radius: 4px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .lightbox-close { position: fixed; top: 20px; right: 26px; color: #F7F6F4; font-size: 30px; line-height: 1; cursor: pointer; }
+  .lightbox-arrow { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; background: rgba(247,246,244,0.12); border: 1px solid rgba(247,246,244,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #F7F6F4; transition: background 0.15s; }
+  .lightbox-arrow:hover { background: rgba(247,246,244,0.22); }
+  .lightbox-arrow svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #lightbox-prev { left: 22px; }
+  #lightbox-next { right: 22px; }
+  .lightbox-counter { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); color: #F7F6F4; font-family: 'League Spartan', sans-serif; font-size: 12.5px; letter-spacing: 0.05em; }
   .detail-block { margin-bottom: 18px; }
   .detail-label { font-family: 'League Spartan', sans-serif; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); margin-bottom: 6px; }
   .detail-value { font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
@@ -530,7 +544,7 @@
     transition: border-color 0.15s, transform 0.15s;
   }
   .fireplace-card:hover { border-color: var(--brass); transform: translateY(-2px); }
-  .fireplace-card-title { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 15.5px; }
+  .fireplace-card-title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14.5px; }
   .fireplace-card-brand { font-family: 'League Spartan', sans-serif; font-size: 10.5px; color: var(--smoke); margin-top: -6px; }
   .fireplace-badges { display: flex; gap: 6px; flex-wrap: wrap; }
   .fireplace-badge {
@@ -540,6 +554,107 @@
   }
   .fireplace-price { font-family: 'League Spartan', sans-serif; font-size: 12.5px; color: var(--ember-dim); font-weight: 600; }
   .fireplace-desc { font-size: 12px; color: var(--paper-dim); line-height: 1.45; max-height: 52px; overflow: hidden; }
+  .addr-status { font-size: 11px; color: var(--smoke); margin: -6px 0 14px 2px; }
+
+  /* ---- Calculatie ---- */
+  .calc-list { display: flex; flex-direction: column; gap: 10px; }
+  .calc-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: 9px; padding: 14px 16px; cursor: pointer; transition: border-color 0.15s, transform 0.15s; display: flex; align-items: center; gap: 14px; justify-content: space-between; }
+  .calc-card-dup { color: var(--smoke); font-size: 15px; padding: 4px 8px; cursor: pointer; line-height: 1; }
+  .calc-card-dup:hover { color: var(--ember-dim); }
+  .calc-card:hover { border-color: var(--brass); transform: translateY(-2px); }
+  .calc-card-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .calc-card-name { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.01em; }
+  .calc-status-badge { display: inline-block; font-family: 'League Spartan', sans-serif; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ember-dim); background: rgba(211,177,115,0.16); border: 1px solid var(--ember-dim); border-radius: 10px; padding: 1px 7px; margin-left: 8px; vertical-align: middle; }
+  .calc-card-meta { font-family: 'League Spartan', sans-serif; font-size: 11px; color: var(--smoke); }
+  .calc-card-total { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.01em; color: var(--ember-dim); white-space: nowrap; }
+  .calc-card-dup svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  .calc-card-del { color: var(--smoke); font-size: 18px; padding: 4px 8px; cursor: pointer; line-height: 1; }
+  .calc-card-del:hover { color: var(--danger); }
+  .calc-empty { color: var(--smoke); font-size: 13px; font-style: italic; padding: 20px 2px; }
+  .calc-editor { display: flex; flex-direction: column; gap: 18px; }
+  .calc-top-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .calc-section { background: var(--panel); border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden; }
+  .calc-section > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .calc-section > summary::-webkit-details-marker { display: none; }
+  .calc-section-sub { margin-left: auto; font-family: 'League Spartan', sans-serif; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--ember-dim); font-size: 13.5px; }
+  .calc-rows { padding: 4px 16px 14px; display: flex; flex-direction: column; }
+  .calc-group-label { font-family: 'League Spartan', sans-serif; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); padding: 10px 0 4px; }
+  .calc-row { display: grid; grid-template-columns: 1fr 74px 64px 88px; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--hairline); }
+  .calc-row:last-child { border-bottom: none; }
+  .calc-row-label { font-size: 12.5px; color: var(--paper); }
+  .calc-row-price { font-family: 'League Spartan', sans-serif; font-size: 11.5px; color: var(--smoke); text-align: right; }
+  .calc-row-qty { width: 100%; background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px; padding: 5px 6px; color: var(--paper); font-family: inherit; font-size: 12.5px; text-align: center; }
+  .calc-row-qty:focus { outline: none; border-color: var(--ember); }
+  .calc-row-total { font-family: 'League Spartan', sans-serif; font-size: 12.5px; font-weight: 600; text-align: right; }
+  .calc-products { display: flex; flex-direction: column; gap: 8px; }
+  .calc-product-row { display: grid; grid-template-columns: 1fr 120px 32px; gap: 8px; align-items: center; }
+  .calc-product-row input { background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px; padding: 8px 10px; color: var(--paper); font-family: inherit; font-size: 13px; }
+  .calc-product-row input:focus { outline: none; border-color: var(--ember); }
+  .calc-auto-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0 2px; color: var(--paper-dim); font-size: 11.5px; }
+  .calc-grand { background: linear-gradient(180deg, #FBFAF8, #F1EBE1); border: 1px solid var(--hairline); border-radius: 10px; padding: 20px 22px; display: flex; align-items: center; justify-content: space-between; }
+  .calc-grand-label { font-family: 'League Spartan', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); }
+  .calc-grand-num { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 0.01em; color: var(--paper); }
+  .calc-editor-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+  .calc-share-wrap { position: relative; display: inline-block; }
+  .calc-share-menu { display: none; position: absolute; bottom: calc(100% + 6px); right: 0; background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); overflow: hidden; z-index: 20; min-width: 220px; flex-direction: column; }
+  .calc-share-menu.open { display: flex; }
+  .calc-share-option { padding: 11px 15px; background: none; border: none; text-align: left; font-family: 'League Spartan', sans-serif; font-size: 13px; color: var(--paper); cursor: pointer; }
+  .calc-share-option:hover { background: var(--soot); color: var(--ember-dim); }
+  .calc-share-option + .calc-share-option { border-top: 1px solid var(--hairline); }
+  .calc-search-results { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+  .calc-search-row { display: flex; align-items: center; gap: 10px; background: var(--soot); border: 1px solid var(--hairline); border-radius: 8px; padding: 8px 10px; }
+  .calc-search-row-main { flex: 1; min-width: 0; }
+  .calc-search-row-label { font-size: 12.5px; color: var(--paper); }
+  .calc-search-row-meta { font-size: 10.5px; color: var(--smoke); margin-top: 2px; }
+  .calc-search-empty { font-size: 12px; color: var(--smoke); font-style: italic; padding: 6px 2px; }
+  .calc-recent-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .calc-chip { font-family: 'League Spartan', sans-serif; font-size: 11.5px; background: var(--soot); border: 1px solid var(--hairline); border-radius: 20px; padding: 5px 12px; cursor: pointer; color: var(--paper-dim); }
+  .calc-chip:hover { border-color: var(--ember); color: var(--paper); }
+  .calc-presets-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .calc-preset-btn { font-family: 'League Spartan', sans-serif; font-size: 12px; font-weight: 500; background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; padding: 9px 13px; cursor: pointer; color: var(--paper); text-align: left; }
+  .calc-preset-btn:hover { border-color: var(--ember); }
+  .calc-sticky-total { position: sticky; top: 0; z-index: 8; background: linear-gradient(180deg, #FBFAF8, #F1EBE1); border: 1px solid var(--hairline); border-radius: 10px; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: -4px; }
+  .calc-sticky-total-label { font-family: 'League Spartan', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); }
+  .calc-sticky-total-num { font-family: 'Poppins', sans-serif; font-size: 19px; font-weight: 700; color: var(--paper); }
+  .calc-version-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--hairline); }
+  .calc-version-row:last-child { border-bottom: none; }
+  .calc-version-meta { font-size: 12.5px; color: var(--paper-dim); }
+  .calc-version-total { font-family: 'League Spartan', sans-serif; font-weight: 600; font-size: 13px; }
+  @media (max-width: 980px) {
+    .calc-top-row { grid-template-columns: 1fr; }
+    .calc-row { grid-template-columns: 1fr 60px 56px 76px; font-size: 12px; }
+    .calc-product-row { grid-template-columns: 1fr 96px 28px; }
+  }
+
+  /* ---- Digitaal verzenden / print sheet ---- */
+  .psheet-preview-wrap { background: #fff; border-radius: 10px; max-width: 800px; width: 100%; margin: 0 auto; box-shadow: 0 20px 60px rgba(0,0,0,0.35); overflow: hidden; }
+  .psheet-toolbar { display: flex; align-items: center; gap: 10px; padding: 14px 20px; background: var(--panel-raised); border-bottom: 1px solid var(--hairline); position: sticky; top: 0; }
+  .psheet-toolbar-title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; color: var(--paper); }
+  .psheet-page { max-width: 720px; margin: 0 auto; padding: 46px 40px; font-family: 'League Spartan', sans-serif; color: #2B2B2B; background: #fff; }
+  .psheet-head { display: flex; align-items: center; gap: 16px; border-bottom: 3px solid var(--ember); padding-bottom: 18px; margin-bottom: 34px; }
+  .psheet-logo { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
+  .psheet-brand { font-family: 'Poppins', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0.01em; line-height: 1.15; text-transform: uppercase; }
+  .psheet-brand-sub { font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--smoke); margin-top: 2px; }
+  .psheet-meta { margin-left: auto; text-align: right; font-size: 12px; color: var(--paper-dim); line-height: 1.7; }
+  .psheet-title { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; margin: 0 0 5px; }
+  .psheet-sub { color: var(--smoke); font-size: 12.5px; margin-bottom: 30px; }
+  .psheet-client { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin-bottom: 34px; font-size: 13.5px; }
+  .psheet-client-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--smoke); margin-bottom: 2px; }
+  .psheet-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  .psheet-table td { padding: 10px 0; border-bottom: 1px solid var(--hairline); font-size: 13.5px; }
+  .psheet-table td:last-child { text-align: right; font-weight: 600; white-space: nowrap; padding-left: 16px; }
+  .psheet-total-row td { border-top: 2px solid #2B2B2B; border-bottom: none; padding-top: 18px; font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; }
+  .psheet-note { margin-top: 24px; font-size: 11.5px; color: var(--smoke); line-height: 1.6; }
+  .psheet-foot { margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--hairline); font-size: 11px; color: var(--smoke); display: flex; justify-content: space-between; }
+  @media print {
+    @page { margin: 12mm; }
+    body { background: #fff; }
+    .app, .mobile-topbar, .tabbar, .clock-widget, .toast { display: none !important; }
+    #psheet-backdrop { position: static !important; display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; }
+    .psheet-preview-wrap { box-shadow: none !important; border-radius: 0 !important; max-width: none !important; margin: 0 !important; }
+    .psheet-toolbar { display: none !important; }
+    .psheet-page { padding: 0 !important; max-width: none !important; }
+  }
   .room-size-toggles { display: flex; gap: 8px; }
   .toggle-chip {
     display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--paper);
@@ -561,7 +676,7 @@
 
   /* ---- Clock widget ---- */
   .clock-widget {
-    position: fixed; bottom: 22px; right: 22px; z-index: 40;
+    position: fixed; bottom: 22px; left: calc(220px + 22px); z-index: 5; pointer-events: none;
     background: var(--panel); border: 3px solid var(--ember-dim); border-radius: 2px;
     padding: 12px 20px; text-align: center; box-shadow: 0 10px 26px rgba(43,43,43,0.22);
   }
@@ -574,7 +689,7 @@
     letter-spacing: 0.05em; color: var(--smoke); margin-top: 3px;
   }
   @media (max-width: 780px) {
-    .clock-widget { bottom: 12px; right: 12px; padding: 8px 14px; }
+    .clock-widget { bottom: calc(70px + env(safe-area-inset-bottom)); left: 12px; padding: 8px 14px; }
     .toast { bottom: calc(78px + env(safe-area-inset-bottom)); }
     .clock-time { font-size: 17px; }
   }
@@ -684,6 +799,12 @@
     }
     .modal-head { position: sticky; top: -18px; margin: -18px -20px 20px; padding: 18px 20px 14px; background: var(--panel); z-index: 2; border-bottom: 1px solid var(--hairline); }
     .modal::before { content: ''; display: block; width: 36px; height: 4px; background: var(--hairline); border-radius: 3px; margin: 0 auto 16px; }
+    .psheet-preview-wrap {
+      max-width: 100%; width: 100%; border-radius: 16px 16px 0 0; max-height: 100vh; overflow-y: auto;
+      -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain;
+    }
+    .psheet-toolbar { flex-wrap: wrap; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; }
+    .psheet-toolbar-title { width: 100%; }
 
     /* Compact AI chat */
     .ai-msg { padding: 10px 13px; font-size: 13.5px; }
@@ -806,6 +927,9 @@
   <div class="nav-item tabbar-item" data-view="afgeronde-projecten">
     <div class="tabbar-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="0"/><path d="M3 9h18"/><path d="M9 13l2 2 4-4"/></svg></div><div class="tabbar-label">Projecten</div>
   </div>
+  <div class="nav-item tabbar-item" data-view="calculatie">
+    <div class="tabbar-icon"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="0"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="10" y2="16"/><line x1="14" y1="16" x2="16" y2="16"/></svg></div><div class="tabbar-label">Calculatie</div>
+  </div>
   <div class="nav-item tabbar-item" data-view="haarden">
     <div class="tabbar-icon"><svg viewBox="0 0 24 24"><path d="M12 3s-6 5.5-6 10a6 6 0 0 0 12 0c0-1.6-.7-2.8-1.4-3.8.1 1.4-.6 2.3-1.4 2.3-1 0-1.2-1-1.2-1.8C13.8 7.4 12 5.5 12 3z"/></svg></div><div class="tabbar-label">Haarden</div>
   </div>
@@ -828,6 +952,7 @@
       <div class="nav-item" data-view="taken"><span class="dot"></span> Taken <span class="nav-count" id="count-taken">0</span></div>
       <div class="nav-item" data-view="klanten"><span class="dot"></span> Klanten <span class="nav-count" id="count-klanten">0</span></div>
       <div class="nav-item" data-view="afgeronde-projecten"><span class="dot"></span> Afgeronde projecten <span class="nav-count" id="count-afgerond">0</span></div>
+      <div class="nav-item" data-view="calculatie"><span class="dot"></span> Calculatie <span class="nav-count" id="count-calc">0</span></div>
       <div class="nav-item" data-view="haarden"><span class="dot"></span> Haardendatabase <span class="nav-count" id="count-haarden">0</span></div>
       <div class="nav-item" data-view="assistent"><span class="dot"></span> AI Assistent</div>
     </div>
@@ -960,6 +1085,85 @@
       <div class="fireplace-grid" id="fireplace-grid"></div>
     </div>
 
+    <!-- CALCULATIE -->
+    <div class="view" id="view-calculatie">
+      <div id="calc-list-panel">
+        <div class="view-header">
+          <div>
+            <div class="view-title">Calculatie</div>
+            <div class="view-desc">Maak een prijsberekening per klant. Kies onderdelen en aantallen — de rest telt niet mee, en de totalen worden automatisch opgeteld.</div>
+          </div>
+          <button class="btn btn-primary" id="calc-new-btn">+ Nieuwe berekening</button>
+        </div>
+        <div class="calc-list" id="calc-list"></div>
+      </div>
+
+      <div id="calc-editor-panel" style="display:none">
+        <div class="view-header">
+          <div>
+            <div class="view-title" id="calc-editor-title">Nieuwe berekening</div>
+            <div class="view-desc">Vul aantallen in bij de onderdelen die van toepassing zijn.</div>
+          </div>
+          <button class="btn btn-ghost" id="calc-versions-btn">Versies</button>
+          <button class="btn btn-ghost" id="calc-back-btn">← Terug naar overzicht</button>
+        </div>
+        <div class="calc-editor">
+          <div class="calc-sticky-total">
+            <div class="calc-sticky-total-label">Totaal calculatie</div>
+            <div class="calc-sticky-total-num" id="calc-sticky-total-num">€ 0</div>
+          </div>
+          <div class="calc-top-row">
+            <div class="field">
+              <label>Klant</label>
+              <select id="calc-client-select">
+                <option value="">— Geen klant gekoppeld —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Datum</label>
+              <input type="date" id="calc-date" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Producten zoeken</label>
+            <input type="text" id="calc-search-input" placeholder="Zoek op omschrijving, bijv. ‘bocht 45’ of ‘schoorsteenkap’" autocomplete="off" />
+            <div class="calc-search-results" id="calc-search-results"></div>
+            <div class="calc-recent-row" id="calc-recent-row"></div>
+          </div>
+          <div class="field">
+            <label>Snel toevoegen — pakketten</label>
+            <div class="calc-presets-row" id="calc-presets-row"></div>
+          </div>
+          <details class="calc-section" open>
+            <summary>Haard / model <span class="calc-section-sub" id="calc-sub-products">€ 0</span></summary>
+            <div class="calc-rows">
+              <div class="calc-products" id="calc-products"></div>
+              <button class="btn btn-ghost btn-sm" id="calc-add-product-btn" style="align-self:flex-start; margin-top:8px">+ Regel toevoegen</button>
+            </div>
+          </details>
+          <div id="calc-catalog-sections"></div>
+          <div class="calc-grand">
+            <div class="calc-grand-label">Totaal calculatie</div>
+            <div class="calc-grand-num" id="calc-grand-total">€ 0</div>
+          </div>
+          <div class="calc-editor-actions">
+            <button class="btn btn-danger btn-ghost" id="calc-delete-btn" style="display:none">Verwijderen</button>
+            <button class="btn btn-ghost" id="calc-copy-btn">Kopieer samenvatting</button>
+            <div class="calc-share-wrap">
+              <button class="btn btn-ghost" id="calc-share-btn">Delen</button>
+              <div class="calc-share-menu" id="calc-share-menu">
+                <button type="button" class="calc-share-option" data-channel="whatsapp">Via WhatsApp</button>
+                <button type="button" class="calc-share-option" data-channel="email">Via e-mail (koen@josharm.nl)</button>
+              </div>
+            </div>
+            <button class="btn btn-ghost" id="calc-send-btn">Digitaal verzenden</button>
+            <button class="btn btn-ghost" id="calc-draft-btn">Concept opslaan</button>
+            <button class="btn btn-primary" id="calc-save-btn">Opslaan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- AI ASSISTENT -->
     <div class="view" id="view-assistent">
       <div class="view-header">
@@ -1018,6 +1222,27 @@
       <label>Naam</label>
       <input type="text" id="cf-name" placeholder="Voor- en achternaam" />
     </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Postcode</label>
+        <input type="text" id="cf-postcode" placeholder="bijv. 1234AB" />
+      </div>
+      <div class="field">
+        <label>Huisnummer</label>
+        <input type="text" id="cf-housenumber" placeholder="bijv. 12" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Straat</label>
+        <input type="text" id="cf-street" placeholder="Wordt automatisch ingevuld" />
+      </div>
+      <div class="field">
+        <label>Woonplaats</label>
+        <input type="text" id="cf-city" placeholder="Wordt automatisch ingevuld" />
+      </div>
+    </div>
+    <div class="addr-status" id="cf-address-status"></div>
     <div class="field-row">
       <div class="field">
         <label>E-mail</label>
@@ -1116,6 +1341,10 @@
     <div class="detail-block">
       <div class="detail-label">Contact</div>
       <div class="detail-value" id="detail-contact"></div>
+    </div>
+    <div class="detail-block">
+      <div class="detail-label">Adres</div>
+      <div class="detail-value" id="detail-address"></div>
     </div>
     <div class="detail-grid">
       <div class="detail-block">
@@ -1252,6 +1481,77 @@
 
 <div id="toast" class="toast"></div>
 
+<div class="lightbox-backdrop" id="lightbox-backdrop">
+  <div class="lightbox-close">&times;</div>
+  <div class="lightbox-arrow" id="lightbox-prev"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div>
+  <img id="lightbox-img" src="" />
+  <div class="lightbox-arrow" id="lightbox-next"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></div>
+  <div class="lightbox-counter" id="lightbox-counter"></div>
+</div>
+
+<div class="modal-backdrop" id="calc-versions-backdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Versiegeschiedenis</h2>
+      <div class="modal-close" id="calc-versions-close">&times;</div>
+    </div>
+    <div id="calc-versions-list"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="psheet-backdrop">
+  <div class="psheet-preview-wrap">
+    <div class="psheet-toolbar">
+      <div class="psheet-toolbar-title">Afdrukvoorbeeld</div>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="psheet-close-btn">Sluiten</button>
+      <button class="btn btn-primary" id="psheet-print-btn">Printen / Opslaan als PDF</button>
+    </div>
+    <div class="print-sheet" id="calc-print-sheet">
+      <div class="psheet-page">
+        <div class="psheet-head">
+          <img class="psheet-logo" id="psheet-logo" />
+          <div>
+            <div class="psheet-brand">Jos Harm</div>
+            <div class="psheet-brand-sub">Exclusieve haarden</div>
+          </div>
+          <div class="psheet-meta">
+            <div id="psheet-date"></div>
+            <div>Adviseur: Koen Harm</div>
+          </div>
+        </div>
+        <div class="psheet-title">Prijsopgave</div>
+        <div class="psheet-sub">Vrijblijvende calculatie op basis van de besproken wensen.</div>
+        <div class="psheet-client">
+          <div>
+            <div class="psheet-client-label">Klant</div>
+            <div id="psheet-client-name"></div>
+          </div>
+          <div>
+            <div class="psheet-client-label">Adres</div>
+            <div id="psheet-client-addr"></div>
+          </div>
+        </div>
+        <table class="psheet-table">
+          <tbody id="psheet-rows"></tbody>
+          <tr class="psheet-total-row"><td>Totaal (incl. installatie)</td><td id="psheet-total"></td></tr>
+        </table>
+        <div class="psheet-note">
+          <p style="margin:0 0 12px">Deze begroting is gemaakt op basis van de door u aangeleverde informatie en of documenten. Voor een definitieve offerte of order dienen wij de situatie ter plaatse te beoordelen en in te meten. Het uiteindelijke order bedrag kan hierdoor nog aangepast worden.</p>
+          <p style="margin:0 0 12px">Eventuele stelposten worden naar aanleiding van een offerteaanvraag definitief gemaakt.</p>
+          <p style="margin:0 0 12px">Geldigheidstermijn van deze prijsopgave is 1 maand na dagtekening.</p>
+          <p style="margin:0 0 12px">Vertrouwende u hiermee een passende aanbieding te hebben gedaan, zien wij uw reactie met belangstelling tegemoet.</p>
+          <p style="margin:0">Levering: In nader overleg.<br>Betaling: 40% bij opdracht, 40% voor aanvang werkzaamheden, 20% na gereedkomen werkzaamheden.</p>
+        </div>
+        <div class="psheet-foot">
+          <div>Jos Harm</div>
+          <div>koen@josharm.nl</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="clock-widget" id="clock-widget">
   <div class="clock-time" id="clock-time">--:--</div>
   <div class="clock-date" id="clock-date">—</div>
@@ -1261,6 +1561,8 @@
 let tasks = [];
 let clients = [];
 let fireplaces = [];
+let calculations = [];
+let editingCalcId = null;
 let editingClientId = null;
 let detailClientId = null;
 let editingFireplaceId = null;
@@ -1457,6 +1759,11 @@ async function loadData() {
     fireplaces = f ? JSON.parse(f.value) : [];
   } catch (e) { console.error('Laden haardendatabase mislukt', e); fireplaces = []; }
   try {
+    const cd = await storageGet('calculations-data');
+    calculations = cd ? JSON.parse(cd.value) : [];
+  } catch (e) { console.error('Laden calculaties mislukt', e); calculations = []; }
+  calculations.forEach(c => { if (!c.createdAt) c.createdAt = Date.now(); if (!c.products) c.products = []; if (!c.qty) c.qty = {}; });
+  try {
     const s = await storageGet('settings-data');
     const settings = s ? JSON.parse(s.value) : {};
     if (settings.reminderMinutes) reminderMinutes = settings.reminderMinutes;
@@ -1466,6 +1773,7 @@ async function loadData() {
   renderClients();
   renderBoard();
   renderFireplaces();
+  renderCalcList();
   migrateOversizedPhotos();
   checkTaskReminders();
   setupRealtimeSync();
@@ -1485,6 +1793,10 @@ function setupRealtimeSync() {
   listenRemote('fireplace-catalog', (val) => {
     try { fireplaces = JSON.parse(val); } catch (e) { return; }
     renderFireplaces();
+  });
+  listenRemote('calculations-data', (val) => {
+    try { calculations = JSON.parse(val); } catch (e) { return; }
+    renderCalcList();
   });
 }
 let saveStatusTimer = null;
@@ -1545,6 +1857,19 @@ async function saveClients() {
     pendingSaveCount--;
   }
 }
+async function saveCalculations() {
+  setSaveStatus('saving', 'Opslaan…');
+  pendingSaveCount++;
+  try {
+    await storageSet('calculations-data', JSON.stringify(calculations));
+    setSaveStatus('saved', 'Opgeslagen');
+  } catch (e) {
+    console.error('Opslaan calculaties mislukt', e);
+    setSaveStatus('error', 'Opslaan mislukt — probeer opnieuw');
+  } finally {
+    pendingSaveCount--;
+  }
+}
 async function saveFireplaces() {
   setSaveStatus('saving', 'Opslaan…');
   pendingSaveCount++;
@@ -1574,13 +1899,14 @@ async function saveSettings() {
 
 // ---------- Navigation ----------
 document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
+  item.addEventListener('click', async () => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     item.classList.add('active');
     document.getElementById('view-' + item.dataset.view).classList.add('active');
     if (item.dataset.view === 'home') renderBoard();
     if (item.dataset.view === 'assistent') populateAdviseClientSelect();
+    if (item.dataset.view === 'calculatie') { await saveCalcDraftSilently(); closeCalcEditor(); renderCalcList(); }
   });
 });
 
@@ -2274,6 +2600,11 @@ function openClientModal(clientId) {
   const c = clientId ? clients.find(x => x.id === clientId) : null;
   document.getElementById('client-modal-title').textContent = c ? 'Klantprofiel bewerken' : 'Nieuw klantprofiel';
   document.getElementById('cf-name').value = c ? c.name || '' : '';
+  document.getElementById('cf-postcode').value = c ? c.postcode || '' : '';
+  document.getElementById('cf-housenumber').value = c ? c.houseNumber || '' : '';
+  document.getElementById('cf-street').value = c ? c.street || '' : '';
+  document.getElementById('cf-city').value = c ? c.city || '' : '';
+  document.getElementById('cf-address-status').textContent = '';
   document.getElementById('cf-email').value = c ? c.email || '' : '';
   document.getElementById('cf-phone').value = c ? c.phone || '' : '';
   document.getElementById('cf-ref').value = c ? c.ref || '' : '';
@@ -2332,11 +2663,52 @@ document.getElementById('cf-simar-box').addEventListener('click', () => {
 });
 document.getElementById('client-modal-close').addEventListener('click', closeClientModal);
 document.getElementById('client-cancel-btn').addEventListener('click', closeClientModal);
+let addressLookupTimer = null;
+function scheduleAddressLookup() {
+  clearTimeout(addressLookupTimer);
+  addressLookupTimer = setTimeout(lookupAddress, 500);
+}
+async function lookupAddress() {
+  const statusEl = document.getElementById('cf-address-status');
+  const pc = document.getElementById('cf-postcode').value.trim().replace(/\s+/g, '').toUpperCase();
+  const num = document.getElementById('cf-housenumber').value.trim();
+  if (!/^[1-9][0-9]{3}[A-Z]{2}$/.test(pc) || !num) { statusEl.textContent = ''; return; }
+  statusEl.textContent = 'Adres zoeken…';
+  try {
+    const res = await fetch(`https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=${encodeURIComponent(pc + ' ' + num)}&fq=type:adres&rows=1`);
+    const data = await res.json();
+    const doc = data && data.response && data.response.docs && data.response.docs[0];
+    if (doc) {
+      document.getElementById('cf-street').value = doc.straatnaam || '';
+      document.getElementById('cf-city').value = doc.woonplaatsnaam || '';
+      statusEl.textContent = 'Adres gevonden ✓';
+    } else {
+      statusEl.textContent = 'Geen adres gevonden bij deze postcode/huisnummer — vul handmatig aan.';
+    }
+  } catch (e) {
+    statusEl.textContent = 'Adres opzoeken mislukt — vul handmatig aan.';
+  }
+}
+document.getElementById('cf-postcode').addEventListener('input', scheduleAddressLookup);
+document.getElementById('cf-housenumber').addEventListener('input', scheduleAddressLookup);
+document.getElementById('cf-phone').addEventListener('input', (e) => {
+  const input = e.target;
+  const hadTrailingSpace = /\s$/.test(input.value) && input.selectionStart === input.value.length;
+  let digits = input.value.replace(/[^\d+]/g, '');
+  const plusPrefix = digits.startsWith('+') ? '+' : '';
+  digits = digits.replace(/\+/g, '');
+  const grouped = digits.match(/.{1,2}/g) || [];
+  input.value = plusPrefix + grouped.join(' ') + (hadTrailingSpace ? ' ' : '');
+});
 document.getElementById('client-save-btn').addEventListener('click', async () => {
   const name = document.getElementById('cf-name').value.trim();
   if (!name) { document.getElementById('cf-name').focus(); return; }
   const data = {
     name,
+    postcode: document.getElementById('cf-postcode').value.trim(),
+    houseNumber: document.getElementById('cf-housenumber').value.trim(),
+    street: document.getElementById('cf-street').value.trim(),
+    city: document.getElementById('cf-city').value.trim(),
     email: document.getElementById('cf-email').value.trim(),
     phone: document.getElementById('cf-phone').value.trim(),
     ref: document.getElementById('cf-ref').value.trim(),
@@ -2377,7 +2749,11 @@ function openDetail(clientId) {
   const badge = document.getElementById('detail-phase-badge');
   badge.innerHTML = `<div class="phase-dot" style="background:${ph.color}"></div> ${ph.label}`;
   document.getElementById('detail-simar-badge').style.display = c.simar ? 'inline-flex' : 'none';
-  document.getElementById('detail-contact').textContent = [c.email, c.phone].filter(Boolean).join('  ·  ') || '—';
+  document.getElementById('detail-contact').innerHTML = [
+    c.email ? `<a href="https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(c.name + ' <' + c.email + '>')}&subject=${encodeURIComponent('Jos Harm — ' + c.name)}" target="_blank" rel="noopener">${c.email}</a>` : '',
+    c.phone ? `<a href="tel:${c.phone.replace(/\s+/g,'')}">${c.phone}</a>` : ''
+  ].filter(Boolean).join('  ·  ') || '—';
+  document.getElementById('detail-address').textContent = [[c.street, c.houseNumber].filter(Boolean).join(' '), [c.postcode, c.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || '—';
   document.getElementById('detail-ref').textContent = c.ref || '—';
   document.getElementById('detail-height').textContent = c.height ? c.height + ' mm' : '—';
   document.getElementById('detail-fireplace-type').textContent = c.fireplaceType || '—';
@@ -2404,6 +2780,38 @@ function openDetail(clientId) {
   document.getElementById('detail-edit-btn').onclick = () => { closeDetail(); openClientModal(c.id); };
   document.getElementById('detail-modal-backdrop').classList.add('open');
 }
+let lightboxPhotos = [];
+let lightboxIndex = 0;
+function showLightboxPhoto() {
+  document.getElementById('lightbox-img').src = lightboxPhotos[lightboxIndex] || '';
+  document.getElementById('lightbox-counter').textContent = lightboxPhotos.length > 1 ? (lightboxIndex + 1) + ' / ' + lightboxPhotos.length : '';
+  const multi = lightboxPhotos.length > 1;
+  document.getElementById('lightbox-prev').style.display = multi ? 'flex' : 'none';
+  document.getElementById('lightbox-next').style.display = multi ? 'flex' : 'none';
+}
+document.addEventListener('click', (e) => {
+  const photo = e.target.closest('.detail-photo');
+  if (photo) {
+    const container = photo.closest('.detail-photos');
+    const imgs = Array.from(container.querySelectorAll('.detail-photo'));
+    lightboxPhotos = imgs.map(img => img.src);
+    lightboxIndex = imgs.indexOf(photo);
+    showLightboxPhoto();
+    document.getElementById('lightbox-backdrop').classList.add('open');
+    return;
+  }
+  if (e.target.closest('#lightbox-prev')) { lightboxIndex = (lightboxIndex - 1 + lightboxPhotos.length) % lightboxPhotos.length; showLightboxPhoto(); return; }
+  if (e.target.closest('#lightbox-next')) { lightboxIndex = (lightboxIndex + 1) % lightboxPhotos.length; showLightboxPhoto(); return; }
+  if (e.target.id === 'lightbox-backdrop' || e.target.closest('.lightbox-close')) {
+    document.getElementById('lightbox-backdrop').classList.remove('open');
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('lightbox-backdrop').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') { lightboxIndex = (lightboxIndex - 1 + lightboxPhotos.length) % lightboxPhotos.length; showLightboxPhoto(); }
+  else if (e.key === 'ArrowRight') { lightboxIndex = (lightboxIndex + 1) % lightboxPhotos.length; showLightboxPhoto(); }
+  else if (e.key === 'Escape') { document.getElementById('lightbox-backdrop').classList.remove('open'); }
+});
 function renderProjectPhotos(c) {
   const wrap = document.getElementById('project-photos');
   wrap.innerHTML = (c.projectPhotos || []).map(p => `<img class="detail-photo" src="${p}" />`).join('');
@@ -2934,6 +3342,704 @@ if (notifToggleBtn) {
 }
 updateNotifStatusUI();
 if ('Notification' in window && Notification.permission === 'granted') registerPushToken();
+
+// ---------- Calculatie ----------
+function diamRows(rows, diamLabels) {
+  const items = [];
+  rows.forEach((r, i) => {
+    const [label, prices] = r;
+    diamLabels.forEach((d, di) => {
+      const p = prices[di];
+      if (p != null) items.push({ key: 'i' + i + '_' + di, label: label + ' \u2014 ' + d, price: p });
+    });
+  });
+  return items;
+}
+const CALC_CATALOG = [
+  { key: 'maatwerk', label: 'Maatwerk Jos Harm', items: [
+    { group: 'Vloerplaten' },
+    { key:'mw1', label:'Normaal max 70/70', price:234 },
+    { key:'mw2', label:'Groot max 990/990', price:288.5 },
+    { key:'mw3', label:'Opgedikt vanaf', price:338.85 },
+    { key:'mw4', label:'Isolatie meerprijs', price:92 },
+    { key:'mw5', label:'Afrondingen meerprijs', price:79 },
+    { group: 'Kransen' },
+    { key:'mw6', label:'Vlak klein', price:48 },
+    { key:'mw7', label:'Vlak groot', price:94 },
+    { key:'mw8', label:'Opgedikt', price:167 },
+    { key:'mw9', label:'Extra groot', price:225 },
+    { key:'mw10', label:'Nisbus krans', price:186 },
+    { group: 'Houtnissen' },
+    { key:'mw11', label:'Staal max 700/700/350 diep', price:470 },
+    { key:'mw12', label:'Staal groot max 1000/700/400 diep', price:870 },
+    { key:'mw13', label:'Promatect nis', price:318 },
+    { group: 'Kaders' },
+    { key:'mw14', label:'Rondom haard', price:539 },
+    { key:'mw15', label:'Verdiept', price:690 },
+    { key:'mw16', label:'Verdiept tapend', price:1360 },
+    { group: 'Stoel op hoogte' },
+    { key:'mw17', label:'Klein max 600/600/400 hoog', price:189 },
+    { key:'mw18', label:'Groot', price:298 },
+    { key:'mw19', label:'Stelvoeten', price:150 },
+    { key:'mw20', label:'Wand beugel voor zweefmontage', price:389 },
+    { key:'mw21', label:'Spuiten kanaal (Dik Geurts kleur)', price:90 },
+  ]},
+  { key: 'ew', label: 'Enkelwandig RVS / gespoten', items: diamRows([
+    ['Aansluit element 1 meter',[59,68,105]],
+    ['Aansluit element 1 meter gespoten',[81,87,135]],
+    ['Lengte 1 meter',[48,59,82,125]],
+    ['Lengte 1 meter gespoten',[65,80,113]],
+    ['Lengte 0,5 meter',[32,35,57,75]],
+    ['Lengte 0,5 meter gespoten',[42,45,72]],
+    ['Lengte 0,25 meter',[27,34,45,52]],
+    ['Lengte 0,25 meter gespoten',[36,42,57]],
+    ['Schuifstuk 1 meter',[65,73,86,125]],
+    ['Schuifstuk 1 meter gespoten',[89,93,110]],
+    ['Schuifstuk 0,5 meter',[53,72,90,75]],
+    ['Schuifstuk 0,5 meter gespoten',[72,91,116]],
+    ['Bocht 30 graden',[48,54,66,76]],
+    ['Bocht 30 graden gespoten',[65,69,85]],
+    ['Bocht 45 graden',[48,54,66,76]],
+    ['Bocht 45 graden gespoten',[65,69,85]],
+    ['Bocht 90 graden',[51,57,76,119]],
+    ['Bocht 90 graden gespoten',[69,72,97]],
+    ['Nisbus',[44,50,66,122]],
+    ['Krans gespoten',[35,45,55]],
+    ['T stuk met dop',[125,131,166,176]],
+    ['T stuk met dop gespoten',[169,190,240]],
+  ], ['\u00d8125mm','\u00d8150mm','\u00d8200mm','\u00d8250mm']).concat([
+    { key:'ewv1', label:'Verloopstuk 130-150', price:61 },
+    { key:'ewv2', label:'Verloopstuk 150-200', price:80 },
+    { key:'ewv3', label:'Verloopstuk 200-250', price:81 },
+  ])},
+  { key: 'dw', label: 'Dubbelwandig RVS', items: diamRows([
+    ['Lengte 1000',[230,302,383]],
+    ['Lengte 1000 zwart',[281,359,464]],
+    ['Lengte 500',[138,187,269]],
+    ['Lengte 500 zwart',[182,239,321]],
+    ['Lengte 250',[108,144,187]],
+    ['Passtuk 2-delig 500',[182,204,252]],
+    ['Bocht 30 graden',[144,182,251]],
+    ['Bocht 45 graden',[152,182,269]],
+    ['T stuk 87\u00b0 met dop',[415,580,622]],
+    ['Aansluitstuk pro',[86,124,158]],
+    ['Nisbus aansluitstuk',[204,262,301]],
+    ['Aansluitstuk contra/rvs',[94,115,124]],
+    ['Dakplaat 0-10',[124,138,158]],
+    ['Dakplaat 0-10 zwart',[158,176,195]],
+    ['Loodslab 20-45',[246,275,321]],
+    ['Loodslab 20-45 zwart',[301,347,361]],
+    ['Loodslab 45-60',[289,347,418]],
+    ['Loodslab 45-60 zwart',[345,418,520]],
+    ['Stormkraag/regenrand',[46,58,74]],
+    ['Stormkraag/regenrand zwart',[63,76,88]],
+    ['Kap met vonkengaas',[256,337,433]],
+    ['Kap met vonkengaas zwart',[307,400,506]],
+    ['Muurbeugel',[82,94,102]],
+    ['Muurbeugel gespoten',[101,109,124]],
+    ['Dakbeugel',[61,102,108]],
+    ['Verdieping steun',[94,137,177]],
+  ], ['\u00d8150mm','\u00d8200mm','\u00d8250mm']) },
+  { key: 'cc', label: 'Concentrisch kanaal (CC) RVS', items: diamRows([
+    ['Lengte 1000',[140,177]],
+    ['Lengte 1000 zwart',[183,222]],
+    ['Lengte 500',[102,131]],
+    ['Lengte 500 zwart',[126,168]],
+    ['Lengte 250',[81,106]],
+    ['Schuifstuk 500',[159,213]],
+    ['Bocht 30 graden',[106,151]],
+    ['Bocht 45 graden',[115,156]],
+    ['Bocht 90 graden',[140,186]],
+    ['Verloop 200-130 / 150-100',[120,120]],
+    ['Gevel doorvoer',[223,251]],
+    ['Gevel doorvoer zwart',[269,295]],
+    ['Dakplaat 0-10',[108,126]],
+    ['Dakplaat 0-10 zwart',[153,155]],
+    ['Loodslab 20-45',[190,243]],
+    ['Loodslab 20-45 zwart',[247,285]],
+    ['Loodslab 45-60',[215,284]],
+    ['Loodslab 45-60 zwart',[281,333]],
+    ['Stormkraag',[38,47]],
+    ['Stormkraag zwart',[48,58]],
+    ['Kap met LTV',[145,189]],
+    ['Kap met LTV zwart',[184,229]],
+    ['Muurbeugel instelbaar',[66,80]],
+    ['Dakbeugel',[100,104]],
+    ['Verdieping steun',[89,97]],
+    ['Aansluitstuk Faber/DRU/Bellfires',[57,140]],
+  ], ['150/100mm','200/130mm']) },
+  { key: 'beton', label: 'Boren van sparingen', items: [
+    { key:'b1', label:'Beton \u00d8250 (DW 150)', price:283.5 },
+    { key:'b2', label:'Beton \u00d8250 (DW 150) extra gat', price:106 },
+    { key:'b3', label:'Beton \u00d8300 (DW 200)', price:316 },
+    { key:'b4', label:'Beton \u00d8300 (DW 200) extra gat', price:107 },
+    { key:'b5', label:'Beton \u00d8180 (CC 150-100)', price:283.5 },
+    { key:'b6', label:'Beton \u00d8180 (CC 150-100) extra gat', price:106 },
+    { key:'b7', label:'Beton \u00d8220 (CC 200-130)', price:316 },
+    { key:'b8', label:'Beton \u00d8220 (CC 200-130) extra gat', price:107 },
+    { key:'b9', label:'Gevel \u00d8180 (CC 150-100)', price:283.5 },
+    { key:'b10', label:'Gevel \u00d8180 (CC 150-100) extra gat', price:106 },
+    { key:'b11', label:'Gevel \u00d8220 (CC 200-130)', price:316 },
+    { key:'b12', label:'Gevel \u00d8220 (CC 200-130) extra gat', price:107 },
+    { key:'b13', label:'Beluchting sparing 160', price:273 },
+  ]},
+  { key: 'renovatie', label: 'Renovatie / aanpassen schoorsteenkanaal', items: [
+    { key:'r1', label:'RVS flex 100 per meter', price:39 },
+    { key:'r2', label:'RVS flex 125 per meter', price:43.5 },
+    { key:'r3', label:'RVS flex 150 per meter', price:55 },
+    { key:'r4', label:'Koppelstuk flex 100', price:16 },
+    { key:'r5', label:'Koppelstuk flex 125', price:18 },
+    { key:'r6', label:'Koppelstuk flex 150', price:22 },
+    { key:'r7', label:'Renovatiekap met plaat 100-150 zwart', price:257 },
+    { key:'r8', label:'Renovatiekap met plaat 100-150', price:234 },
+    { key:'r9', label:'Renovatiekap met plaat 200-130 zwart', price:255 },
+    { key:'r10', label:'Renovatiekap met plaat 200-130', price:225 },
+    { key:'r11', label:'RVS schoorsteentule', price:37 },
+    { key:'r12', label:'RVS schoorsteenkap met vonkengaas 125', price:180.5 },
+    { key:'r13', label:'RVS schoorsteenkap met vonkengaas 150', price:215 },
+    { key:'r14', label:'RVS schoorsteenkap met vonkengaas 180', price:251 },
+    { key:'r15', label:'RVS schoorsteenkap met vonkengaas 200', price:258 },
+    { key:'r16', label:'Vermiculiet per zak', price:53 },
+  ]},
+  { key: 'afwerking', label: 'Afwerking haard en kanaal', items: [
+    { key:'a1', label:'Schoorsteenboezem klein', price:935 },
+    { key:'a2', label:'Schoorsteenboezem middel', price:1230 },
+    { key:'a3', label:'Schoorsteenboezem groot', price:1487 },
+    { key:'a4', label:'Tv-nis in schoorsteenboezem', price:425 },
+    { key:'a5', label:'Tv-nis groot', price:487 },
+    { key:'a6', label:'Kleine nis', price:205 },
+    { key:'a7', label:'Grote nis', price:251 },
+    { key:'a8', label:'Convectieroosters sleeve per stuk', price:120 },
+    { key:'a9', label:'Bedieningsdeur Element4 / inbouw LED', price:165.75 },
+    { key:'a10', label:'Omkokering kanaal etage standaard', price:277 },
+    { key:'a11', label:'Omkokering kanaal groot model', price:405 },
+    { key:'a12', label:'Promatect doorvoer houten vloer', price:93 },
+    { key:'a13', label:'Isolatiemateriaal per meter', price:38 },
+    { key:'a14', label:'Stucwerk (boezem)', price:1050 },
+  ]},
+  { key: 'installatie', label: 'Installatie', items: [
+    { key:'in1', label:'1 montage uur', price:78.5 },
+    { key:'in2', label:'1 dagdeel (1 man halve dag)', price:314 },
+    { key:'in3', label:'1 man 1 dag', price:628 },
+    { key:'in4', label:'2 man 1 dag (team)', price:1256 },
+    { key:'in5', label:'Aansluiten hout/gas kachel begane grond', price:438 },
+    { key:'in6', label:'Gasleiding per meter', price:51 },
+    { key:'in7', label:'Gas aansluitmateriaal', price:60 },
+    { key:'in8', label:'Elektra per meter', price:21.8 },
+    { key:'in9', label:'Wandcontactdoos', price:27.3 },
+    { key:'in10', label:'Hulpmateriaal gas/elektra/montage', price:24.5 },
+    { key:'in11', label:'Hulster hijsen vanaf', price:456 },
+    { key:'in12', label:'Parkeerkosten laag tarief Amsterdam overig', price:40 },
+    { key:'in13', label:'Parkeerkosten hoog tarief Amsterdam centrum', price:65 },
+    { key:'in14', label:'Ingebruikstellingskosten', price:250 },
+    { key:'in15', label:'Ontwerptekening per uur', price:78.5 },
+    { key:'in16', label:'Puinbak 3 m3', price:350 },
+  ]},
+];
+function fmtEUR(n) { return '\u20ac ' + (Math.round((n||0)*100)/100).toLocaleString('nl-NL', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function calcSectionTotal(calc, sectionKey) {
+  const section = CALC_CATALOG.find(s => s.key === sectionKey);
+  if (!section) return 0;
+  const qty = (calc.qty && calc.qty[sectionKey]) || {};
+  let total = 0;
+  section.items.forEach(it => { if (it.key) total += (parseFloat(qty[it.key]) || 0) * it.price; });
+  return total;
+}
+function calcProductsTotal(calc) { return (calc.products || []).reduce((s, p) => s + (parseFloat(p.price) || 0), 0); }
+function calcMaterialsBasis(calc) {
+  return calcProductsTotal(calc) + calcSectionTotal(calc,'maatwerk') + calcSectionTotal(calc,'ew') + calcSectionTotal(calc,'dw') + calcSectionTotal(calc,'cc');
+}
+function calcInstallatieAutoTotal(calc) {
+  const basis = calcMaterialsBasis(calc);
+  return basis * 0.0178 + basis * 0.022;
+}
+function calcGrandTotal(calc) {
+  let t = calcProductsTotal(calc);
+  CALC_CATALOG.forEach(s => t += calcSectionTotal(calc, s.key));
+  t += calcInstallatieAutoTotal(calc);
+  return t;
+}
+let calcOpenSections = new Set();
+const CALC_SEARCH_INDEX = CALC_CATALOG.flatMap(section => section.items.filter(it => it.key).map(it => ({ section: section.key, sectionLabel: section.label, key: it.key, label: it.label, price: it.price })));
+function renderCalcSearchResults(query) {
+  const wrap = document.getElementById('calc-search-results');
+  const calc = window.__editingCalc;
+  if (!query || query.trim().length < 2) { wrap.innerHTML = ''; return; }
+  const q = query.trim().toLowerCase();
+  const matches = CALC_SEARCH_INDEX.filter(it => it.label.toLowerCase().includes(q)).slice(0, 25);
+  if (!matches.length) { wrap.innerHTML = '<div class="calc-search-empty">Geen producten gevonden.</div>'; return; }
+  wrap.innerHTML = matches.map(it => {
+    const qty = (calc.qty[it.section] && calc.qty[it.section][it.key]) || 0;
+    return `
+      <div class="calc-search-row" data-section="${it.section}" data-key="${it.key}">
+        <div class="calc-search-row-main">
+          <div class="calc-search-row-label">${it.label}</div>
+          <div class="calc-search-row-meta">${it.sectionLabel} \u00b7 ${fmtEUR(it.price)}${qty ? ' \u00b7 in calculatie: ' + qty : ''}</div>
+        </div>
+        <button class="btn btn-sm btn-primary calc-search-add">+ Toevoegen</button>
+      </div>`;
+  }).join('');
+  wrap.querySelectorAll('.calc-search-add').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.calc-search-row');
+      const sectionKey = row.dataset.section, key = row.dataset.key;
+      pushRecentProduct(sectionKey, key);
+      renderRecentProducts();
+      if (!calc.qty[sectionKey]) calc.qty[sectionKey] = {};
+      calc.qty[sectionKey][key] = (calc.qty[sectionKey][key] || 0) + 1;
+      calcOpenSections.add(sectionKey);
+      renderCalcCatalogSections();
+      updateCalcTotals();
+      renderCalcSearchResults(document.getElementById('calc-search-input').value);
+    });
+  });
+}
+document.getElementById('calc-search-input').addEventListener('input', (e) => renderCalcSearchResults(e.target.value));
+function newCalc() {
+  return { id: 'calc-' + Date.now(), clientId: '', clientName: '', date: new Date().toISOString().slice(0,10), products: [{ label: 'Haard / model', price: 0 }], qty: {}, status: 'concept', createdAt: Date.now(), versions: [] };
+}
+const CALC_PRESETS = [
+  { label: 'Installatie — 1 man, 1 dag', items: [{ section:'installatie', key:'in3', qty:1 }, { section:'installatie', key:'in14', qty:1 }] },
+  { label: 'Installatie — team, 1 dag', items: [{ section:'installatie', key:'in4', qty:1 }, { section:'installatie', key:'in14', qty:1 }] },
+  { label: 'Gasaansluiting begane grond', items: [{ section:'installatie', key:'in5', qty:1 }, { section:'installatie', key:'in6', qty:3 }, { section:'installatie', key:'in7', qty:1 }] },
+  { label: 'Kleine afwerking (nis + omkokering)', items: [{ section:'afwerking', key:'a6', qty:1 }, { section:'afwerking', key:'a10', qty:1 }] },
+];
+function renderCalcPresets() {
+  const wrap = document.getElementById('calc-presets-row');
+  if (!wrap) return;
+  wrap.innerHTML = CALC_PRESETS.map((p, i) => `<button type="button" class="calc-preset-btn" data-preset="${i}">+ ${p.label}</button>`).join('');
+  wrap.querySelectorAll('.calc-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const preset = CALC_PRESETS[btn.dataset.preset];
+      const calc = window.__editingCalc;
+      preset.items.forEach(it => {
+        if (!calc.qty[it.section]) calc.qty[it.section] = {};
+        calc.qty[it.section][it.key] = (calc.qty[it.section][it.key] || 0) + it.qty;
+        calcOpenSections.add(it.section);
+      });
+      renderCalcCatalogSections();
+      updateCalcTotals();
+    });
+  });
+}
+const RECENT_PRODUCTS_KEY = 'jh_recent_products';
+function pushRecentProduct(section, key) {
+  let recent = [];
+  try { recent = JSON.parse(localStorage.getItem(RECENT_PRODUCTS_KEY)) || []; } catch (e) {}
+  recent = recent.filter(r => !(r.section === section && r.key === key));
+  recent.unshift({ section, key });
+  recent = recent.slice(0, 8);
+  localStorage.setItem(RECENT_PRODUCTS_KEY, JSON.stringify(recent));
+}
+function renderRecentProducts() {
+  const wrap = document.getElementById('calc-recent-row');
+  if (!wrap) return;
+  let recent = [];
+  try { recent = JSON.parse(localStorage.getItem(RECENT_PRODUCTS_KEY)) || []; } catch (e) {}
+  const calc = window.__editingCalc;
+  const items = recent.map(r => CALC_SEARCH_INDEX.find(it => it.section === r.section && it.key === r.key)).filter(Boolean);
+  if (!items.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = '<span style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--smoke);align-self:center">Recent:</span>' + items.map(it => `<div class="calc-chip" data-section="${it.section}" data-key="${it.key}">${it.label}</div>`).join('');
+  wrap.querySelectorAll('.calc-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const sectionKey = chip.dataset.section, key = chip.dataset.key;
+      if (!calc.qty[sectionKey]) calc.qty[sectionKey] = {};
+      calc.qty[sectionKey][key] = (calc.qty[sectionKey][key] || 0) + 1;
+      calcOpenSections.add(sectionKey);
+      pushRecentProduct(sectionKey, key);
+      renderCalcCatalogSections();
+      updateCalcTotals();
+      renderRecentProducts();
+    });
+  });
+}
+function pushCalcVersion(calc) {
+  if (!calc.versions) calc.versions = [];
+  const clone = JSON.parse(JSON.stringify(calc));
+  delete clone.versions;
+  calc.versions.unshift({ ts: Date.now(), total: calcGrandTotal(calc), status: calc.status, snapshot: clone });
+  if (calc.versions.length > 10) calc.versions.length = 10;
+}
+function openCalcVersions() {
+  const calc = window.__editingCalc;
+  const list = document.getElementById('calc-versions-list');
+  const versions = (calc && calc.versions) || [];
+  if (!versions.length) {
+    list.innerHTML = '<div class="calc-empty">Nog geen eerdere versies opgeslagen.</div>';
+  } else {
+    list.innerHTML = versions.map((v, i) => `
+      <div class="calc-version-row">
+        <div>
+          <div class="calc-version-meta">${new Date(v.ts).toLocaleString('nl-NL', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}${v.status === 'concept' ? ' · concept' : ''}</div>
+          <div class="calc-version-total">${fmtEUR(v.total)}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" data-restore="${i}">Terugzetten</button>
+      </div>`).join('');
+    list.querySelectorAll('[data-restore]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!confirm('Deze versie terugzetten? Huidige wijzigingen in het formulier gaan verloren.')) return;
+        const v = versions[btn.dataset.restore];
+        const restored = JSON.parse(JSON.stringify(v.snapshot));
+        restored.versions = calc.versions;
+        window.__editingCalc = restored;
+        renderCalcProducts();
+        renderCalcCatalogSections();
+        updateCalcTotals();
+        document.getElementById('calc-versions-backdrop').classList.remove('open');
+      });
+    });
+  }
+  document.getElementById('calc-versions-backdrop').classList.add('open');
+}
+document.getElementById('calc-versions-btn').addEventListener('click', openCalcVersions);
+document.getElementById('calc-versions-close').addEventListener('click', () => document.getElementById('calc-versions-backdrop').classList.remove('open'));
+function buildCalcSummaryText(calc) {
+  const lines = [`Calculatie${calc.clientName ? ' — ' + calc.clientName : ''}`, ''];
+  calc.products.forEach(p => { if (p.label) lines.push(`${p.label}: ${fmtEUR(p.price)}`); });
+  CALC_CATALOG.forEach(section => {
+    const qty = calc.qty[section.key] || {};
+    const sectionLines = [];
+    section.items.forEach(it => { if (it.key && qty[it.key]) sectionLines.push(`  ${it.label} x${qty[it.key]}: ${fmtEUR(qty[it.key]*it.price)}`); });
+    if (sectionLines.length) { lines.push('', section.label + ':'); lines.push(...sectionLines); }
+  });
+  lines.push('', `Totaal: ${fmtEUR(calcGrandTotal(calc))}`);
+  return lines.join('\n');
+}
+document.getElementById('calc-share-btn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('calc-share-menu').classList.toggle('open');
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.calc-share-wrap')) document.getElementById('calc-share-menu').classList.remove('open');
+});
+document.querySelectorAll('.calc-share-option').forEach(opt => {
+  opt.addEventListener('click', async () => {
+    document.getElementById('calc-share-menu').classList.remove('open');
+    const channel = opt.dataset.channel;
+    const calc = window.__editingCalc;
+    const shareBtn = document.getElementById('calc-share-btn');
+    const original = shareBtn.textContent;
+    shareBtn.textContent = 'PDF maken\u2026'; shareBtn.disabled = true;
+    try {
+      const blob = await generateCalcPdfBlob(calc);
+      const fileName = `Calculatie${calc.clientName ? ' - ' + calc.clientName : ''}.pdf`;
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+      const text = buildCalcSummaryText(calc);
+      if (channel === 'whatsapp') {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Calculatie', text });
+        } else {
+          downloadBlob(blob, fileName);
+          alert('PDF gedownload \u2014 je browser ondersteunt geen direct delen van bestanden. Open WhatsApp en voeg het gedownloade bestand handmatig toe.');
+          window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+        }
+      } else {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: subjectFor(calc), text });
+        } else {
+          downloadBlob(blob, fileName);
+          alert('PDF gedownload \u2014 je e-mailapp ondersteunt geen automatische bijlage vanuit de browser. Open je mailprogramma en voeg het gedownloade bestand handmatig toe.');
+          window.location.href = `mailto:koen@josharm.nl?subject=${encodeURIComponent(subjectFor(calc))}&body=${encodeURIComponent(text)}`;
+        }
+      }
+    } catch (err) {
+      alert('Kon geen PDF maken: ' + err.message);
+    } finally {
+      shareBtn.textContent = original; shareBtn.disabled = false;
+    }
+  });
+});
+function subjectFor(calc) { return `Calculatie${calc.clientName ? ' - ' + calc.clientName : ''}`; }
+function downloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function renderCalcList() {
+  const list = document.getElementById('calc-list');
+  if (!list) return;
+  const countEl = document.getElementById('count-calc');
+  if (countEl) countEl.textContent = calculations.length;
+  list.innerHTML = '';
+  if (!calculations.length) { list.innerHTML = '<div class="calc-empty">Nog geen berekeningen \u2014 maak de eerste met "+ Nieuwe berekening".</div>'; return; }
+  calculations.slice().sort((a,b) => (b.createdAt||0) - (a.createdAt||0)).forEach(calc => {
+    const card = document.createElement('div');
+    card.className = 'calc-card';
+    card.innerHTML = `
+      <div class="calc-card-main">
+        <div class="calc-card-name">${calc.clientName || 'Naamloze berekening'}${calc.status === 'concept' ? '<span class="calc-status-badge">Concept</span>' : ''}</div>
+        <div class="calc-card-meta">${calc.date || ''}</div>
+      </div>
+      <div class="calc-card-total">${fmtEUR(calcGrandTotal(calc))}</div>
+      <div class="calc-card-dup" title="Dupliceren"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="1"/><path d="M6 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2"/></svg></div>
+      <div class="calc-card-del">&times;</div>
+    `;
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.calc-card-del') || e.target.closest('.calc-card-dup')) return;
+      openCalcEditor(calc);
+    });
+    card.querySelector('.calc-card-dup').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const copy = JSON.parse(JSON.stringify(calc));
+      copy.id = 'calc-' + Date.now();
+      copy.clientName = (calc.clientName || 'Naamloze berekening') + ' (kopie)';
+      copy.status = 'concept';
+      copy.createdAt = Date.now();
+      copy.updatedAt = Date.now();
+      copy.versions = [];
+      openCalcEditor(copy);
+    });
+    card.querySelector('.calc-card-del').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm('Deze berekening verwijderen?')) return;
+      calculations = calculations.filter(c => c.id !== calc.id);
+      await saveCalculations();
+      renderCalcList();
+    });
+    list.appendChild(card);
+  });
+}
+function populateCalcClientSelect() {
+  const sel = document.getElementById('calc-client-select');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">\u2014 Geen klant gekoppeld \u2014</option>' + clients.map(c => `<option value="${c.id}">${c.name}${c.ref ? ' (' + c.ref + ')' : ''}</option>`).join('');
+  if (current) sel.value = current;
+}
+function renderCalcProducts() {
+  const wrap = document.getElementById('calc-products');
+  const calc = window.__editingCalc;
+  wrap.innerHTML = '';
+  calc.products.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'calc-product-row';
+    row.innerHTML = `
+      <input type="text" value="${(p.label||'').replace(/"/g,'&quot;')}" placeholder="Omschrijving" />
+      <input type="number" value="${p.price||0}" step="0.01" inputmode="decimal" placeholder="Prijs" />
+      <div class="calc-card-del">&times;</div>
+    `;
+    const labelInput = row.children[0], priceInput = row.children[1], delBtn = row.children[2];
+    labelInput.addEventListener('input', () => { p.label = labelInput.value; });
+    priceInput.addEventListener('input', () => { p.price = parseFloat(priceInput.value) || 0; updateCalcTotals(); });
+    delBtn.addEventListener('click', () => { calc.products.splice(i, 1); renderCalcProducts(); updateCalcTotals(); });
+    wrap.appendChild(row);
+  });
+}
+function renderCalcCatalogSections() {
+  const wrap = document.getElementById('calc-catalog-sections');
+  wrap.innerHTML = '';
+  const calc = window.__editingCalc;
+  CALC_CATALOG.forEach(section => {
+    if (!calc.qty[section.key]) calc.qty[section.key] = {};
+    const det = document.createElement('details');
+    det.className = 'calc-section';
+    det.open = calcOpenSections.has(section.key);
+    det.addEventListener('toggle', () => { if (det.open) calcOpenSections.add(section.key); else calcOpenSections.delete(section.key); });
+    det.innerHTML = `<summary>${section.label} <span class="calc-section-sub" data-sub="${section.key}">\u20ac 0</span></summary><div class="calc-rows"></div>`;
+    wrap.appendChild(det);
+    const rowsWrap = det.querySelector('.calc-rows');
+    section.items.forEach(it => {
+      if (it.group) {
+        const g = document.createElement('div');
+        g.className = 'calc-group-label';
+        g.textContent = it.group;
+        rowsWrap.appendChild(g);
+        return;
+      }
+      const row = document.createElement('div');
+      row.className = 'calc-row';
+      const q = calc.qty[section.key][it.key] || '';
+      row.innerHTML = `
+        <div class="calc-row-label">${it.label}</div>
+        <div class="calc-row-price">${fmtEUR(it.price)}</div>
+        <input class="calc-row-qty" type="number" min="0" step="1" inputmode="numeric" value="${q}" />
+        <div class="calc-row-total">${fmtEUR((q||0) * it.price)}</div>
+      `;
+      const input = row.querySelector('.calc-row-qty');
+      input.addEventListener('input', () => {
+        const v = parseFloat(input.value) || 0;
+        if (v) calc.qty[section.key][it.key] = v; else delete calc.qty[section.key][it.key];
+        row.querySelector('.calc-row-total').textContent = fmtEUR(v * it.price);
+        updateCalcTotals();
+      });
+      rowsWrap.appendChild(row);
+    });
+    if (section.key === 'installatie') {
+      const auto = document.createElement('div');
+      auto.className = 'calc-auto-row';
+      auto.innerHTML = `<div>Milieutoeslag (1,78%) + WRAK-bijdrage (2,2%) over materiaalkosten</div><div id="calc-installatie-auto"></div>`;
+      rowsWrap.appendChild(auto);
+    }
+  });
+}
+function updateCalcTotals() {
+  const calc = window.__editingCalc;
+  if (!calc) return;
+  const subP = document.getElementById('calc-sub-products'); if (subP) subP.textContent = fmtEUR(calcProductsTotal(calc));
+  CALC_CATALOG.forEach(section => {
+    let total = calcSectionTotal(calc, section.key);
+    if (section.key === 'installatie') {
+      const auto = calcInstallatieAutoTotal(calc);
+      total += auto;
+      const autoEl = document.getElementById('calc-installatie-auto');
+      if (autoEl) autoEl.textContent = fmtEUR(auto);
+    }
+    const subEl = document.querySelector(`[data-sub="${section.key}"]`);
+    if (subEl) subEl.textContent = fmtEUR(total);
+  });
+  const grandEl = document.getElementById('calc-grand-total');
+  if (grandEl) grandEl.textContent = fmtEUR(calcGrandTotal(calc));
+  const stickyEl = document.getElementById('calc-sticky-total-num');
+  if (stickyEl) stickyEl.textContent = fmtEUR(calcGrandTotal(calc));
+}
+function openCalcEditor(calc) {
+  editingCalcId = calc.id;
+  document.getElementById('calc-list-panel').style.display = 'none';
+  document.getElementById('calc-editor-panel').style.display = 'block';
+  document.getElementById('calc-editor-title').textContent = calc.clientName ? 'Berekening \u2014 ' + calc.clientName : 'Nieuwe berekening';
+  window.__editingCalc = JSON.parse(JSON.stringify(calc));
+  if (!window.__editingCalc.qty) window.__editingCalc.qty = {};
+  if (!window.__editingCalc.products || !window.__editingCalc.products.length) window.__editingCalc.products = [{ label: 'Haard / model', price: 0 }];
+  calcOpenSections = new Set();
+  document.getElementById('calc-search-input').value = '';
+  document.getElementById('calc-search-results').innerHTML = '';
+  renderCalcPresets();
+  renderRecentProducts();
+  populateCalcClientSelect();
+  document.getElementById('calc-client-select').value = calc.clientId || '';
+  document.getElementById('calc-date').value = calc.date || new Date().toISOString().slice(0,10);
+  document.getElementById('calc-delete-btn').style.display = calculations.some(c => c.id === calc.id) ? 'inline-block' : 'none';
+  renderCalcProducts();
+  renderCalcCatalogSections();
+  updateCalcTotals();
+}
+function closeCalcEditor() {
+  document.getElementById('calc-editor-panel').style.display = 'none';
+  document.getElementById('calc-list-panel').style.display = 'block';
+  editingCalcId = null;
+  window.__editingCalc = null;
+}
+async function saveCalcDraftSilently() {
+  const calc = window.__editingCalc;
+  if (!calc || !editingCalcId) return;
+  if (!calc.clientName) {
+    const c = clients.find(x => x.id === calc.clientId);
+    calc.clientName = c ? c.name : 'Naamloze berekening (concept)';
+  }
+  if (calc.status !== 'definitief') calc.status = 'concept';
+  calc.updatedAt = Date.now();
+  pushCalcVersion(calc);
+  const snapshot = JSON.parse(JSON.stringify(calc));
+  const idx = calculations.findIndex(c => c.id === snapshot.id);
+  if (idx >= 0) calculations[idx] = snapshot; else calculations.unshift(snapshot);
+  await saveCalculations();
+}
+document.getElementById('calc-new-btn').addEventListener('click', () => openCalcEditor(newCalc()));
+document.getElementById('calc-back-btn').addEventListener('click', async () => {
+  await saveCalcDraftSilently();
+  closeCalcEditor();
+  renderCalcList();
+});
+document.getElementById('calc-draft-btn').addEventListener('click', async () => {
+  await saveCalcDraftSilently();
+  renderCalcList();
+});
+document.getElementById('calc-add-product-btn').addEventListener('click', () => {
+  window.__editingCalc.products.push({ label: '', price: 0 });
+  renderCalcProducts();
+});
+document.getElementById('calc-client-select').addEventListener('change', (e) => {
+  const calc = window.__editingCalc;
+  calc.clientId = e.target.value;
+  const c = clients.find(x => x.id === calc.clientId);
+  if (c) calc.clientName = c.name;
+});
+document.getElementById('calc-date').addEventListener('change', (e) => { window.__editingCalc.date = e.target.value; });
+document.getElementById('calc-save-btn').addEventListener('click', async () => {
+  const calc = window.__editingCalc;
+  if (!calc.clientName) {
+    const c = clients.find(x => x.id === calc.clientId);
+    calc.clientName = c ? c.name : 'Naamloze berekening';
+  }
+  calc.updatedAt = Date.now();
+  calc.status = 'definitief';
+  pushCalcVersion(calc);
+  const idx = calculations.findIndex(c => c.id === calc.id);
+  if (idx >= 0) calculations[idx] = calc; else calculations.unshift(calc);
+  await saveCalculations();
+  renderCalcList();
+  closeCalcEditor();
+});
+document.getElementById('calc-delete-btn').addEventListener('click', async () => {
+  if (!confirm('Deze berekening verwijderen?')) return;
+  calculations = calculations.filter(c => c.id !== editingCalcId);
+  await saveCalculations();
+  renderCalcList();
+  closeCalcEditor();
+});
+function fillPsheetPreview(calc, open) {
+  const client = clients.find(x => x.id === calc.clientId);
+  const addr = client ? [[client.street, client.houseNumber].filter(Boolean).join(' '), [client.postcode, client.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '';
+  let rows = '';
+  (calc.products || []).forEach(p => { if (p.label && p.price) rows += `<tr><td>${p.label}</td><td>${fmtEUR(p.price)}</td></tr>`; });
+  CALC_CATALOG.forEach(section => {
+    let t = calcSectionTotal(calc, section.key);
+    if (section.key === 'installatie') t += calcInstallatieAutoTotal(calc);
+    if (t > 0) rows += `<tr><td>${section.label}</td><td>${fmtEUR(t)}</td></tr>`;
+  });
+  document.getElementById('psheet-rows').innerHTML = rows;
+  document.getElementById('psheet-total').textContent = fmtEUR(calcGrandTotal(calc));
+  document.getElementById('psheet-client-name').textContent = calc.clientName || (client ? client.name : '') || '\u2014';
+  document.getElementById('psheet-client-addr').textContent = addr || '\u2014';
+  document.getElementById('psheet-date').textContent = calc.date ? new Date(calc.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const logoSrc = document.querySelector('.sidebar .brand-mark');
+  if (logoSrc) document.getElementById('psheet-logo').src = logoSrc.src;
+  if (open) document.getElementById('psheet-backdrop').classList.add('open');
+}
+document.getElementById('calc-send-btn').addEventListener('click', () => {
+  fillPsheetPreview(window.__editingCalc, true);
+});
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.onload = () => resolve(); s.onerror = () => reject(new Error('Kon ' + src + ' niet laden'));
+    document.head.appendChild(s);
+  });
+}
+async function generateCalcPdfBlob(calc) {
+  const backdrop = document.getElementById('psheet-backdrop');
+  const wasOpen = backdrop.classList.contains('open');
+  fillPsheetPreview(calc, true);
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  const pageEl = document.querySelector('#calc-print-sheet .psheet-page');
+  const logoImg = document.getElementById('psheet-logo');
+  if (logoImg && logoImg.src && !logoImg.complete) {
+    await new Promise(res => { logoImg.onload = res; logoImg.onerror = res; });
+  }
+  try {
+    const canvas = await html2canvas(pageEl, { scale: 2, backgroundColor: '#ffffff' });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'px', format: [canvas.width, canvas.height] });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
+    return pdf.output('blob');
+  } finally {
+    if (!wasOpen) backdrop.classList.remove('open');
+  }
+}
+document.getElementById('psheet-close-btn').addEventListener('click', () => {
+  document.getElementById('psheet-backdrop').classList.remove('open');
+});
+document.getElementById('psheet-print-btn').addEventListener('click', () => { window.print(); });
+document.getElementById('calc-copy-btn').addEventListener('click', () => {
+  const calc = window.__editingCalc;
+  const text = buildCalcSummaryText(calc);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => alert('Samenvatting gekopieerd naar klembord.')).catch(() => alert(text));
+  } else {
+    alert(text);
+  }
+});
 </script>
 </body>
 </html>
