@@ -43,7 +43,7 @@
     --afgerond: #A59F67;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: var(--soot); color: var(--paper); }
+  html, body { margin: 0; padding: 0; background: var(--soot); color: var(--paper); max-width: 100%; overflow-x: clip; overscroll-behavior-x: none; }
   body {
     font-family: 'League Spartan', sans-serif;
     font-size: 14px;
@@ -60,24 +60,66 @@
   ::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
 
-  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  @media (min-width: 901px) {
+    .app {
+      background-image:
+        linear-gradient(var(--hairline), var(--hairline)),
+        linear-gradient(#F1EBE1, #F1EBE1);
+      background-size: 1px 100%, 248px 100%;
+      background-position: 247px 0, left top;
+      background-repeat: no-repeat, no-repeat;
+    }
+  }
 
   /* ---- Sidebar ---- */
   .sidebar {
     background: linear-gradient(180deg, #FBFAF8, #F1EBE1);
     border-right: 1px solid var(--hairline);
     padding: 28px 18px;
-    display: flex; flex-direction: column; gap: 32px;
-    position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column; gap: 26px;
+    position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden;
   }
-  .brand { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 4px 18px; border-bottom: 1px solid var(--hairline); position: relative; flex-shrink: 0; }
+  .brand::after { content: ''; position: absolute; left: 4px; bottom: -1px; width: 34px; height: 1px; background: var(--ember); }
   .brand-mark {
     width: 40px; height: 40px; flex-shrink: 0; object-fit: contain;
   }
   .brand-text { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: var(--paper); line-height: 1.1; }
   .brand-sub { font-family: 'League Spartan', sans-serif; font-weight: 500; font-size: 9.5px; color: var(--smoke); letter-spacing: 0.08em; text-transform: uppercase; }
 
-  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav { display: flex; flex-direction: column; gap: 2px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .nav::-webkit-scrollbar { width: 0; }
+  .sidebar .nav-group-label {
+    font-family: 'League Spartan', sans-serif; font-size: 9px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--smoke); padding: 16px 12px 6px; opacity: 0.8;
+  }
+  .sidebar .nav-group-label:first-child { padding-top: 0; }
+  .sidebar .nav-item {
+    position: relative; gap: 11px; padding: 9px 12px 9px 13px; border-radius: 7px;
+    letter-spacing: 0.005em; overflow: hidden; align-items: center;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  .sidebar .nav-item::before {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 2px; height: 0; background: var(--ember); border-radius: 0 2px 2px 0;
+    transition: height 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar .nav-item:hover { background: rgba(255,255,255,0.55); color: var(--paper); }
+  .sidebar .nav-item:hover::before { height: 14px; opacity: 0.45; }
+  .sidebar .nav-item.active {
+    background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
+    color: var(--paper); border-color: rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px rgba(43,43,43,0.06);
+  }
+  .sidebar .nav-item.active::before { height: 20px; opacity: 1; }
+  .sidebar .nav-ico { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex-shrink: 0; color: var(--smoke); transition: color 0.2s ease; }
+  .sidebar .nav-ico svg { width: 17px; height: 17px; }
+  .sidebar .nav-item:hover .nav-ico { color: var(--paper); }
+  .sidebar .nav-item.active .nav-ico { color: var(--ember); }
+  .sidebar .nav-label { min-width: 0; white-space: normal; line-height: 1.25; }
+  .sidebar .nav-item.active .nav-label { font-weight: 600; }
   .nav-item {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 12px; border-radius: 6px; cursor: pointer;
@@ -90,12 +132,13 @@
   .nav-item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--smoke); flex-shrink: 0; }
   .nav-item.active .dot { background: var(--ember); box-shadow: 0 0 6px var(--ember); }
   .nav-count {
-    margin-left: auto; font-family: 'League Spartan', sans-serif; font-size: 10.5px;
+    margin-left: auto; flex-shrink: 0; font-family: 'League Spartan', sans-serif; font-size: 10.5px;
     color: var(--smoke); background: var(--soot); border: 1px solid var(--hairline);
     padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center;
   }
+  .sidebar .nav-item.active .nav-count { color: var(--ember); border-color: rgba(216,90,44,0.35); background: rgba(216,90,44,0.08); }
 
-  .sidebar-foot { margin-top: auto; padding: 12px 4px 0; border-top: 1px solid var(--hairline); }
+  .sidebar-foot { margin-top: auto; flex-shrink: 0; padding: 14px 4px 0; border-top: 1px solid var(--hairline); }
   .sidebar-foot-text { font-size: 11px; color: var(--smoke); line-height: 1.5; }
   .save-status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--smoke); margin-top: 8px; }
   .save-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex-shrink: 0; transition: background 0.2s; }
@@ -104,7 +147,7 @@
   .save-status.error { color: var(--danger); }
 
   /* ---- Main ---- */
-  .main { padding: 34px 42px 60px; max-width: 1240px; }
+  .main { padding: 34px 42px 60px; max-width: 1240px; min-width: 0; }
   .view { display: none; }
   .view.active { display: block; animation: fadein 0.25s ease; }
   @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
@@ -159,6 +202,18 @@
       linear-gradient(180deg, #F2ECE1, #ECE3D2);
   }
   .board-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--smoke); font-size: 13px; font-style: italic; }
+  .board-ref-row { display: flex; margin-top: 7px; min-width: 0; }
+  .board-badge-group { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .board-ref-copy {
+    display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--hairline);
+    background: var(--panel-raised); color: var(--smoke); cursor: pointer; border-radius: 4px;
+    font-family: 'League Spartan', sans-serif; font-size: 10px; letter-spacing: 0.05em;
+    padding: 2px 5px; max-width: 100%; min-width: 0; overflow: hidden;
+  }
+  .board-ref-copy svg { width: 11px; height: 11px; flex-shrink: 0; }
+  .board-ref-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .board-ref-copy:hover { color: var(--paper); border-color: var(--ember); }
+  .board-ref-copy.copied { color: var(--afgerond); border-color: var(--afgerond); }
   .board-card {
     position: absolute; background: var(--panel); border: 3px solid var(--ember-dim); border-radius: 2px;
     aspect-ratio: 1 / 1; overflow: hidden;
@@ -176,7 +231,7 @@
     font-weight: 500; line-height: 1.35;
     display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
   }
-  .board-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 7px; }
+  .board-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 7px; flex-wrap: wrap; min-width: 0; }
   .board-dots { display: flex; gap: 5px; }
   .board-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--hairline); cursor: pointer; transition: transform 0.12s ease; }
   .board-dot.filled { background: radial-gradient(circle at 35% 30%, #EAD3A0, var(--ember)); box-shadow: 0 0 4px rgba(211,177,115,0.6); }
@@ -197,6 +252,7 @@
   /* ---- Burn effect ---- */
   .board-card.charring { pointer-events: none; }
   .board-card.charring .board-card-text,
+  .board-card.charring .board-ref-row,
   .board-card.charring .board-card-foot { animation: contentFade 0.9s ease forwards; }
   @keyframes contentFade {
     0% { opacity: 1; }
@@ -284,6 +340,39 @@
   .task-add input[type="date"] { flex: 0 0 150px; color-scheme: light; padding-left: 32px; }
   .task-add input[type="time"] { flex: 0 0 110px; color-scheme: light; padding-left: 32px; }
   .task-add input:focus { outline: none; border-color: var(--ember); }
+  .task-add input.task-add-ref { flex: 0 0 190px; font-family: 'League Spartan', sans-serif; letter-spacing: 0.04em; }
+  .task-ref-chip {
+    display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+    background: var(--panel-raised); border: 1px solid var(--hairline); border-radius: 5px;
+    padding: 3px 4px 3px 8px; margin-top: 6px; max-width: 100%;
+  }
+  .task-ref-label {
+    font-family: 'League Spartan', sans-serif; font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--smoke); flex-shrink: 0;
+  }
+  .task-ref-num {
+    font-family: 'League Spartan', sans-serif; font-size: 12px; letter-spacing: 0.06em;
+    color: var(--paper); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .task-ref-copy {
+    display: inline-flex; align-items: center; gap: 4px; border: none; background: transparent;
+    color: var(--smoke); cursor: pointer; font-family: 'League Spartan', sans-serif; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 6px; border-radius: 4px; flex-shrink: 0;
+  }
+  .task-ref-copy svg { width: 13px; height: 13px; }
+  .task-ref-copy:hover { color: var(--paper); background: var(--panel); }
+  .task-ref-copy.copied { color: var(--afgerond); }
+  .task-ref-add {
+    font-family: 'League Spartan', sans-serif; font-size: 11px; color: var(--smoke);
+    cursor: pointer; letter-spacing: 0.04em;
+  }
+  .task-ref-add:hover { color: var(--ember); }
+  .task-ref-input {
+    background: var(--soot); border: 1px solid var(--ember); border-radius: 5px; color: var(--paper);
+    font-family: 'League Spartan', sans-serif; font-size: 12px; letter-spacing: 0.05em; padding: 5px 8px;
+    margin-top: 6px; max-width: 100%; width: 200px;
+  }
+  .task-ref-input:focus { outline: none; }
   .datetime-field { position: relative; flex: 1; }
   .datetime-field svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--smoke); pointer-events: none; }
   .datetime-field input { width: 100%; }
@@ -425,8 +514,9 @@
   .modal-close:hover { color: var(--paper); }
   .field { margin-bottom: 14px; }
   .field label { display: block; font-family: 'League Spartan', sans-serif; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); margin-bottom: 6px; }
+  .field { min-width: 0; }
   .field input, .field textarea, .field select {
-    width: 100%; background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px;
+    width: 100%; max-width: 100%; min-width: 0; background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px;
     padding: 10px 12px; color: var(--paper); font-family: inherit; font-size: 13.5px; resize: vertical;
   }
   .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--ember); }
@@ -573,6 +663,38 @@
   .calc-empty { color: var(--smoke); font-size: 13px; font-style: italic; padding: 20px 2px; }
   .calc-editor { display: flex; flex-direction: column; gap: 18px; }
   .calc-top-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .price-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .price-toolbar input[type="text"] {
+    flex: 1 1 220px; min-width: 0; background: var(--soot); border: 1px solid var(--hairline);
+    border-radius: 6px; padding: 10px 12px; color: var(--paper); font-family: inherit; font-size: 13.5px;
+  }
+  .price-toolbar input[type="text"]:focus { outline: none; border-color: var(--ember); }
+  .price-stat { font-family: 'League Spartan', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); }
+  .price-row {
+    display: grid; grid-template-columns: 1fr 120px 110px 34px; gap: 10px; align-items: center;
+    padding: 8px 16px; border-top: 1px solid var(--hairline); font-size: 13px;
+  }
+  .price-row.changed { background: rgba(216,90,44,0.07); }
+  .price-row-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .price-row-base { font-family: 'League Spartan', sans-serif; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--smoke); }
+  .price-row-input {
+    width: 100%; background: var(--soot); border: 1px solid var(--hairline); border-radius: 5px;
+    padding: 7px 9px; color: var(--paper); font-family: inherit; font-size: 13px; text-align: right;
+  }
+  .price-row-input:focus { outline: none; border-color: var(--ember); }
+  .price-row-reset {
+    background: transparent; border: 1px solid var(--hairline); border-radius: 5px; color: var(--smoke);
+    cursor: pointer; font-size: 14px; padding: 5px 0; width: 34px;
+  }
+  .price-row-reset:disabled { opacity: 0.3; cursor: default; }
+  .price-row-reset:not(:disabled):hover { color: var(--paper); border-color: var(--ember); }
+  .calc-top-row > .field { min-width: 0; }
+  .calc-diam-field { margin-bottom: 0; }
+  .calc-section { scroll-margin-top: 200px; }
+  .calc-editor { max-width: 100%; }
+  .field input[type="date"], .field input[type="time"] {
+    -webkit-appearance: none; appearance: none; display: block;
+  }
   .calc-section { background: var(--panel); border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden; }
   .calc-section > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.02em; }
   .calc-section > summary::-webkit-details-marker { display: none; }
@@ -613,6 +735,71 @@
   .calc-presets-row { display: flex; flex-wrap: wrap; gap: 8px; }
   .calc-preset-btn { font-family: 'League Spartan', sans-serif; font-size: 12px; font-weight: 500; background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; padding: 9px 13px; cursor: pointer; color: var(--paper); text-align: left; }
   .calc-preset-btn:hover { border-color: var(--ember); }
+  .calc-stickybar {
+    position: sticky; top: 0; z-index: 9; display: flex; flex-direction: column; gap: 8px;
+    background: linear-gradient(180deg, #FBFAF8, #F1EBE1); border: 1px solid var(--hairline);
+    border-radius: 10px; padding: 10px 12px; box-shadow: 0 6px 14px rgba(43,43,43,0.07);
+  }
+  .calc-stickybar .calc-sticky-total { position: static; border: none; background: none; padding: 0; box-shadow: none; border-radius: 0; }
+  .calc-searchbox { position: relative; display: flex; align-items: center; }
+  .calc-searchbox > svg { position: absolute; left: 11px; width: 15px; height: 15px; color: var(--smoke); pointer-events: none; }
+  .calc-searchbox input {
+    width: 100%; min-width: 0; background: var(--soot); border: 1px solid var(--hairline); border-radius: 8px;
+    padding: 10px 34px 10px 33px; color: var(--paper); font-family: inherit; font-size: 14px;
+  }
+  .calc-searchbox input:focus { outline: none; border-color: var(--ember); }
+  .calc-search-clear {
+    position: absolute; right: 6px; border: none; background: transparent; color: var(--smoke);
+    font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; display: none;
+  }
+  .calc-searchbox.has-query .calc-search-clear { display: block; }
+  .calc-searchbox .calc-search-results {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 12;
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 10px;
+    box-shadow: 0 12px 26px rgba(43,43,43,0.16); padding: 6px; margin-top: 0; max-height: 340px;
+  }
+  .calc-search-results:empty { display: none; }
+  .calc-search-row.active { border-color: var(--ember); background: var(--panel-raised); }
+  .calc-filterrow {
+    display: flex; gap: 6px; align-items: center; overflow-x: auto; scrollbar-width: none;
+    padding-bottom: 1px;
+  }
+  .calc-filterrow::-webkit-scrollbar { height: 0; }
+  .calc-filterrow:empty { display: none; }
+  .calc-fchip {
+    flex: 0 0 auto; font-family: 'League Spartan', sans-serif; font-size: 12px; letter-spacing: 0.03em;
+    background: var(--soot); border: 1px solid var(--hairline); border-radius: 20px;
+    padding: 7px 13px; color: var(--smoke); cursor: pointer; white-space: nowrap; min-height: 34px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .calc-fchip:hover { border-color: var(--ember); color: var(--paper); }
+  .calc-fchip.active { background: var(--ember); border-color: var(--ember); color: #fff; }
+  .calc-fchip-amount { font-size: 10.5px; opacity: 0.75; }
+  .calc-fchip.has-amount { color: var(--paper); border-color: rgba(216,90,44,0.4); }
+  .calc-flabel {
+    flex: 0 0 auto; font-family: 'League Spartan', sans-serif; font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--smoke); padding-right: 2px;
+  }
+  .calc-selected-block .calc-rows { gap: 0; }
+  .calc-selected-row {
+    display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; align-items: center;
+    padding: 9px 16px; border-top: 1px solid var(--hairline); font-size: 13px;
+  }
+  .calc-selected-row:first-child { border-top: none; }
+  .calc-selected-label { min-width: 0; cursor: pointer; }
+  .calc-selected-label:hover { color: var(--ember); }
+  .calc-selected-sub { font-family: 'League Spartan', sans-serif; font-size: 10.5px; color: var(--smoke); letter-spacing: 0.04em; }
+  .calc-selected-qty { display: flex; align-items: center; gap: 4px; }
+  .calc-selected-qty button {
+    width: 30px; height: 30px; border: 1px solid var(--hairline); background: var(--soot);
+    color: var(--paper); border-radius: 6px; cursor: pointer; font-size: 15px; line-height: 1;
+  }
+  .calc-selected-qty button:hover { border-color: var(--ember); }
+  .calc-selected-qty span { min-width: 22px; text-align: center; font-family: 'League Spartan', sans-serif; }
+  .calc-selected-amount { font-family: 'League Spartan', sans-serif; font-weight: 600; min-width: 78px; text-align: right; }
+  .calc-selected-del { color: var(--smoke); cursor: pointer; font-size: 17px; padding: 0 2px; }
+  .calc-selected-del:hover { color: var(--danger); }
+  .calc-section.flash > summary { background: rgba(216,90,44,0.1); }
   .calc-sticky-total { position: sticky; top: 0; z-index: 8; background: linear-gradient(180deg, #FBFAF8, #F1EBE1); border: 1px solid var(--hairline); border-radius: 10px; padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: -4px; }
   .calc-sticky-total-label { font-family: 'League Spartan', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); }
   .calc-sticky-total-num { font-family: 'Poppins', sans-serif; font-size: 19px; font-weight: 700; color: var(--paper); }
@@ -620,6 +807,22 @@
   .calc-version-row:last-child { border-bottom: none; }
   .calc-version-meta { font-size: 12.5px; color: var(--paper-dim); }
   .calc-version-total { font-family: 'League Spartan', sans-serif; font-weight: 600; font-size: 13px; }
+  @media (max-width: 560px) {
+    .calc-row {
+      grid-template-columns: 1fr 64px 84px;
+      grid-template-areas: 'label label label' 'price qty total';
+      row-gap: 4px; padding: 9px 0;
+    }
+    .calc-row-label { grid-area: label; }
+    .calc-row-price { grid-area: price; text-align: left; }
+    .calc-row-qty { grid-area: qty; min-height: 38px; }
+    .calc-row-total { grid-area: total; }
+    .calc-selected-row { grid-template-columns: 1fr auto; grid-template-areas: 'label label' 'qty amount' 'qty del'; row-gap: 6px; }
+    .calc-selected-label { grid-area: label; }
+    .calc-selected-qty { grid-area: qty; }
+    .calc-selected-amount { grid-area: amount; }
+    .calc-selected-del { grid-area: del; justify-self: end; }
+  }
   @media (max-width: 980px) {
     .calc-top-row { grid-template-columns: 1fr; }
     .calc-row { grid-template-columns: 1fr 60px 56px 76px; font-size: 12px; }
@@ -688,7 +891,7 @@
     font-family: 'League Spartan', sans-serif; font-size: 10px; text-transform: uppercase;
     letter-spacing: 0.05em; color: var(--smoke); margin-top: 3px;
   }
-  @media (max-width: 780px) {
+  @media (max-width: 900px) {
     .clock-widget { bottom: calc(70px + env(safe-area-inset-bottom)); left: 12px; padding: 8px 14px; }
     .toast { bottom: calc(78px + env(safe-area-inset-bottom)); }
     .clock-time { font-size: 17px; }
@@ -703,7 +906,7 @@
     .ai-side { position: static; flex-direction: row; flex-wrap: wrap; }
     .ai-side-card { flex: 1; min-width: 220px; }
   }
-  @media (max-width: 780px) {
+  @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; }
     .sidebar { display: none; }
     .main { padding: 14px 14px calc(96px + env(safe-area-inset-bottom)); max-width: 100%; }
@@ -741,8 +944,19 @@
     .reminder-settings input[type="number"], .reminder-settings select { font-size: 16px; padding: 6px 8px; }
     .subtask-check { width: 18px; height: 18px; }
     .checkbox-box { width: 22px; height: 22px; }
+    .price-row { grid-template-columns: 1fr 96px 34px; grid-template-areas: 'label label label' 'base input reset'; row-gap: 6px; }
+    .price-row-label { grid-area: label; }
+    .price-row-base { grid-area: base; align-self: center; }
+    .price-row-input { grid-area: input; }
+    .price-row-reset { grid-area: reset; min-height: 38px; }
+    .calc-stickybar { gap: 6px; padding: 8px 10px; }
+    .calc-stickybar .calc-sticky-total-num { font-size: 17px; }
+    .calc-fchip { min-height: 30px; padding: 5px 11px; font-size: 11.5px; }
+    .calc-searchbox input { padding-top: 9px; padding-bottom: 9px; }
     .task-add { flex-direction: column; }
     .task-add input[type="text"] { width: 100%; }
+    .task-add input.task-add-ref { flex: 1 1 auto; width: 100%; }
+    .task-ref-copy { min-height: 36px; padding: 6px 10px; }
     .task-add-datetime { display: flex; gap: 8px; }
     .task-add input[type="date"] { flex: 1 1 auto; width: auto; min-width: 130px; }
     .task-add input[type="time"] { flex: 0 0 100px; width: auto; min-width: 100px; }
@@ -877,7 +1091,7 @@
   .home-stat { background: var(--panel); border: 1px solid var(--hairline); border-radius: 9px; padding: 10px 20px; text-align: center; min-width: 84px; box-shadow: 0 2px 6px rgba(139,131,120,0.12); }
   .home-stat-num { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 22px; color: var(--ember-dim); line-height: 1; }
   .home-stat-label { font-family: 'League Spartan', sans-serif; font-size: 9.5px; color: var(--smoke); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
-  @media (max-width: 780px) {
+  @media (max-width: 900px) {
     .home-stats { width: 100%; justify-content: space-between; }
     .home-stat { flex: 1; padding: 10px 6px; min-width: 0; }
     .home-greeting-title { font-size: 21px; }
@@ -948,13 +1162,42 @@
       </div>
     </div>
     <div class="nav">
-      <div class="nav-item active" data-view="home"><span class="dot"></span> Home</div>
-      <div class="nav-item" data-view="taken"><span class="dot"></span> Taken <span class="nav-count" id="count-taken">0</span></div>
-      <div class="nav-item" data-view="klanten"><span class="dot"></span> Klanten <span class="nav-count" id="count-klanten">0</span></div>
-      <div class="nav-item" data-view="afgeronde-projecten"><span class="dot"></span> Afgeronde projecten <span class="nav-count" id="count-afgerond">0</span></div>
-      <div class="nav-item" data-view="calculatie"><span class="dot"></span> Calculatie <span class="nav-count" id="count-calc">0</span></div>
-      <div class="nav-item" data-view="haarden"><span class="dot"></span> Haardendatabase <span class="nav-count" id="count-haarden">0</span></div>
-      <div class="nav-item" data-view="assistent"><span class="dot"></span> AI Assistent</div>
+      <div class="nav-group-label">Overzicht</div>
+      <div class="nav-item active" data-view="home">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
+        <span class="nav-label">Home</span>
+      </div>
+      <div class="nav-item" data-view="taken">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h9"/><path d="M9 12h9"/><path d="M9 19h9"/><path d="M4 5.5l1.2 1.2L7.5 4"/><path d="M4 12.5l1.2 1.2L7.5 11"/><circle cx="5.4" cy="19" r="1.4"/></svg></span>
+        <span class="nav-label">Taken</span>
+        <span class="nav-count" id="count-taken">0</span>
+      </div>
+      <div class="nav-group-label">Werk</div>
+      <div class="nav-item" data-view="klanten">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20v-1.4A4.6 4.6 0 0 1 7.6 14h2.8a4.6 4.6 0 0 1 4.6 4.6V20"/><circle cx="17.6" cy="9" r="2.2"/><path d="M16 13.6h1.8A3.2 3.2 0 0 1 21 16.8V18"/></svg></span>
+        <span class="nav-label">Klanten</span>
+        <span class="nav-count" id="count-klanten">0</span>
+      </div>
+      <div class="nav-item" data-view="afgeronde-projecten">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V7l8-3 8 3v13"/><path d="M4 20h16"/><path d="M9.2 13.2l2 2 3.6-3.8"/></svg></span>
+        <span class="nav-label">Afgeronde projecten</span>
+        <span class="nav-count" id="count-afgerond">0</span>
+      </div>
+      <div class="nav-item" data-view="calculatie">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18"/><path d="M8 7h8"/><path d="M8.5 11.5h.01"/><path d="M12 11.5h.01"/><path d="M15.5 11.5h.01"/><path d="M8.5 15h.01"/><path d="M12 15h.01"/><path d="M15.5 15v3"/><path d="M8.5 18h3.5"/></svg></span>
+        <span class="nav-label">Calculatie</span>
+        <span class="nav-count" id="count-calc">0</span>
+      </div>
+      <div class="nav-group-label">Kennis</div>
+      <div class="nav-item" data-view="haarden">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s-6 5.5-6 10a6 6 0 0 0 12 0c0-1.6-.7-2.8-1.4-3.8.1 1.4-.6 2.3-1.4 2.3-1 0-1.2-1-1.2-1.8C13.8 7.4 12 5.5 12 3z"/></svg></span>
+        <span class="nav-label">Haardendatabase</span>
+        <span class="nav-count" id="count-haarden">0</span>
+      </div>
+      <div class="nav-item" data-view="assistent">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.5 4.1 4.1 1.5-4.1 1.5L12 14.7l-1.5-4.1L6.4 9.1l4.1-1.5z"/><path d="M18 15l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z"/></svg></span>
+        <span class="nav-label">AI Assistent</span>
+      </div>
     </div>
     <div class="sidebar-foot">
       <div class="sidebar-foot-text" id="sidebar-foot-text">Alles wat je hier invoert, wordt automatisch bewaard zodra je deze app via Claude opent — je kunt dus altijd verder waar je gebleven was.</div>
@@ -1019,6 +1262,7 @@
       </div>
       <div class="task-add">
         <input type="text" id="new-task-input" placeholder="Nieuwe taak, bijv. 'Offerte Kalfire nasturen naar dhr. Jansen'…" />
+        <input type="text" id="new-task-ref" class="task-add-ref" placeholder="Referentienr. (optioneel)" autocomplete="off" />
         <div class="task-add-datetime">
           <span class="datetime-field">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -1093,9 +1337,33 @@
             <div class="view-title">Calculatie</div>
             <div class="view-desc">Maak een prijsberekening per klant. Kies onderdelen en aantallen — de rest telt niet mee, en de totalen worden automatisch opgeteld.</div>
           </div>
-          <button class="btn btn-primary" id="calc-new-btn">+ Nieuwe berekening</button>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-ghost" id="calc-prices-btn">Prijzen beheren</button>
+            <button class="btn btn-primary" id="calc-new-btn">+ Nieuwe berekening</button>
+          </div>
         </div>
         <div class="calc-list" id="calc-list"></div>
+      </div>
+
+      <div id="calc-prices-panel" style="display:none">
+        <div class="view-header">
+          <div>
+            <div class="view-title">Prijzen beheren</div>
+            <div class="view-desc">Pas hier een prijs aan — hij wordt meteen overal in de calculaties gebruikt. Exporteer als bestand om ze op de computer bij te werken en weer in te lezen.</div>
+          </div>
+          <button class="btn btn-ghost" id="calc-prices-back-btn">← Terug naar overzicht</button>
+        </div>
+        <div class="calc-editor">
+          <div class="price-toolbar">
+            <input type="text" id="calc-prices-search" placeholder="Zoek onderdeel…" autocomplete="off" />
+            <button class="btn btn-ghost btn-sm" id="calc-prices-export">Exporteer bestand</button>
+            <button class="btn btn-ghost btn-sm" id="calc-prices-import">Importeer bestand</button>
+            <button class="btn btn-ghost btn-sm" id="calc-prices-reset">Alles terug naar standaard</button>
+            <input type="file" id="calc-prices-file" accept=".json,application/json" style="display:none" />
+          </div>
+          <div class="price-stat" id="calc-prices-stat"></div>
+          <div id="calc-prices-list"></div>
+        </div>
       </div>
 
       <div id="calc-editor-panel" style="display:none">
@@ -1108,9 +1376,20 @@
           <button class="btn btn-ghost" id="calc-back-btn">← Terug naar overzicht</button>
         </div>
         <div class="calc-editor">
-          <div class="calc-sticky-total">
-            <div class="calc-sticky-total-label">Totaal calculatie</div>
-            <div class="calc-sticky-total-num" id="calc-sticky-total-num">€ 0</div>
+          <div class="calc-stickybar">
+            <div class="calc-sticky-total">
+              <div class="calc-sticky-total-label">Totaal calculatie</div>
+              <div class="calc-sticky-total-num" id="calc-sticky-total-num">€ 0</div>
+            </div>
+            <div class="calc-searchbox">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+              <input type="text" id="calc-search-input" placeholder="Zoek onderdeel — bijv. ‘bocht 45’" autocomplete="off" />
+              <button type="button" class="calc-search-clear" id="calc-search-clear" title="Wissen">&times;</button>
+              <div class="calc-search-results" id="calc-search-results"></div>
+            </div>
+            <div class="calc-filterrow" id="calc-channel-row"></div>
+            <div class="calc-filterrow" id="calc-diam-row"></div>
+            <div class="calc-filterrow calc-jumprow" id="calc-jump-row"></div>
           </div>
           <div class="calc-top-row">
             <div class="field">
@@ -1124,27 +1403,17 @@
               <input type="date" id="calc-date" />
             </div>
           </div>
+          <details class="calc-section calc-selected-block" id="calc-selected-block" open>
+            <summary>In deze calculatie <span class="calc-section-sub" id="calc-selected-count">0 regels</span></summary>
+            <div class="calc-rows" id="calc-selected-list"></div>
+          </details>
           <div class="field">
-            <label>Producten zoeken</label>
-            <input type="text" id="calc-search-input" placeholder="Zoek op omschrijving, bijv. ‘bocht 45’ of ‘schoorsteenkap’" autocomplete="off" />
-            <div class="calc-search-results" id="calc-search-results"></div>
+            <label>Recent gebruikt</label>
             <div class="calc-recent-row" id="calc-recent-row"></div>
           </div>
           <div class="field">
             <label>Snel toevoegen — pakketten</label>
             <div class="calc-presets-row" id="calc-presets-row"></div>
-          </div>
-          <div class="field">
-            <label>Kanaaldiameter filter</label>
-            <select id="calc-diam-filter">
-              <option value="">Alle diameters</option>
-              <option value="Ø125mm">Ø125mm</option>
-              <option value="Ø150mm">Ø150mm</option>
-              <option value="Ø200mm">Ø200mm</option>
-              <option value="Ø250mm">Ø250mm</option>
-              <option value="100/150mm">100/150mm (concentrisch)</option>
-              <option value="130/200mm">130/200mm (concentrisch)</option>
-            </select>
           </div>
           <details class="calc-section" open>
             <summary>Haard / model <span class="calc-section-sub" id="calc-sub-products">€ 0</span></summary>
@@ -1780,6 +2049,11 @@ async function loadData() {
     const settings = s ? JSON.parse(s.value) : {};
     if (settings.reminderMinutes) reminderMinutes = settings.reminderMinutes;
   } catch (e) { /* geen opgeslagen instellingen, gebruik standaardwaarde */ }
+  try {
+    const pr = await storageGet('calc-prices');
+    priceOverrides = pr ? JSON.parse(pr.value) : {};
+  } catch (e) { console.error('Laden prijzen mislukt', e); priceOverrides = {}; }
+  applyPriceOverrides();
   applyReminderSettingToUI();
   renderTasks();
   renderClients();
@@ -1805,6 +2079,10 @@ function setupRealtimeSync() {
   listenRemote('fireplace-catalog', (val) => {
     try { fireplaces = JSON.parse(val); } catch (e) { return; }
     renderFireplaces();
+  });
+  listenRemote('calc-prices', (val) => {
+    try { priceOverrides = JSON.parse(val) || {}; } catch (e) { return; }
+    refreshAfterPriceChange();
   });
   listenRemote('calculations-data', (val) => {
     try { calculations = JSON.parse(val); } catch (e) { return; }
@@ -2140,17 +2418,27 @@ function renderBoard() {
     card.innerHTML = `
       <div class="board-check"><svg viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="3"><path d="M4 12l6 6L20 6"/></svg></div>
       <div class="board-card-text"></div>
+      ${(!isMobile && t.ref) ? `<div class="board-ref-row"><button class="board-ref-copy" type="button" title="Referentie ${t.ref} kopiêren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span></span></button></div>` : ''}
       <div class="board-card-foot">
         <div class="board-dots">
           ${[1,2,3,4,5].map(n => `<div class="board-dot ${n <= basePriority ? 'filled' : ''}" data-n="${n}"></div>`).join('')}
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
+        <div class="board-badge-group">
           ${dueShort ? `<div class="board-due-badge${isOverdue ? ' overdue' : ''}">${dueShort}</div>` : ''}
           ${totalSub > 0 ? `<div class="board-sub-badge">${doneSub}/${totalSub}</div>` : ''}
         </div>
       </div>
     `;
     card.querySelector('.board-card-text').textContent = t.text;
+    const boardRefBtn = card.querySelector('.board-ref-copy');
+    if (boardRefBtn) {
+      boardRefBtn.querySelector('span').textContent = t.ref;
+      boardRefBtn.addEventListener('pointerdown', e => e.stopPropagation());
+      boardRefBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        copyRefToClipboard(t.ref, boardRefBtn);
+      });
+    }
     card.querySelectorAll('.board-dot').forEach(dot => {
       dot.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2191,7 +2479,7 @@ function makeCardDraggable(card, t, board) {
   let startX = 0, startY = 0, startLeftPct = 0, startTopPct = 0, boardRect = null;
 
   card.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.board-check, .board-card-foot')) return;
+    if (e.target.closest('.board-check, .board-card-foot, .board-ref-row')) return;
     if (e.button !== undefined && e.button !== 0) return;
     dragging = true;
     boardRect = board.getBoundingClientRect();
@@ -2330,6 +2618,7 @@ function taskCard(t) {
         <div class="task-priority-row">
           ${[1,2,3,4,5].map(n => `<div class="board-dot ${n <= (t.priority || 3) ? 'filled' : ''}" data-n="${n}" title="Prioriteit ${n}"></div>`).join('')}
         </div>
+        <div class="task-ref-slot"></div>
         <div class="subtask-block" style="display:none"></div>
       </div>
       <div class="task-actions-col">
@@ -2339,6 +2628,7 @@ function taskCard(t) {
     </div>
   `;
   el.querySelector('.task-text').textContent = t.text;
+  renderTaskRef(el.querySelector('.task-ref-slot'), t);
   el.querySelector('.task-check').addEventListener('click', () => {
     t.done = !t.done;
     saveTasks();
@@ -2472,20 +2762,98 @@ function taskCard(t) {
   });
   return el;
 }
+function copyRefToClipboard(ref, btn) {
+  const done = () => {
+    if (!btn) return;
+    const label = btn.querySelector('span');
+    const orig = label ? label.textContent : '';
+    btn.classList.add('copied');
+    if (label) label.textContent = 'Gekopieerd';
+    setTimeout(() => { btn.classList.remove('copied'); if (label) label.textContent = orig; }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ref).then(done).catch(() => legacyCopy(ref, done));
+  } else {
+    legacyCopy(ref, done);
+  }
+}
+function legacyCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); cb(); } catch (e) { alert(text); }
+  ta.remove();
+}
+function renderTaskRef(slot, t) {
+  slot.innerHTML = '';
+  const editRef = () => {
+    slot.innerHTML = '';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'task-ref-input';
+    input.placeholder = 'Referentienummer';
+    input.value = t.ref || '';
+    slot.appendChild(input);
+    input.focus();
+    input.select();
+    let settled = false;
+    const commit = () => {
+      if (settled) return;
+      settled = true;
+      t.ref = input.value.trim() || null;
+      saveTasks();
+      renderTaskRef(slot, t);
+    };
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      if (e.key === 'Escape') { e.preventDefault(); settled = true; renderTaskRef(slot, t); }
+    });
+    input.addEventListener('blur', commit);
+  };
+  if (!t.ref) {
+    const add = document.createElement('div');
+    add.className = 'task-ref-add';
+    add.textContent = '+ referentienummer';
+    add.addEventListener('click', editRef);
+    slot.appendChild(add);
+    return;
+  }
+  const chip = document.createElement('div');
+  chip.className = 'task-ref-chip';
+  chip.innerHTML = `
+    <div class="task-ref-label">Referentie:</div>
+    <div class="task-ref-num" title="Klik om te wijzigen"></div>
+    <button class="task-ref-copy" type="button" title="Referentienummer kopiêren">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+      <span>Kopieer</span>
+    </button>
+  `;
+  const numEl = chip.querySelector('.task-ref-num');
+  numEl.textContent = t.ref;
+  numEl.addEventListener('click', editRef);
+  const btn = chip.querySelector('.task-ref-copy');
+  btn.addEventListener('click', () => copyRefToClipboard(t.ref, btn));
+  slot.appendChild(chip);
+}
 function addTask() {
   const input = document.getElementById('new-task-input');
+  const refInput = document.getElementById('new-task-ref');
   const dateInput = document.getElementById('new-task-date');
   const timeInput = document.getElementById('new-task-time');
   const text = input.value.trim();
   if (!text) return;
-  tasks.unshift({ id: 'task-' + Date.now(), text, done: false, createdAt: Date.now(), priority: 3, subtasks: [], dueDate: dateInput.value || null, dueTime: timeInput.value || null, reminderFired: false });
+  tasks.unshift({ id: 'task-' + Date.now(), text, ref: (refInput.value || '').trim() || null, done: false, createdAt: Date.now(), priority: 3, subtasks: [], dueDate: dateInput.value || null, dueTime: timeInput.value || null, reminderFired: false });
   input.value = '';
+  refInput.value = '';
   dateInput.value = '';
   timeInput.value = '';
   saveTasks();
   renderTasks();
   checkTaskReminders();
 }
+document.getElementById('new-task-ref').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
 document.getElementById('add-task-btn').addEventListener('click', addTask);
 document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
 
@@ -3555,6 +3923,16 @@ const CALC_CATALOG = [
     { key:'in16', label:'Puinbak 3 m3', price:350 },
   ]},
 ];
+const CALC_SECTION_ORDER = [
+  'ew_rvs', 'ew_zwart', 'dw_rvs', 'dw_zwart', 'cc_rvs', 'cc_zwart',
+  'afwerking',
+  'maatwerk', 'beton', 'renovatie',
+  'installatie',
+];
+CALC_CATALOG.sort((a, b) => {
+  const ia = CALC_SECTION_ORDER.indexOf(a.key), ib = CALC_SECTION_ORDER.indexOf(b.key);
+  return (ia < 0 ? 998 : ia) - (ib < 0 ? 998 : ib);
+});
 function fmtEUR(n) { return '\u20ac ' + (Math.round((n||0)*100)/100).toLocaleString('nl-NL', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function calcSectionTotal(calc, sectionKey) {
   const section = CALC_CATALOG.find(s => s.key === sectionKey);
@@ -3581,18 +3959,150 @@ function calcGrandTotal(calc) {
   return t;
 }
 let calcOpenSections = new Set();
-const CALC_SEARCH_INDEX = CALC_CATALOG.flatMap(section => section.items.filter(it => it.key).map(it => ({ section: section.key, sectionLabel: section.label, key: it.key, label: it.label, price: it.price })));
+function buildCalcSearchIndex() {
+  return CALC_CATALOG.flatMap(section => section.items.filter(it => it.key).map(it => ({ section: section.key, sectionLabel: section.label, key: it.key, label: it.label, price: it.price })));
+}
+let CALC_SEARCH_INDEX = buildCalcSearchIndex();
+
+// ---------- Prijzenbeheer (overrides op de standaardprijslijst) ----------
+let priceOverrides = {};
+function priceKey(sectionKey, itemKey) { return sectionKey + '.' + itemKey; }
+function applyPriceOverrides() {
+  CALC_CATALOG.forEach(s => s.items.forEach(it => {
+    if (!it.key) return;
+    if (it.basePrice === undefined) it.basePrice = it.price;
+    const ov = priceOverrides[priceKey(s.key, it.key)];
+    const num = parseFloat(ov);
+    it.price = (ov === undefined || ov === null || ov === '' || isNaN(num)) ? it.basePrice : num;
+  }));
+  CALC_SEARCH_INDEX = buildCalcSearchIndex();
+}
+async function savePriceOverrides() {
+  setSaveStatus('saving', 'Opslaan…');
+  pendingSaveCount++;
+  try {
+    await storageSet('calc-prices', JSON.stringify(priceOverrides));
+    setSaveStatus('saved', 'Opgeslagen');
+  } catch (e) {
+    console.error('Opslaan prijzen mislukt', e);
+    setSaveStatus('error', 'Opslaan mislukt');
+  } finally {
+    pendingSaveCount--;
+  }
+}
+function refreshAfterPriceChange() {
+  applyPriceOverrides();
+  if (window.__editingCalc && document.getElementById('calc-editor-panel').style.display !== 'none') {
+    renderCalcCatalogSections();
+    updateCalcTotals();
+  }
+  renderCalcList();
+  renderPriceManager();
+}
+let priceFilterQuery = '';
+function renderPriceManager() {
+  const wrap = document.getElementById('calc-prices-list');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const q = priceFilterQuery.trim().toLowerCase();
+  let shown = 0;
+  CALC_CATALOG.forEach(section => {
+    const items = section.items.filter(it => it.key && (!q || (it.label + ' ' + section.label).toLowerCase().includes(q)));
+    if (!items.length) return;
+    const det = document.createElement('details');
+    det.className = 'calc-section';
+    det.open = !!q;
+    const changed = items.filter(it => priceOverrides[priceKey(section.key, it.key)] !== undefined).length;
+    det.innerHTML = `<summary>${section.label} <span class="calc-section-sub">${changed ? changed + ' aangepast' : items.length + ' regels'}</span></summary><div class="calc-rows"></div>`;
+    const rows = det.querySelector('.calc-rows');
+    items.forEach(it => {
+      shown++;
+      const k = priceKey(section.key, it.key);
+      const isOv = priceOverrides[k] !== undefined;
+      const row = document.createElement('div');
+      row.className = 'price-row' + (isOv ? ' changed' : '');
+      row.innerHTML = `
+        <div class="price-row-label"></div>
+        <div class="price-row-base">standaard ${fmtEUR(it.basePrice)}</div>
+        <input class="price-row-input" type="number" step="0.01" min="0" inputmode="decimal" value="${it.price}" />
+        <button class="price-row-reset" type="button" title="Terug naar standaardprijs" ${isOv ? '' : 'disabled'}>↺</button>
+      `;
+      row.querySelector('.price-row-label').textContent = it.label;
+      const input = row.querySelector('.price-row-input');
+      input.addEventListener('change', () => {
+        const v = parseFloat(input.value);
+        if (isNaN(v)) { input.value = it.price; return; }
+        if (v === it.basePrice) delete priceOverrides[k]; else priceOverrides[k] = v;
+        savePriceOverrides();
+        refreshAfterPriceChange();
+      });
+      row.querySelector('.price-row-reset').addEventListener('click', () => {
+        delete priceOverrides[k];
+        savePriceOverrides();
+        refreshAfterPriceChange();
+      });
+      rows.appendChild(row);
+    });
+    wrap.appendChild(det);
+  });
+  if (!shown) wrap.innerHTML = '<div class="calc-empty">Geen onderdelen gevonden.</div>';
+  const stat = document.getElementById('calc-prices-stat');
+  if (stat) {
+    const n = Object.keys(priceOverrides).length;
+    stat.textContent = n ? `${n} prijs${n === 1 ? '' : 'zen'} aangepast t.o.v. standaard` : 'Alle prijzen staan op standaard';
+  }
+}
+function exportPriceFile() {
+  const payload = { type: 'jos-harm-prijzen', version: 1, exportedAt: new Date().toISOString(), prices: {} };
+  CALC_CATALOG.forEach(s => s.items.forEach(it => {
+    if (it.key) payload.prices[priceKey(s.key, it.key)] = { omschrijving: s.label + ' — ' + it.label, prijs: it.price };
+  }));
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'prijzen-jos-harm.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function importPriceFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try { data = JSON.parse(reader.result); } catch (e) { alert('Dit bestand kon niet gelezen worden (geen geldig prijzenbestand).'); return; }
+    const prices = data && data.prices ? data.prices : data;
+    if (!prices || typeof prices !== 'object') { alert('Geen prijzen gevonden in dit bestand.'); return; }
+    let applied = 0;
+    CALC_CATALOG.forEach(s => s.items.forEach(it => {
+      if (!it.key) return;
+      const k = priceKey(s.key, it.key);
+      const entry = prices[k];
+      if (entry === undefined) return;
+      const v = parseFloat(typeof entry === 'object' ? entry.prijs : entry);
+      if (isNaN(v)) return;
+      applied++;
+      if (v === it.basePrice) delete priceOverrides[k]; else priceOverrides[k] = v;
+    }));
+    savePriceOverrides();
+    refreshAfterPriceChange();
+    alert(`${applied} prijzen ingelezen uit het bestand.`);
+  };
+  reader.readAsText(file);
+}
 function renderCalcSearchResults(query) {
   const wrap = document.getElementById('calc-search-results');
+  const box = document.querySelector('.calc-searchbox');
   const calc = window.__editingCalc;
-  if (!query || query.trim().length < 2) { wrap.innerHTML = ''; return; }
-  const q = query.trim().toLowerCase();
-  const matches = CALC_SEARCH_INDEX.filter(it => it.label.toLowerCase().includes(q)).slice(0, 25);
+  const raw = (query || '').trim();
+  if (box) box.classList.toggle('has-query', !!raw);
+  if (!raw) { wrap.innerHTML = ''; return; }
+  const q = raw.toLowerCase();
+  const matches = CALC_SEARCH_INDEX.filter(it => (it.label + ' ' + it.sectionLabel).toLowerCase().includes(q)).slice(0, 25);
   if (!matches.length) { wrap.innerHTML = '<div class="calc-search-empty">Geen producten gevonden.</div>'; return; }
-  wrap.innerHTML = matches.map(it => {
+  wrap.innerHTML = matches.map((it, i) => {
     const qty = (calc.qty[it.section] && calc.qty[it.section][it.key]) || 0;
     return `
-      <div class="calc-search-row" data-section="${it.section}" data-key="${it.key}">
+      <div class="calc-search-row${i === 0 ? ' active' : ''}" data-section="${it.section}" data-key="${it.key}">
         <div class="calc-search-row-main">
           <div class="calc-search-row-label">${it.label}</div>
           <div class="calc-search-row-meta">${it.sectionLabel} \u00b7 ${fmtEUR(it.price)}${qty ? ' \u00b7 in calculatie: ' + qty : ''}</div>
@@ -3615,11 +4125,33 @@ function renderCalcSearchResults(query) {
     });
   });
 }
+document.getElementById('calc-search-clear').addEventListener('click', () => {
+  const inp = document.getElementById('calc-search-input');
+  inp.value = '';
+  renderCalcSearchResults('');
+  inp.focus();
+});
 document.getElementById('calc-search-input').addEventListener('input', (e) => renderCalcSearchResults(e.target.value));
-document.getElementById('calc-diam-filter').addEventListener('change', (e) => {
-  calcDiamFilter = e.target.value;
-  renderCalcCatalogSections();
-  updateCalcTotals();
+document.getElementById('calc-search-input').addEventListener('keydown', (e) => {
+  const rows = Array.from(document.querySelectorAll('#calc-search-results .calc-search-row'));
+  if (e.key === 'Escape') { e.target.value = ''; renderCalcSearchResults(''); return; }
+  if (!rows.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const cur = rows.findIndex(r => r.classList.contains('active'));
+    const next = e.key === 'ArrowDown' ? Math.min(rows.length - 1, cur + 1) : Math.max(0, cur - 1);
+    rows.forEach(r => r.classList.remove('active'));
+    rows[next].classList.add('active');
+    rows[next].scrollIntoViewIfNeeded ? rows[next].scrollIntoViewIfNeeded() : null;
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const row = rows.find(r => r.classList.contains('active')) || rows[0];
+    row.querySelector('.calc-search-add').click();
+  }
+});
+document.addEventListener('pointerdown', (e) => {
+  const box = document.querySelector('.calc-searchbox');
+  if (box && !box.contains(e.target)) document.getElementById('calc-search-results').innerHTML = '';
 });
 function newCalc() {
   return { id: 'calc-' + Date.now(), clientId: '', clientName: '', date: new Date().toISOString().slice(0,10), products: [{ label: 'Haard / model', price: 0 }], qty: {}, status: 'concept', createdAt: Date.now(), versions: [] };
@@ -3664,7 +4196,8 @@ function renderRecentProducts() {
   try { recent = JSON.parse(localStorage.getItem(RECENT_PRODUCTS_KEY)) || []; } catch (e) {}
   const calc = window.__editingCalc;
   const items = recent.map(r => CALC_SEARCH_INDEX.find(it => it.section === r.section && it.key === r.key)).filter(Boolean);
-  if (!items.length) { wrap.innerHTML = ''; return; }
+  if (!items.length) { wrap.innerHTML = ''; if (wrap.parentElement) wrap.parentElement.style.display = 'none'; return; }
+  if (wrap.parentElement) wrap.parentElement.style.display = '';
   wrap.innerHTML = '<span style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--smoke);align-self:center">Recent:</span>' + items.map(it => `<div class="calc-chip" data-section="${it.section}" data-key="${it.key}">${it.label}</div>`).join('');
   wrap.querySelectorAll('.calc-chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -3851,14 +4384,150 @@ function renderCalcProducts() {
   });
 }
 let calcDiamFilter = '';
+let calcChannelFilter = '';
+const CHANNEL_GROUPS = [
+  { key: 'ew', label: 'Enkelwandig' },
+  { key: 'dw', label: 'Dubbelwandig' },
+  { key: 'cc', label: 'Concentrisch' },
+];
+function visibleCalcSections() {
+  return CALC_CATALOG.filter(s => {
+    const m = /^(ew|dw|cc)_/.exec(s.key);
+    if (!m) return true;
+    return !calcChannelFilter || m[1] === calcChannelFilter;
+  });
+}
+function availableDiameters() {
+  const set = [];
+  visibleCalcSections().forEach(s => s.items.forEach(it => { if (it.diam && !set.includes(it.diam)) set.push(it.diam); }));
+  const order = ['\u00d8125mm','\u00d8150mm','\u00d8200mm','\u00d8250mm','100/150mm','130/200mm'];
+  return set.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+}
+function renderCalcFilters() {
+  const calc = window.__editingCalc;
+  if (!calc) return;
+  const chanRow = document.getElementById('calc-channel-row');
+  chanRow.innerHTML = '<span class="calc-flabel">Kanaal</span>'
+    + `<button type="button" class="calc-fchip${calcChannelFilter ? '' : ' active'}" data-chan="">Alle</button>`
+    + CHANNEL_GROUPS.map(g => `<button type="button" class="calc-fchip${calcChannelFilter === g.key ? ' active' : ''}" data-chan="${g.key}">${g.label}</button>`).join('');
+  chanRow.querySelectorAll('.calc-fchip').forEach(btn => btn.addEventListener('click', () => {
+    calcChannelFilter = btn.dataset.chan;
+    if (calcDiamFilter && !availableDiameters().includes(calcDiamFilter)) calcDiamFilter = '';
+    renderCalcCatalogSections();
+    renderCalcFilters();
+    updateCalcTotals();
+  }));
+
+  const diams = availableDiameters();
+  const diamRow = document.getElementById('calc-diam-row');
+  diamRow.innerHTML = '<span class="calc-flabel">Diameter</span>'
+    + `<button type="button" class="calc-fchip${calcDiamFilter ? '' : ' active'}" data-diam="">Alle</button>`
+    + diams.map(d => `<button type="button" class="calc-fchip${calcDiamFilter === d ? ' active' : ''}" data-diam="${d}">${d}</button>`).join('');
+  diamRow.querySelectorAll('.calc-fchip').forEach(btn => btn.addEventListener('click', () => {
+    calcDiamFilter = btn.dataset.diam;
+    renderCalcCatalogSections();
+    renderCalcFilters();
+    updateCalcTotals();
+  }));
+
+  const jumpRow = document.getElementById('calc-jump-row');
+  jumpRow.innerHTML = '<span class="calc-flabel">Ga naar</span>'
+    + visibleCalcSections().map(s => {
+        const t = calcSectionTotal(calc, s.key) + (s.key === 'installatie' ? calcInstallatieAutoTotal(calc) : 0);
+        return `<button type="button" class="calc-fchip${t ? ' has-amount' : ''}" data-jump="${s.key}">${s.label}${t ? `<span class="calc-fchip-amount">${fmtEUR(t)}</span>` : ''}</button>`;
+      }).join('');
+  jumpRow.querySelectorAll('.calc-fchip').forEach(btn => btn.addEventListener('click', () => {
+    const key = btn.dataset.jump;
+    const det = document.getElementById('calc-sec-' + key);
+    if (!det) return;
+    calcOpenSections.add(key);
+    det.open = true;
+    const top = det.getBoundingClientRect().top + window.scrollY - (document.querySelector('.calc-stickybar').offsetHeight + 24);
+    window.scrollTo({ top, behavior: 'smooth' });
+    det.classList.add('flash');
+    setTimeout(() => det.classList.remove('flash'), 900);
+  }));
+}
+function calcSelectedLines() {
+  const calc = window.__editingCalc;
+  const lines = [];
+  if (!calc) return lines;
+  CALC_CATALOG.forEach(s => {
+    const qty = calc.qty[s.key] || {};
+    s.items.forEach(it => {
+      const q = parseFloat(qty[it.key]);
+      if (it.key && q) lines.push({ section: s.key, sectionLabel: s.label, key: it.key, label: it.label, price: it.price, qty: q });
+    });
+  });
+  return lines;
+}
+function renderCalcSelected() {
+  const wrap = document.getElementById('calc-selected-list');
+  if (!wrap) return;
+  const calc = window.__editingCalc;
+  const lines = calcSelectedLines();
+  const countEl = document.getElementById('calc-selected-count');
+  if (countEl) countEl.textContent = lines.length ? `${lines.length} regel${lines.length === 1 ? '' : 's'}` : 'nog leeg';
+  wrap.innerHTML = '';
+  if (!lines.length) {
+    wrap.innerHTML = '<div class="calc-empty" style="padding:14px 16px">Nog niets gekozen — zoek hierboven of open een onderdeel.</div>';
+    return;
+  }
+  lines.forEach(l => {
+    const row = document.createElement('div');
+    row.className = 'calc-selected-row';
+    row.innerHTML = `
+      <div class="calc-selected-label">
+        <div></div>
+        <div class="calc-selected-sub">${l.sectionLabel} · ${fmtEUR(l.price)}</div>
+      </div>
+      <div class="calc-selected-qty">
+        <button type="button" data-step="-1">−</button><span>${l.qty}</span><button type="button" data-step="1">+</button>
+      </div>
+      <div class="calc-selected-amount">${fmtEUR(l.qty * l.price)}</div>
+      <div class="calc-selected-del" title="Verwijderen">&times;</div>
+    `;
+    row.querySelector('.calc-selected-label > div').textContent = l.label;
+    row.querySelector('.calc-selected-label').addEventListener('click', () => {
+      const m = /^(ew|dw|cc)_/.exec(l.section);
+      if (m && calcChannelFilter && m[1] !== calcChannelFilter) {
+        calcChannelFilter = m[1];
+        if (calcDiamFilter && !availableDiameters().includes(calcDiamFilter)) calcDiamFilter = '';
+        renderCalcCatalogSections();
+        renderCalcFilters();
+      }
+      const det = document.getElementById('calc-sec-' + l.section);
+      if (!det) return;
+      calcOpenSections.add(l.section);
+      det.open = true;
+      const top = det.getBoundingClientRect().top + window.scrollY - (document.querySelector('.calc-stickybar').offsetHeight + 24);
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+    row.querySelectorAll('.calc-selected-qty button').forEach(b => b.addEventListener('click', () => {
+      const step = parseFloat(b.dataset.step);
+      const cur = parseFloat(calc.qty[l.section][l.key]) || 0;
+      const next = Math.max(0, cur + step);
+      if (next) calc.qty[l.section][l.key] = next; else delete calc.qty[l.section][l.key];
+      renderCalcCatalogSections();
+      updateCalcTotals();
+    }));
+    row.querySelector('.calc-selected-del').addEventListener('click', () => {
+      delete calc.qty[l.section][l.key];
+      renderCalcCatalogSections();
+      updateCalcTotals();
+    });
+    wrap.appendChild(row);
+  });
+}
 function renderCalcCatalogSections() {
   const wrap = document.getElementById('calc-catalog-sections');
   wrap.innerHTML = '';
   const calc = window.__editingCalc;
-  CALC_CATALOG.forEach(section => {
+  visibleCalcSections().forEach(section => {
     if (!calc.qty[section.key]) calc.qty[section.key] = {};
     const det = document.createElement('details');
     det.className = 'calc-section';
+    det.id = 'calc-sec-' + section.key;
     det.open = calcOpenSections.has(section.key);
     det.addEventListener('toggle', () => { if (det.open) calcOpenSections.add(section.key); else calcOpenSections.delete(section.key); });
     det.innerHTML = `<summary>${section.label} <span class="calc-section-sub" data-sub="${section.key}">\u20ac 0</span></summary><div class="calc-rows"></div>`;
@@ -3926,6 +4595,8 @@ function updateCalcTotals() {
   if (grandEl) grandEl.textContent = fmtEUR(calcGrandTotal(calc));
   const stickyEl = document.getElementById('calc-sticky-total-num');
   if (stickyEl) stickyEl.textContent = fmtEUR(calcGrandTotal(calc));
+  renderCalcSelected();
+  renderCalcFilters();
 }
 function migrateCalcQtySections(calc) {
   const map = { ew: ['ew_rvs','ew_zwart'], dw: ['dw_rvs','dw_zwart'], cc: ['cc_rvs','cc_zwart'] };
@@ -3942,6 +4613,8 @@ function migrateCalcQtySections(calc) {
   });
 }
 function openCalcEditor(calc) {
+  const pricesPanel = document.getElementById('calc-prices-panel');
+  if (pricesPanel) pricesPanel.style.display = 'none';
   editingCalcId = calc.id;
   document.getElementById('calc-list-panel').style.display = 'none';
   document.getElementById('calc-editor-panel').style.display = 'block';
@@ -3953,8 +4626,9 @@ function openCalcEditor(calc) {
   calcOpenSections = new Set();
   document.getElementById('calc-search-input').value = '';
   document.getElementById('calc-search-results').innerHTML = '';
-  document.getElementById('calc-diam-filter').value = '';
+  document.querySelector('.calc-searchbox').classList.remove('has-query');
   calcDiamFilter = '';
+  calcChannelFilter = '';
   renderCalcPresets();
   renderRecentProducts();
   populateCalcClientSelect();
@@ -3963,9 +4637,12 @@ function openCalcEditor(calc) {
   document.getElementById('calc-delete-btn').style.display = calculations.some(c => c.id === calc.id) ? 'inline-block' : 'none';
   renderCalcProducts();
   renderCalcCatalogSections();
+  renderCalcFilters();
   updateCalcTotals();
 }
 function closeCalcEditor() {
+  const pp = document.getElementById('calc-prices-panel');
+  if (pp) pp.style.display = 'none';
   document.getElementById('calc-editor-panel').style.display = 'none';
   document.getElementById('calc-list-panel').style.display = 'block';
   editingCalcId = null;
@@ -3987,6 +4664,34 @@ async function saveCalcDraftSilently() {
   await saveCalculations();
 }
 document.getElementById('calc-new-btn').addEventListener('click', () => openCalcEditor(newCalc()));
+document.getElementById('calc-prices-btn').addEventListener('click', () => {
+  document.getElementById('calc-list-panel').style.display = 'none';
+  document.getElementById('calc-editor-panel').style.display = 'none';
+  document.getElementById('calc-prices-panel').style.display = 'block';
+  renderPriceManager();
+});
+document.getElementById('calc-prices-back-btn').addEventListener('click', () => {
+  document.getElementById('calc-prices-panel').style.display = 'none';
+  document.getElementById('calc-list-panel').style.display = 'block';
+});
+document.getElementById('calc-prices-search').addEventListener('input', (e) => {
+  priceFilterQuery = e.target.value;
+  renderPriceManager();
+});
+document.getElementById('calc-prices-export').addEventListener('click', exportPriceFile);
+document.getElementById('calc-prices-import').addEventListener('click', () => document.getElementById('calc-prices-file').click());
+document.getElementById('calc-prices-file').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (file) importPriceFile(file);
+  e.target.value = '';
+});
+document.getElementById('calc-prices-reset').addEventListener('click', () => {
+  if (!Object.keys(priceOverrides).length) return;
+  if (!confirm('Alle aangepaste prijzen terugzetten naar de standaardprijslijst?')) return;
+  priceOverrides = {};
+  savePriceOverrides();
+  refreshAfterPriceChange();
+});
 document.getElementById('calc-back-btn').addEventListener('click', async () => {
   await saveCalcDraftSilently();
   closeCalcEditor();
