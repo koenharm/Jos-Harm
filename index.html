@@ -236,7 +236,26 @@
   .board-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--hairline); cursor: pointer; transition: transform 0.12s ease; }
   .board-dot.filled { background: radial-gradient(circle at 35% 30%, #EAD3A0, var(--ember)); box-shadow: 0 0 4px rgba(211,177,115,0.6); }
   .board-dot:hover { transform: scale(1.2); }
-  .board-sub-badge { font-family: 'League Spartan', sans-serif; font-size: 10px; color: var(--smoke); }
+  .board-sub-badge { font-family: 'League Spartan', sans-serif; font-size: 10px; color: var(--smoke); cursor: pointer; border-bottom: 1px dotted var(--hairline); }
+  .board-sub-badge:hover { color: var(--ember); }
+  .board-subs { display: flex; flex-direction: column; gap: 4px; margin-top: 7px; padding-top: 6px; border-top: 1px solid var(--hairline); }
+  .board-sub-row { display: flex; align-items: flex-start; gap: 6px; }
+  .board-sub-check {
+    width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--smoke); flex-shrink: 0;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .board-sub-check.checked { background: var(--brass); border-color: var(--brass); }
+  .board-sub-check svg { display: none; width: 7px; height: 7px; }
+  .board-sub-check.checked svg { display: block; }
+  .board-sub-text { font-size: 0.82em; line-height: 1.35; color: var(--paper); min-width: 0; }
+  .board-sub-row.done .board-sub-text { text-decoration: line-through; color: var(--smoke); }
+  .board-sub-more { font-family: 'League Spartan', sans-serif; font-size: 0.75em; color: var(--smoke); cursor: pointer; padding-left: 18px; }
+  .board-sub-more:hover { color: var(--ember); }
+  @media (max-width: 780px) {
+    .board-sub-check { width: 18px; height: 18px; }
+    .board-sub-check svg { width: 10px; height: 10px; }
+    .board-sub-text { font-size: 13px; }
+  }
   .board-due-badge {
     font-family: 'League Spartan', sans-serif; font-size: 9.5px; font-weight: 600; color: var(--ember-dim);
   }
@@ -253,7 +272,8 @@
   .board-card.charring { pointer-events: none; }
   .board-card.charring .board-card-text,
   .board-card.charring .board-ref-row,
-  .board-card.charring .board-card-foot { animation: contentFade 0.9s ease forwards; }
+  .board-card.charring .board-card-foot,
+  .board-card.charring .board-subs { animation: contentFade 0.9s ease forwards; }
   @keyframes contentFade {
     0% { opacity: 1; }
     45% { opacity: 1; }
@@ -341,6 +361,11 @@
   .task-add input[type="time"] { flex: 0 0 110px; color-scheme: light; padding-left: 32px; }
   .task-add input:focus { outline: none; border-color: var(--ember); }
   .task-add input.task-add-ref { flex: 0 0 190px; font-family: 'League Spartan', sans-serif; letter-spacing: 0.04em; }
+  .task-add select.task-add-client {
+    flex: 0 0 200px; background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 11px 12px; color: var(--paper); font-family: inherit; font-size: 13px;
+  }
+  .task-add select.task-add-client:focus { outline: none; border-color: var(--ember); }
   .task-ref-chip {
     display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
     background: var(--panel-raised); border: 1px solid var(--hairline); border-radius: 5px;
@@ -402,7 +427,51 @@
   .task-body { flex: 1; }
   .task-text { font-size: 13.5px; line-height: 1.45; }
   .task-card.done .task-text { text-decoration: line-through; color: var(--smoke); }
-  .task-meta-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .task-meta-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap; }
+  .task-client {
+    display: inline-flex; align-items: center; gap: 5px; font-family: 'League Spartan', sans-serif;
+    font-size: 10px; letter-spacing: 0.03em; color: var(--smoke); cursor: pointer; border-bottom: 1px dotted var(--hairline);
+  }
+  .task-client.set { color: var(--brass); border-bottom-color: var(--brass); }
+  .task-client:hover { color: var(--ember); }
+  .task-client svg { width: 11px; height: 11px; }
+  .task-client-select { font-family: inherit; font-size: 11px; background: var(--soot); color: var(--paper); border: 1px solid var(--ember); border-radius: 5px; padding: 4px 6px; max-width: 220px; }
+  .board-client { font-family: 'League Spartan', sans-serif; font-size: 0.78em; color: var(--brass); margin-top: 5px; letter-spacing: 0.03em; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
+  .board-client:hover { color: var(--ember); }
+  .task-client-slot { display: inline-flex; align-items: center; }
+  .task-client-edit { font-family: 'League Spartan', sans-serif; font-size: 9.5px; color: var(--smoke); cursor: pointer; margin-left: 5px; }
+  .task-client-edit:hover { color: var(--ember); }
+  .client-task-badge {
+    font-family: 'League Spartan', sans-serif; font-size: 9.5px; letter-spacing: 0.04em;
+    color: var(--brass); border: 1px solid var(--hairline); border-radius: 4px; padding: 2px 5px;
+  }
+  .client-tasks { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+  .client-task-row { display: flex; align-items: flex-start; gap: 9px; }
+  .client-task-check {
+    width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid var(--smoke); flex-shrink: 0; margin-top: 2px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .client-task-check.checked { background: var(--brass); border-color: var(--brass); }
+  .client-task-check svg { display: none; width: 9px; height: 9px; }
+  .client-task-check.checked svg { display: block; }
+  .client-task-body { min-width: 0; flex: 1; }
+  .client-task-text { font-size: 13px; line-height: 1.4; }
+  .client-task-row.done .client-task-text { text-decoration: line-through; color: var(--smoke); }
+  .client-task-meta { font-family: 'League Spartan', sans-serif; font-size: 10px; color: var(--smoke); margin-top: 2px; display: flex; gap: 9px; flex-wrap: wrap; }
+  .client-task-meta .overdue { color: var(--danger); }
+  .client-task-sub { font-size: 11.5px; color: var(--paper-dim); padding-left: 3px; margin-top: 3px; line-height: 1.45; }
+  .client-task-add { display: flex; gap: 7px; margin-top: 11px; }
+  .client-task-add input {
+    flex: 1; background: var(--soot); border: 1px solid var(--hairline); border-radius: 5px;
+    padding: 8px 10px; color: var(--paper); font-family: inherit; font-size: 12.5px;
+  }
+  .client-task-add input:focus { outline: none; border-color: var(--ember); }
+  @media (max-width: 780px) {
+    .client-task-check { width: 22px; height: 22px; }
+    .client-task-check svg { width: 12px; height: 12px; }
+    .client-task-add input { min-height: 44px; font-size: 16px; }
+    .task-client { font-size: 11.5px; }
+  }
   .task-meta { font-family: 'League Spartan', sans-serif; font-size: 10px; color: var(--smoke); }
   .task-due {
     font-family: 'League Spartan', sans-serif; font-size: 10px; color: var(--smoke); cursor: pointer;
@@ -1262,7 +1331,10 @@
       </div>
       <div class="task-add">
         <input type="text" id="new-task-input" placeholder="Nieuwe taak, bijv. 'Offerte Kalfire nasturen naar dhr. Jansen'…" />
-        <input type="text" id="new-task-ref" class="task-add-ref" placeholder="Referentienr. (optioneel)" autocomplete="off" />
+        <input type="text" id="new-task-ref" class="task-add-ref" placeholder="Referentienr. (optioneel)" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+        <select id="new-task-client" class="task-add-client" title="Koppel aan klant (optioneel)">
+          <option value="">Losse taak</option>
+        </select>
         <div class="task-add-datetime">
           <span class="datetime-field">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -1654,6 +1726,15 @@
       <div class="detail-value" id="detail-notes"></div>
     </div>
 
+    <div class="detail-block" id="detail-tasks-block">
+      <div class="detail-label">Taken bij deze klant</div>
+      <div class="client-tasks" id="detail-tasks"></div>
+      <div class="client-task-add">
+        <input type="text" id="detail-task-input" placeholder="Nieuwe taak voor deze klant…" />
+        <button class="btn btn-sm btn-primary" id="detail-task-add-btn">+</button>
+      </div>
+    </div>
+
     <div class="project-section" id="project-section" style="display:none">
       <div class="detail-label">Afgeronde project — foto's</div>
       <div class="detail-photos" id="project-photos"></div>
@@ -1849,6 +1930,7 @@ let detailClientId = null;
 let editingFireplaceId = null;
 let pendingPhotos = [];
 let expandedSubtasks = new Set();
+let expandedBoardSubs = new Set();
 let reminderMinutes = 30;
 
 const PHASES = [
@@ -2029,7 +2111,7 @@ async function loadData() {
     const t = await storageGet('tasks-data');
     tasks = t ? JSON.parse(t.value) : [];
   } catch (e) { console.error('Laden taken mislukt', e); tasks = []; }
-  tasks.forEach(t => { if (!t.priority) t.priority = 3; if (!t.subtasks) t.subtasks = []; if (t.dueDate === undefined) t.dueDate = null; if (t.dueTime === undefined) t.dueTime = null; if (t.reminderFired === undefined) t.reminderFired = false; });
+  tasks.forEach(t => { if (!t.priority) t.priority = 3; if (!t.subtasks) t.subtasks = []; if (t.clientId === undefined) t.clientId = null; if (t.dueDate === undefined) t.dueDate = null; if (t.dueTime === undefined) t.dueTime = null; if (t.reminderFired === undefined) t.reminderFired = false; });
   try {
     const c = await storageGet('clients-data');
     clients = c ? JSON.parse(c.value) : [];
@@ -2068,8 +2150,8 @@ function setupRealtimeSync() {
   if (!fbReady) return;
   listenRemote('tasks-data', (val) => {
     try { tasks = JSON.parse(val); } catch (e) { return; }
-    tasks.forEach(t => { if (!t.priority) t.priority = 3; if (!t.subtasks) t.subtasks = []; if (t.dueDate === undefined) t.dueDate = null; if (t.dueTime === undefined) t.dueTime = null; if (t.reminderFired === undefined) t.reminderFired = false; });
-    renderTasks(); renderBoard(); checkTaskReminders();
+    tasks.forEach(t => { if (!t.priority) t.priority = 3; if (!t.subtasks) t.subtasks = []; if (t.clientId === undefined) t.clientId = null; if (t.dueDate === undefined) t.dueDate = null; if (t.dueTime === undefined) t.dueTime = null; if (t.reminderFired === undefined) t.reminderFired = false; });
+    renderTasks(); renderBoard(); renderClients(); checkTaskReminders();
   });
   listenRemote('clients-data', (val) => {
     try { clients = JSON.parse(val); } catch (e) { return; }
@@ -2418,6 +2500,7 @@ function renderBoard() {
     card.innerHTML = `
       <div class="board-check"><svg viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="3"><path d="M4 12l6 6L20 6"/></svg></div>
       <div class="board-card-text"></div>
+      ${clientById(t.clientId) ? '<div class="board-client"></div>' : ''}
       ${(!isMobile && t.ref) ? `<div class="board-ref-row"><button class="board-ref-copy" type="button" title="Referentie ${t.ref} kopiêren"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span></span></button></div>` : ''}
       <div class="board-card-foot">
         <div class="board-dots">
@@ -2425,11 +2508,75 @@ function renderBoard() {
         </div>
         <div class="board-badge-group">
           ${dueShort ? `<div class="board-due-badge${isOverdue ? ' overdue' : ''}">${dueShort}</div>` : ''}
-          ${totalSub > 0 ? `<div class="board-sub-badge">${doneSub}/${totalSub}</div>` : ''}
+          ${totalSub > 0 ? `<div class="board-sub-badge" title="Subtaken tonen/verbergen">${doneSub}/${totalSub}</div>` : ''}
         </div>
       </div>
+      ${totalSub > 0 ? '<div class="board-subs"></div>' : ''}
     `;
     card.querySelector('.board-card-text').textContent = t.text;
+    const boardClientEl = card.querySelector('.board-client');
+    if (boardClientEl) {
+      const bc = clientById(t.clientId);
+      boardClientEl.textContent = bc ? (bc.name || 'Naamloos') : '';
+      boardClientEl.title = 'Klantinformatie openen';
+      boardClientEl.addEventListener('pointerdown', e => e.stopPropagation());
+      boardClientEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (bc) openDetail(bc.id);
+      });
+    }
+
+    const subsWrap = card.querySelector('.board-subs');
+    if (subsWrap) {
+      const COLLAPSED = 2;
+      const renderCardSubs = () => {
+        subsWrap.innerHTML = '';
+        const expanded = expandedBoardSubs.has(t.id);
+        const list = (t.subtasks || []);
+        const openFirst = [...list].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+        const shown = expanded ? openFirst : openFirst.slice(0, COLLAPSED);
+        shown.forEach(s => {
+          const row = document.createElement('div');
+          row.className = 'board-sub-row' + (s.done ? ' done' : '');
+          row.innerHTML = `<div class="board-sub-check ${s.done ? 'checked' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="4"><path d="M4 12l6 6L20 6"/></svg></div><div class="board-sub-text"></div>`;
+          row.querySelector('.board-sub-text').textContent = s.text;
+          row.querySelector('.board-sub-check').addEventListener('pointerdown', e => e.stopPropagation());
+          row.querySelector('.board-sub-check').addEventListener('click', (e) => {
+            e.stopPropagation();
+            s.done = !s.done;
+            saveTasks();
+            renderBoard();
+            renderTasks();
+          });
+          subsWrap.appendChild(row);
+        });
+        const hidden = openFirst.length - shown.length;
+        if (hidden > 0 || expanded) {
+          const more = document.createElement('div');
+          more.className = 'board-sub-more';
+          more.textContent = expanded ? 'minder tonen' : `+ ${hidden} meer`;
+          more.addEventListener('pointerdown', e => e.stopPropagation());
+          more.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (expandedBoardSubs.has(t.id)) expandedBoardSubs.delete(t.id);
+            else expandedBoardSubs.add(t.id);
+            renderCardSubs();
+          });
+          subsWrap.appendChild(more);
+        }
+      };
+      renderCardSubs();
+      const subBadge = card.querySelector('.board-sub-badge');
+      if (subBadge) {
+        subBadge.addEventListener('pointerdown', e => e.stopPropagation());
+        subBadge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (expandedBoardSubs.has(t.id)) expandedBoardSubs.delete(t.id);
+          else expandedBoardSubs.add(t.id);
+          renderCardSubs();
+        });
+      }
+    }
     const boardRefBtn = card.querySelector('.board-ref-copy');
     if (boardRefBtn) {
       boardRefBtn.querySelector('span').textContent = t.ref;
@@ -2479,7 +2626,7 @@ function makeCardDraggable(card, t, board) {
   let startX = 0, startY = 0, startLeftPct = 0, startTopPct = 0, boardRect = null;
 
   card.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.board-check, .board-card-foot, .board-ref-row')) return;
+    if (e.target.closest('.board-check, .board-card-foot, .board-ref-row, .board-subs')) return;
     if (e.button !== undefined && e.button !== 0) return;
     dragging = true;
     boardRect = board.getBoundingClientRect();
@@ -2614,6 +2761,7 @@ function taskCard(t) {
           <div class="task-meta">${dateStr}</div>
           <div class="task-due${isOverdue ? ' overdue' : ''}${t.dueDate ? ' set' : ''}">${dueLabel}</div>
           <div class="subtask-link">${totalSub > 0 ? `Subtaken (${doneSub}/${totalSub})` : '+ subtaak toevoegen'}</div>
+          <div class="task-client-slot"></div>
         </div>
         <div class="task-priority-row">
           ${[1,2,3,4,5].map(n => `<div class="board-dot ${n <= (t.priority || 3) ? 'filled' : ''}" data-n="${n}" title="Prioriteit ${n}"></div>`).join('')}
@@ -2628,6 +2776,7 @@ function taskCard(t) {
     </div>
   `;
   el.querySelector('.task-text').textContent = t.text;
+  renderTaskClient(el.querySelector('.task-client-slot'), t);
   renderTaskRef(el.querySelector('.task-ref-slot'), t);
   el.querySelector('.task-check').addEventListener('click', () => {
     t.done = !t.done;
@@ -2740,8 +2889,11 @@ function taskCard(t) {
       if (!val) return;
       t.subtasks = t.subtasks || [];
       t.subtasks.push({ id: 'sub-' + Date.now(), text: val, done: false });
+      input.value = '';
       saveTasks();
-      renderTasks();
+      renderSubtasks();
+      subBlock.querySelector('.subtask-add-row input').focus();
+      renderBoard();
     }
     addRow.querySelector('button').addEventListener('click', addSub);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') addSub(); });
@@ -2793,6 +2945,8 @@ function renderTaskRef(slot, t) {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'task-ref-input';
+    input.inputMode = 'numeric';
+    input.pattern = '[0-9]*';
     input.placeholder = 'Referentienummer';
     input.value = t.ref || '';
     slot.appendChild(input);
@@ -2837,21 +2991,90 @@ function renderTaskRef(slot, t) {
   btn.addEventListener('click', () => copyRefToClipboard(t.ref, btn));
   slot.appendChild(chip);
 }
+function renderTaskClient(slot, t) {
+  slot.innerHTML = '';
+  const c = clientById(t.clientId);
+  const chip = document.createElement('div');
+  chip.className = 'task-client' + (c ? ' set' : '');
+  chip.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg><span></span>`;
+  chip.querySelector('span').textContent = c ? (c.name || 'Naamloos') : '+ klant koppelen';
+  chip.title = c ? 'Klantinformatie openen' : 'Koppel deze taak aan een klant';
+  const openSelect = () => {
+    const sel = document.createElement('select');
+    sel.className = 'task-client-select';
+    sel.innerHTML = '<option value="">Losse taak</option>';
+    [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach(cl => {
+      const opt = document.createElement('option');
+      opt.value = cl.id;
+      opt.textContent = (cl.name || 'Naamloos') + (cl.ref ? ' \u00b7 ' + cl.ref : '');
+      sel.appendChild(opt);
+    });
+    sel.value = t.clientId || '';
+    slot.innerHTML = '';
+    slot.appendChild(sel);
+    sel.focus();
+    let settled = false;
+    const commit = () => {
+      if (settled) return;
+      settled = true;
+      t.clientId = sel.value || null;
+      saveTasks();
+      renderTasks();
+      renderBoard();
+      renderClients();
+    };
+    sel.addEventListener('change', commit);
+    sel.addEventListener('blur', commit);
+  };
+  chip.addEventListener('click', () => {
+    if (c) openDetail(c.id);
+    else openSelect();
+  });
+  slot.appendChild(chip);
+  if (c) {
+    const edit = document.createElement('span');
+    edit.className = 'task-client-edit';
+    edit.textContent = 'wijzig';
+    edit.title = 'Andere klant kiezen of ontkoppelen';
+    edit.addEventListener('click', openSelect);
+    slot.appendChild(edit);
+  }
+}
 function addTask() {
   const input = document.getElementById('new-task-input');
   const refInput = document.getElementById('new-task-ref');
   const dateInput = document.getElementById('new-task-date');
   const timeInput = document.getElementById('new-task-time');
+  const clientSelect = document.getElementById('new-task-client');
   const text = input.value.trim();
   if (!text) return;
-  tasks.unshift({ id: 'task-' + Date.now(), text, ref: (refInput.value || '').trim() || null, done: false, createdAt: Date.now(), priority: 3, subtasks: [], dueDate: dateInput.value || null, dueTime: timeInput.value || null, reminderFired: false });
+  const clientId = clientSelect && clientSelect.value ? clientSelect.value : null;
+  const linked = clientId ? clients.find(c => c.id === clientId) : null;
+  tasks.unshift({ id: 'task-' + Date.now(), text, ref: (refInput.value || '').trim() || (linked && linked.ref) || null, clientId, done: false, createdAt: Date.now(), priority: 3, subtasks: [], dueDate: dateInput.value || null, dueTime: timeInput.value || null, reminderFired: false });
   input.value = '';
   refInput.value = '';
   dateInput.value = '';
   timeInput.value = '';
   saveTasks();
   renderTasks();
+  renderBoard();
+  renderClients();
   checkTaskReminders();
+}
+function clientById(id) { return id ? clients.find(c => c.id === id) : null; }
+function clientTasks(id) { return tasks.filter(t => t.clientId === id); }
+function populateTaskClientSelect() {
+  const sel = document.getElementById('new-task-client');
+  if (!sel) return;
+  const keep = sel.value;
+  sel.innerHTML = '<option value="">Losse taak</option>' +
+    [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+      .map(c => `<option value="${c.id}"></option>`).join('');
+  [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach((c, i) => {
+    const opt = sel.options[i + 1];
+    if (opt) opt.textContent = (c.name || 'Naamloos') + (c.ref ? ' · ' + c.ref : '');
+  });
+  if ([...sel.options].some(o => o.value === keep)) sel.value = keep;
 }
 document.getElementById('new-task-ref').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
 document.getElementById('add-task-btn').addEventListener('click', addTask);
@@ -2897,6 +3120,7 @@ function renderClients() {
         ${(c.photos && c.photos.length) ? `<div class="client-photo-row">${photosHtml}${moreCount > 0 ? `<div class="client-thumb-more">+${moreCount}</div>` : ''}</div>` : ''}
         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
           <div class="client-name"></div>
+          ${clientTasks(c.id).filter(t => !t.done).length > 0 ? `<div class="client-task-badge">${clientTasks(c.id).filter(t => !t.done).length} ${clientTasks(c.id).filter(t => !t.done).length === 1 ? 'taak' : 'taken'}</div>` : ''}
           ${c.simar ? `<div class="simar-badge">Simar</div>` : ''}
         </div>
         ${c.ref ? `<div class="client-ref"></div>` : ''}
@@ -2939,6 +3163,7 @@ function renderClients() {
 
   renderProjectGallery();
   populateAdviseClientSelect();
+  populateTaskClientSelect();
 }
 
 function renderProjectGallery() {
@@ -3114,6 +3339,8 @@ document.getElementById('client-save-btn').addEventListener('click', async () =>
 });
 document.getElementById('client-delete-btn').addEventListener('click', async () => {
   if (!editingClientId) return;
+  tasks.forEach(t => { if (t.clientId === editingClientId) t.clientId = null; });
+  await saveTasks();
   clients = clients.filter(x => x.id !== editingClientId);
   await saveClients();
   renderClients();
@@ -3158,7 +3385,72 @@ function openDetail(clientId) {
   }
 
   document.getElementById('detail-edit-btn').onclick = () => { closeDetail(); openClientModal(c.id); };
+  renderDetailTasks(c);
   document.getElementById('detail-modal-backdrop').classList.add('open');
+}
+function renderDetailTasks(c) {
+  const wrap = document.getElementById('detail-tasks');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const list = clientTasks(c.id).slice().sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    return getEffectivePriority(b) - getEffectivePriority(a);
+  });
+  if (list.length === 0) {
+    wrap.innerHTML = '<div class="empty-hint">Nog geen taken gekoppeld aan deze klant.</div>';
+  }
+  list.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'client-task-row' + (t.done ? ' done' : '');
+    const doneSub = (t.subtasks || []).filter(s => s.done).length;
+    const totalSub = (t.subtasks || []).length;
+    const overdue = isTaskOverdue(t);
+    const dueLabel = t.dueDate
+      ? new Date(t.dueDate + 'T00:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) + (t.dueTime ? ', ' + t.dueTime : '')
+      : '';
+    row.innerHTML = `
+      <div class="client-task-check ${t.done ? 'checked' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="4"><path d="M4 12l6 6L20 6"/></svg></div>
+      <div class="client-task-body">
+        <div class="client-task-text"></div>
+        <div class="client-task-meta">
+          ${dueLabel ? `<span class="${overdue ? 'overdue' : ''}">${dueLabel}</span>` : ''}
+          ${totalSub > 0 ? `<span>subtaken ${doneSub}/${totalSub}</span>` : ''}
+        </div>
+        ${totalSub > 0 ? '<div class="client-task-sub"></div>' : ''}
+      </div>
+    `;
+    row.querySelector('.client-task-text').textContent = t.text;
+    const subEl = row.querySelector('.client-task-sub');
+    if (subEl) {
+      subEl.textContent = (t.subtasks || []).map(s => (s.done ? '\u2713 ' : '\u00b7 ') + s.text).join('   ');
+    }
+    row.querySelector('.client-task-check').addEventListener('click', () => {
+      t.done = !t.done;
+      saveTasks();
+      renderTasks();
+      renderBoard();
+      renderClients();
+      renderDetailTasks(c);
+    });
+    wrap.appendChild(row);
+  });
+}
+document.getElementById('detail-task-add-btn').addEventListener('click', addDetailTask);
+document.getElementById('detail-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addDetailTask(); });
+function addDetailTask() {
+  const c = clients.find(x => x.id === detailClientId);
+  if (!c) return;
+  const input = document.getElementById('detail-task-input');
+  const text = input.value.trim();
+  if (!text) return;
+  tasks.unshift({ id: 'task-' + Date.now(), text, ref: c.ref || null, clientId: c.id, done: false, createdAt: Date.now(), priority: 3, subtasks: [], dueDate: null, dueTime: null, reminderFired: false });
+  input.value = '';
+  saveTasks();
+  renderTasks();
+  renderBoard();
+  renderClients();
+  renderDetailTasks(c);
+  input.focus();
 }
 let lightboxPhotos = [];
 let lightboxIndex = 0;
