@@ -978,7 +978,14 @@
   @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    .main { padding: 14px 14px calc(96px + env(safe-area-inset-bottom)); max-width: 100%; }
+    html, body { height: 100%; overflow: hidden; }
+    body { display: flex; flex-direction: column; }
+    .mobile-topbar { position: static; flex-shrink: 0; }
+    .app { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+    .main {
+      padding: 14px 14px calc(96px + env(safe-area-inset-bottom)); max-width: 100%;
+      height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
+    }
     .task-cols { grid-template-columns: 1fr; }
     .field-row, .field-row-3 { grid-template-columns: 1fr; }
     .kanban { grid-template-columns: 1fr; }
@@ -2991,6 +2998,16 @@ function renderTaskRef(slot, t) {
   btn.addEventListener('click', () => copyRefToClipboard(t.ref, btn));
   slot.appendChild(chip);
 }
+function scrollToCalcSection(det) {
+  const bar = (document.querySelector('.calc-stickybar')?.offsetHeight || 0) + 24;
+  const scroller = document.querySelector('.main');
+  if (scroller && getComputedStyle(scroller).overflowY === 'auto') {
+    const top = det.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - bar;
+    scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  } else {
+    window.scrollTo({ top: det.getBoundingClientRect().top + window.scrollY - bar, behavior: 'smooth' });
+  }
+}
 function renderTaskClient(slot, t) {
   slot.innerHTML = '';
   const c = clientById(t.clientId);
@@ -4734,8 +4751,7 @@ function renderCalcFilters() {
     if (!det) return;
     calcOpenSections.add(key);
     det.open = true;
-    const top = det.getBoundingClientRect().top + window.scrollY - (document.querySelector('.calc-stickybar').offsetHeight + 24);
-    window.scrollTo({ top, behavior: 'smooth' });
+    scrollToCalcSection(det);
     det.classList.add('flash');
     setTimeout(() => det.classList.remove('flash'), 900);
   }));
@@ -4792,8 +4808,7 @@ function renderCalcSelected() {
       if (!det) return;
       calcOpenSections.add(l.section);
       det.open = true;
-      const top = det.getBoundingClientRect().top + window.scrollY - (document.querySelector('.calc-stickybar').offsetHeight + 24);
-      window.scrollTo({ top, behavior: 'smooth' });
+      scrollToCalcSection(det);
     });
     row.querySelectorAll('.calc-selected-qty button').forEach(b => b.addEventListener('click', () => {
       const step = parseFloat(b.dataset.step);
