@@ -940,6 +940,36 @@
   }
   .toggle-chip input { accent-color: var(--ember-dim); }
 
+  /* ---- Notities ---- */
+  .notes-list { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+  .note-card {
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 9px;
+    padding: 13px 15px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .note-card:hover { border-color: var(--ember); }
+  .note-card.editing { cursor: default; border-color: var(--ember); box-shadow: 0 2px 10px rgba(43,43,43,0.06); }
+  .note-card-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .note-card-body { font-size: 12.5px; color: var(--paper-dim); line-height: 1.5; white-space: pre-wrap; max-height: 60px; overflow: hidden; }
+  .note-card-meta { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--smoke); margin-top: 8px; }
+  .note-editor { display: flex; flex-direction: column; gap: 10px; }
+  .note-editor textarea {
+    width: 100%; box-sizing: border-box; resize: vertical; min-height: 160px;
+    font-family: 'League Spartan', sans-serif; font-size: 14px; line-height: 1.6; color: var(--paper);
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 7px; padding: 11px 13px;
+  }
+  .note-editor textarea:focus { outline: none; border-color: var(--ember); }
+  .note-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .note-tools .note-saved { font-size: 11px; color: var(--smoke); margin-left: auto; }
+  .note-del { font-size: 12px; color: var(--smoke); cursor: pointer; background: none; border: none; font-family: inherit; }
+  .note-del:hover { color: var(--danger); }
+  .notes-empty { font-size: 13px; color: var(--smoke); font-style: italic; }
+  .topbar-note-btn {
+    display: none; width: 34px; height: 34px; align-items: center; justify-content: center;
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; color: var(--paper-dim); cursor: pointer;
+  }
+  .topbar-note-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .topbar-note-btn:active { transform: scale(0.94); }
+
   /* ---- Toast ---- */
   .toast {
     position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -1065,6 +1095,9 @@
     .mobile-topbar .brand-mark { width: 30px; height: 30px; }
     .mobile-topbar .brand-text { font-size: 15px; }
     .mobile-topbar .save-status { margin-left: auto; font-size: 10px; }
+    .topbar-note-btn { display: flex; margin-left: 6px; }
+    .notes-list { max-width: 100%; }
+    .note-editor textarea { font-size: 16px; min-height: 200px; }
 
     /* Bottom tab bar */
     .tabbar {
@@ -1217,6 +1250,9 @@
     <div class="brand-text">Werkplaats</div>
   </div>
   <div class="save-status" id="save-status-m"><div class="save-status-dot"></div><span id="save-status-text-m">Alles opgeslagen</span></div>
+  <div class="topbar-note-btn nav-item" data-view="notities" id="topbar-note-btn" title="Notities">
+    <svg viewBox="0 0 24 24"><path d="M5 3.5h14v17H5z"/><path d="M8.5 8h7"/><path d="M8.5 12h7"/><path d="M8.5 16h4"/></svg>
+  </div>
 </div>
 
 <div class="tabbar">
@@ -1264,6 +1300,11 @@
         <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h9"/><path d="M9 12h9"/><path d="M9 19h9"/><path d="M4 5.5l1.2 1.2L7.5 4"/><path d="M4 12.5l1.2 1.2L7.5 11"/><circle cx="5.4" cy="19" r="1.4"/></svg></span>
         <span class="nav-label">Taken</span>
         <span class="nav-count" id="count-taken">0</span>
+      </div>
+      <div class="nav-item" data-view="notities">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14v17H5z"/><path d="M8.5 8h7"/><path d="M8.5 12h7"/><path d="M8.5 16h4"/></svg></span>
+        <span class="nav-label">Notities</span>
+        <span class="nav-count" id="count-notities">0</span>
       </div>
       <div class="nav-group-label">Werk</div>
       <div class="nav-item" data-view="klanten">
@@ -1327,6 +1368,18 @@
         </div>
       </div>
       <div class="board" id="board"></div>
+    </div>
+
+    <!-- NOTITIES -->
+    <div class="view" id="view-notities">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Notities</div>
+          <div class="view-desc">Even snel iets voor jezelf opschrijven en later teruglezen. Alles wordt tijdens het typen bewaard.</div>
+        </div>
+        <button class="btn btn-primary" id="note-add-btn">Nieuwe notitie</button>
+      </div>
+      <div class="notes-list" id="notes-list"></div>
     </div>
 
     <!-- TAKEN -->
@@ -2159,8 +2212,13 @@ async function loadData() {
     const pr = await storageGet('calc-prices');
     priceOverrides = pr ? JSON.parse(pr.value) : {};
   } catch (e) { console.error('Laden prijzen mislukt', e); priceOverrides = {}; }
+  try {
+    const nt = await storageGet('notes-data');
+    notes = nt ? JSON.parse(nt.value) : [];
+  } catch (e) { console.error('Laden notities mislukt', e); notes = []; }
   applyPriceOverrides();
   applyReminderSettingToUI();
+  renderNotes();
   renderTasks();
   renderClients();
   renderBoard();
@@ -2189,6 +2247,10 @@ function setupRealtimeSync() {
   listenRemote('calc-prices', (val) => {
     try { priceOverrides = JSON.parse(val) || {}; } catch (e) { return; }
     refreshAfterPriceChange();
+  });
+  listenRemote('notes-data', (val) => {
+    try { notes = JSON.parse(val) || []; } catch (e) { return; }
+    if (openNoteId === null) renderNotes();
   });
   listenRemote('calculations-data', (val) => {
     try { calculations = JSON.parse(val); } catch (e) { return; }
@@ -2292,6 +2354,142 @@ async function saveSettings() {
     pendingSaveCount--;
   }
 }
+
+// ---------- Notities ----------
+let notes = [];
+let openNoteId = null;
+let noteSaveTimer = null;
+async function saveNotes() {
+  setSaveStatus('saving', 'Opslaan…');
+  pendingSaveCount++;
+  try {
+    await storageSet('notes-data', JSON.stringify(notes));
+    setSaveStatus('saved', 'Opgeslagen');
+  } catch (e) {
+    console.error('Opslaan notities mislukt', e);
+    setSaveStatus('error', 'Opslaan mislukt — probeer opnieuw');
+  } finally {
+    pendingSaveCount--;
+  }
+}
+function noteTitle(text) {
+  const first = (text || '').split('\n').map(l => l.replace(/^[•\-\s]+/, '').trim()).find(l => l);
+  return first ? first.slice(0, 70) : 'Nieuwe notitie';
+}
+function noteWhen(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const today = new Date();
+  const sameDay = d.toDateString() === today.toDateString();
+  return sameDay
+    ? 'Vandaag ' + d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }) + ' ' + d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+}
+function renderNotes() {
+  const list = document.getElementById('notes-list');
+  if (!list) return;
+  const countEl = document.getElementById('count-notities');
+  if (countEl) countEl.textContent = notes.length;
+  list.innerHTML = '';
+  if (!notes.length) {
+    const empty = document.createElement('div');
+    empty.className = 'notes-empty';
+    empty.textContent = 'Nog geen notities — klik op “Nieuwe notitie” om te beginnen.';
+    list.appendChild(empty);
+    return;
+  }
+  [...notes].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).forEach(n => {
+    const card = document.createElement('div');
+    card.className = 'note-card' + (n.id === openNoteId ? ' editing' : '');
+    if (n.id === openNoteId) {
+      card.innerHTML = `
+        <div class="note-editor">
+          <textarea placeholder="Schrijf hier je notitie…"></textarea>
+          <div class="note-tools">
+            <button class="btn btn-sm" data-act="bullet">• Opsomming</button>
+            <button class="btn btn-sm" data-act="done">Klaar</button>
+            <button class="note-del" data-act="del">Verwijderen</button>
+            <span class="note-saved"></span>
+          </div>
+        </div>`;
+      const ta = card.querySelector('textarea');
+      const saved = card.querySelector('.note-saved');
+      ta.value = n.text || '';
+      setTimeout(() => { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }, 0);
+      const queueSave = () => {
+        n.text = ta.value;
+        n.updatedAt = Date.now();
+        saved.textContent = 'Typen…';
+        clearTimeout(noteSaveTimer);
+        noteSaveTimer = setTimeout(async () => {
+          await saveNotes();
+          saved.textContent = 'Bewaard ' + noteWhen(n.updatedAt);
+        }, 600);
+      };
+      ta.addEventListener('input', queueSave);
+      ta.addEventListener('keydown', e => {
+        if (e.key !== 'Enter' || e.shiftKey) return;
+        const upto = ta.value.slice(0, ta.selectionStart);
+        const line = upto.slice(upto.lastIndexOf('\n') + 1);
+        const m = line.match(/^(\s*)• /);
+        if (!m) return;
+        e.preventDefault();
+        if (line.trim() === '•') {
+          const start = ta.selectionStart - line.length;
+          ta.setRangeText('\n', start, ta.selectionStart, 'end');
+        } else {
+          ta.setRangeText('\n' + m[1] + '• ', ta.selectionStart, ta.selectionEnd, 'end');
+        }
+        queueSave();
+      });
+      card.querySelector('[data-act="bullet"]').addEventListener('click', () => {
+        const val = ta.value;
+        const s = val.lastIndexOf('\n', Math.max(ta.selectionStart - 1, 0)) + 1;
+        let e2 = val.indexOf('\n', ta.selectionEnd);
+        if (e2 === -1) e2 = val.length;
+        const block = val.slice(s, e2) || '';
+        const lines = block.split('\n');
+        const allBullets = lines.every(l => !l.trim() || /^\s*• /.test(l));
+        const next = lines.map(l => {
+          if (!l.trim()) return l;
+          return allBullets ? l.replace(/^(\s*)• /, '$1') : l.replace(/^(\s*)/, '$1• ');
+        }).join('\n');
+        ta.setRangeText(next, s, e2, 'end');
+        ta.focus();
+        queueSave();
+      });
+      card.querySelector('[data-act="done"]').addEventListener('click', async () => {
+        clearTimeout(noteSaveTimer);
+        n.text = ta.value;
+        n.updatedAt = Date.now();
+        openNoteId = null;
+        if (!(n.text || '').trim()) notes = notes.filter(x => x.id !== n.id);
+        await saveNotes();
+        renderNotes();
+      });
+      card.querySelector('[data-act="del"]').addEventListener('click', async () => {
+        clearTimeout(noteSaveTimer);
+        notes = notes.filter(x => x.id !== n.id);
+        openNoteId = null;
+        await saveNotes();
+        renderNotes();
+      });
+    } else {
+      card.innerHTML = '<div class="note-card-title"></div><div class="note-card-body"></div><div class="note-card-meta"></div>';
+      card.querySelector('.note-card-title').textContent = noteTitle(n.text);
+      card.querySelector('.note-card-body').textContent = (n.text || '').split('\n').slice(1).join('\n').trim();
+      card.querySelector('.note-card-meta').textContent = noteWhen(n.updatedAt);
+      card.addEventListener('click', () => { openNoteId = n.id; renderNotes(); });
+    }
+    list.appendChild(card);
+  });
+}
+document.getElementById('note-add-btn').addEventListener('click', () => {
+  const n = { id: 'note-' + Date.now(), text: '', updatedAt: Date.now() };
+  notes.unshift(n);
+  openNoteId = n.id;
+  renderNotes();
+});
 
 // ---------- Navigation ----------
 document.querySelectorAll('.nav-item').forEach(item => {
