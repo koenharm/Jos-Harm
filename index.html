@@ -506,7 +506,13 @@
   .subtask-check.checked { background: var(--brass); border-color: var(--brass); }
   .subtask-check svg { display: none; width: 8px; height: 8px; }
   .subtask-check.checked svg { display: block; }
-  .subtask-text { font-size: 12.5px; flex: 1; }
+  .subtask-text { font-size: 12.5px; flex: 1; cursor: text; border-bottom: 1px dashed transparent; }
+  .subtask-text:hover { border-bottom-color: var(--hairline); }
+  .subtask-text-input {
+    flex: 1; min-width: 0; font-family: inherit; font-size: 12.5px; color: var(--paper);
+    background: var(--panel-raised); border: 1px solid var(--ember); border-radius: 5px; padding: 4px 8px;
+  }
+  .subtask-text-input:focus { outline: none; }
   .subtask-row.done .subtask-text { text-decoration: line-through; color: var(--smoke); }
   .subtask-del { color: var(--smoke); cursor: pointer; font-size: 13px; }
   .subtask-del:hover { color: var(--danger); }
@@ -962,7 +968,7 @@
   }
   @media (max-width: 900px) {
     .clock-widget { bottom: calc(70px + env(safe-area-inset-bottom)); left: 12px; padding: 8px 14px; }
-    .toast { bottom: calc(78px + env(safe-area-inset-bottom)); }
+    .toast { bottom: calc(72px + env(safe-area-inset-bottom)); }
     .clock-time { font-size: 17px; }
   }
   .toast-undo:hover { text-decoration: underline; }
@@ -978,12 +984,12 @@
   @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    html, body { height: 100%; overflow: hidden; }
+    html, body { height: 100vh; height: 100dvh; overflow: hidden; }
     body { display: flex; flex-direction: column; }
-    .mobile-topbar { position: static; flex-shrink: 0; }
-    .app { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+    .mobile-topbar { position: static; flex-shrink: 0; order: 1; }
+    .app { flex: 1 1 auto; min-height: 0; overflow: hidden; order: 2; }
     .main {
-      padding: 14px 14px calc(96px + env(safe-area-inset-bottom)); max-width: 100%;
+      padding: 14px 14px 26px; max-width: 100%;
       height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
     }
     .task-cols { grid-template-columns: 1fr; }
@@ -1062,7 +1068,7 @@
 
     /* Bottom tab bar */
     .tabbar {
-      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;
+      display: flex; position: relative; order: 3; flex-shrink: 0; z-index: 1000;
       background: linear-gradient(180deg, #FBFAF8, #F1EBE1); border-top: 1px solid var(--hairline);
       padding: 7px 4px calc(7px + env(safe-area-inset-bottom));
     }
@@ -1090,7 +1096,8 @@
     body:has(.modal-backdrop.open) .tabbar { display: none; }
     .modal-backdrop { align-items: flex-end; padding: 0; overflow: hidden; }
     .modal {
-      max-width: 100%; width: 100%; border-radius: 16px 16px 0 0; max-height: 100vh; overflow-y: auto;
+      max-width: 100%; width: 100%; border-radius: 16px 16px 0 0;
+      max-height: calc(100dvh - env(safe-area-inset-top) - 8px); overflow-y: auto;
       -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain;
       padding: 18px 20px calc(26px + env(safe-area-inset-bottom));
       animation: sheetUp 0.26s ease-out;
@@ -1098,15 +1105,17 @@
     .modal-head { position: sticky; top: -18px; margin: -18px -20px 20px; padding: 18px 20px 14px; background: var(--panel); z-index: 2; border-bottom: 1px solid var(--hairline); }
     .modal::before { content: ''; display: block; width: 36px; height: 4px; background: var(--hairline); border-radius: 3px; margin: 0 auto 16px; }
     .psheet-preview-wrap {
-      max-width: 100%; width: 100%; border-radius: 16px 16px 0 0; max-height: 100vh; overflow-y: auto;
+      max-width: 100%; width: 100%; border-radius: 16px 16px 0 0;
+      max-height: calc(100dvh - env(safe-area-inset-top) - 8px); overflow-y: auto;
       -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain;
     }
-    .psheet-toolbar { flex-wrap: wrap; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; }
+    .psheet-toolbar { flex-wrap: wrap; padding: 12px 16px; position: sticky; top: 0; z-index: 3; }
+    .psheet-page { padding: 26px 18px calc(30px + env(safe-area-inset-bottom)); }
     .psheet-toolbar-title { width: 100%; }
 
     /* Compact AI chat */
     .ai-msg { padding: 10px 13px; font-size: 13.5px; }
-    .ai-wrap { height: calc(100vh - 340px); min-height: 320px; }
+    .ai-wrap { height: calc(100dvh - 340px); min-height: 320px; }
     .ai-side-card { padding: 12px 13px; }
     .clock-widget { display: none; }
   }
@@ -2882,7 +2891,31 @@ function taskCard(t) {
         <div class="subtask-text"></div>
         <div class="subtask-del">&times;</div>
       `;
-      row.querySelector('.subtask-text').textContent = s.text;
+      const textEl = row.querySelector('.subtask-text');
+      textEl.textContent = s.text;
+      textEl.title = 'Klik om deze subtaak aan te passen';
+      textEl.addEventListener('click', () => {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'subtask-text-input';
+        inp.value = s.text;
+        textEl.replaceWith(inp);
+        inp.focus();
+        inp.select();
+        let settled = false;
+        const finish = (save) => {
+          if (settled) return;
+          settled = true;
+          const val = inp.value.trim();
+          if (save && val && val !== s.text) { s.text = val; saveTasks(); renderBoard(); }
+          renderSubtasks();
+        };
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+          if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+        });
+        inp.addEventListener('blur', () => finish(true));
+      });
       row.querySelector('.subtask-check').addEventListener('click', () => {
         s.done = !s.done;
         saveTasks();
@@ -3976,6 +4009,77 @@ setInterval(() => {
   checkTaskReminders();
 }, 60000);
 
+// ---------- Getypte tekst beschermen ----------
+function isUserTyping() {
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
+const pendingRenders = new Set();
+function deferWhileTyping(name, fn) {
+  return function (...args) {
+    if (isUserTyping()) { pendingRenders.add(name); return; }
+    return fn.apply(this, args);
+  };
+}
+const _renderTasks = renderTasks, _renderBoard = renderBoard, _renderClients = renderClients;
+renderTasks = deferWhileTyping('tasks', _renderTasks);
+renderBoard = deferWhileTyping('board', _renderBoard);
+renderClients = deferWhileTyping('clients', _renderClients);
+document.addEventListener('focusout', () => {
+  setTimeout(() => {
+    if (isUserTyping() || pendingRenders.size === 0) return;
+    const jobs = new Set(pendingRenders);
+    pendingRenders.clear();
+    if (jobs.has('tasks')) _renderTasks();
+    if (jobs.has('board')) _renderBoard();
+    if (jobs.has('clients')) _renderClients();
+  }, 120);
+});
+
+// Concepten: bewaar wat er in tekstvelden staat, ook als de pagina onverwacht herlaadt
+const DRAFT_PREFIX = 'werkplaats:draft:';
+const DRAFT_MAX_AGE = 12 * 60 * 60 * 1000;
+function draftKey(id) { return DRAFT_PREFIX + id; }
+function storeDraft(el) {
+  try {
+    const val = el.value;
+    if (val && val.trim()) localStorage.setItem(draftKey(el.id), JSON.stringify({ v: val, t: Date.now() }));
+    else localStorage.removeItem(draftKey(el.id));
+  } catch (e) { /* localStorage vol of geblokkeerd */ }
+}
+function trackDraft(el) {
+  if (!el.id || el.dataset.draftTracked) return;
+  el.dataset.draftTracked = '1';
+  try {
+    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    const desc = Object.getOwnPropertyDescriptor(proto, 'value');
+    Object.defineProperty(el, 'value', {
+      configurable: true,
+      get() { return desc.get.call(this); },
+      set(v) { desc.set.call(this, v); storeDraft(this); }
+    });
+  } catch (e) { /* setter niet aanpasbaar: input-event blijft werken */ }
+  el.addEventListener('input', () => storeDraft(el));
+}
+function initDrafts() {
+  const sel = 'textarea[id], input[id][type="text"], input[id]:not([type])';
+  document.querySelectorAll(sel).forEach(el => {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(draftKey(el.id)) || 'null'); } catch (e) {}
+    if (saved && saved.v && Date.now() - (saved.t || 0) < DRAFT_MAX_AGE && !el.value) {
+      const desc = Object.getOwnPropertyDescriptor(
+        el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype, 'value');
+      desc.set.call(el, saved.v);
+    } else if (saved) {
+      try { localStorage.removeItem(draftKey(el.id)); } catch (e) {}
+    }
+    trackDraft(el);
+  });
+}
+initDrafts();
+
 // ---------- Init ----------
 const mobileLogo = document.getElementById('mobile-brand-mark');
 const desktopLogo = document.querySelector('.sidebar .brand-mark');
@@ -3990,6 +4094,14 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (swReloaded) return;
     swReloaded = true;
+    const hasTypedText = [...document.querySelectorAll('input[type="text"], textarea')].some(el => el.value && el.value.trim());
+    if (isUserTyping() || hasTypedText) {
+      const toast = document.getElementById('toast');
+      toast.innerHTML = '<div class="toast-text">Nieuwe versie klaar</div><div class="toast-undo">Nu vernieuwen</div>';
+      toast.querySelector('.toast-undo').addEventListener('click', () => window.location.reload());
+      toast.classList.add('show');
+      return;
+    }
     window.location.reload();
   });
   window.addEventListener('load', () => {
