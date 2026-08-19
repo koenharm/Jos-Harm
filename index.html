@@ -202,6 +202,25 @@
       linear-gradient(180deg, #F2ECE1, #ECE3D2);
   }
   .board-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--smoke); font-size: 13px; font-style: italic; }
+  .board-zone {
+    position: absolute; border: 2px dashed rgba(139,131,120,0.4); border-radius: 10px; pointer-events: none; z-index: 0;
+    background: rgba(255,255,255,0.18);
+  }
+  .board-zone-label {
+    position: absolute; top: 8px; left: 12px; font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: rgba(139,131,120,0.85);
+  }
+  .board-zone.hot { border-color: var(--ember); background: rgba(216,90,44,0.07); }
+  .board-zone.hot .board-zone-label { color: var(--ember); }
+  .board-zone-badge {
+    font-family: 'Poppins', sans-serif; font-size: 0.68em; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--smoke);
+  }
+  .board-group-head {
+    font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--smoke); display: flex; align-items: center; gap: 10px; margin: 10px 0 2px;
+  }
+  .board-group-head::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
   .board-ref-row { display: flex; margin-top: 7px; min-width: 0; }
   .board-badge-group { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
   .board-ref-copy {
@@ -1601,7 +1620,7 @@
       <div class="view-header">
         <div>
           <div class="view-title">Prioriteitenbord</div>
-          <div class="view-desc">Al je openstaande taken door elkaar — hoe hoger de prioriteit, hoe groter en hoger op het bord. Klik de puntjes om prioriteit aan te passen.</div>
+          <div class="view-desc">Drie vlakken: Klanten linksboven, Tekenwerk rechtsboven en Algemeen onderaan. Sleep een post-it naar een vlak om hem in die categorie te zetten — je ziet het terug op je telefoon. Hoe hoger de prioriteit, hoe groter de post-it; klik de puntjes om die aan te passen.</div>
         </div>
       </div>
       <div class="board" id="board"></div>
@@ -4149,33 +4168,85 @@ function initSplash() {
   splash.addEventListener('click', dismiss);
   setTimeout(dismiss, 2400);
 }
+const BOARD_ZONES = [
+  { key: 'klanten', name: 'Klanten', x: [3, 42], y: [10, 40], css: { left: '1.5%', top: '1.5%', width: '47%', height: '48%' } },
+  { key: 'tekenwerk', name: 'Tekenwerk', x: [53, 90], y: [10, 40], css: { left: '51.5%', top: '1.5%', width: '47%', height: '48%' } },
+  { key: 'algemeen', name: 'Algemeen', x: [3, 88], y: [57, 84], css: { left: '1.5%', top: '51%', width: '97%', height: '47.5%' } }
+];
+function boardZone(key) { return BOARD_ZONES.find(z => z.key === key) || BOARD_ZONES[2]; }
+function zoneFromPos(x, y) { return y >= 50 ? 'algemeen' : (x < 50 ? 'klanten' : 'tekenwerk'); }
+function zoneBounds(key) {
+  return {
+    x: key === 'tekenwerk' ? [50, 100] : [0, key === 'klanten' ? 50 : 100],
+    y: key === 'algemeen' ? [50, 100] : [0, 50]
+  };
+}
+// Houdt het middelpunt van een kaart in zijn eigen gebied en de kaart binnen het bord.
+function clampCardToZone(card, t, board) {
+  const r = board.getBoundingClientRect();
+  if (!r.width || !r.height || !card.offsetWidth) return null;
+  const w = (card.offsetWidth / r.width) * 100;
+  const h = (card.offsetHeight / r.height) * 100;
+  const b = zoneBounds(taskZone(t));
+  const clamp = (v, lo, hi) => (hi < lo ? (lo + hi) / 2 : Math.min(Math.max(v, lo), hi));
+  const cx = clamp((parseFloat(card.style.left) || 0) + w / 2, b.x[0] + w / 2 + 0.5, b.x[1] - w / 2 - 0.5);
+  const cy = clamp((parseFloat(card.style.top) || 0) + h / 2, b.y[0] + h / 2 + 0.5, b.y[1] - h / 2 - 0.5);
+  const left = clamp(cx - w / 2, 0.5, 99.5 - w);
+  const top = clamp(cy - h / 2, 0.5, 99.5 - h);
+  card.style.left = left + '%';
+  card.style.top = top + '%';
+  return { left, top };
+}
+function taskZone(t) {
+  if (t.zone && BOARD_ZONES.some(z => z.key === t.zone)) return t.zone;
+  if (typeof t.posX === 'number' && typeof t.posY === 'number') return zoneFromPos(t.posX, t.posY);
+  return 'algemeen';
+}
 function renderBoard() {
   renderHomeStats();
   const board = document.getElementById('board');
   board.innerHTML = '';
   const open = tasks.filter(t => !t.done);
+  const isMobile = window.innerWidth <= 780;
+  board.classList.toggle('board-mobile', isMobile);
+  if (!isMobile) BOARD_ZONES.forEach(z => {
+    const el = document.createElement('div');
+    el.className = 'board-zone';
+    el.dataset.zone = z.key;
+    Object.assign(el.style, z.css);
+    const lab = document.createElement('div');
+    lab.className = 'board-zone-label';
+    lab.textContent = z.name;
+    el.appendChild(lab);
+    board.appendChild(el);
+  });
   if (open.length === 0) {
-    board.innerHTML = '<div class="board-empty">Geen openstaande taken — het bord is leeg.</div>';
+    const empty = document.createElement('div');
+    empty.className = 'board-empty';
+    empty.textContent = 'Geen openstaande taken — het bord is leeg.';
+    board.appendChild(empty);
     return;
   }
   const bands = {
     5: [1, 12], 4: [12, 30], 3: [28, 48], 2: [46, 66], 1: [62, 82],
   };
-  const isMobile = window.innerWidth <= 780;
-  board.classList.toggle('board-mobile', isMobile);
   const mScale = isMobile ? 0.62 : 1;
+  const zoneRank = { klanten: 0, tekenwerk: 1, algemeen: 2 };
+  let boardDirty = false;
   const ordered = isMobile
-    ? [...open].sort((a, b) => getEffectivePriority(b) - getEffectivePriority(a))
+    ? [...open].sort((a, b) => zoneRank[taskZone(a)] - zoneRank[taskZone(b)] || getEffectivePriority(b) - getEffectivePriority(a))
     : open;
+  let lastZone = null;
   ordered.forEach((t, idx) => {
     const h1 = (hashStr(t.id + 'x') % 1000) / 1000;
     const h2 = (hashStr(t.id + 'y') % 1000) / 1000;
     const h3 = (hashStr(t.id + 'r') % 1000) / 1000;
     const p = getEffectivePriority(t);
     const basePriority = t.priority || 3;
-    const band = bands[p];
-    const top = (typeof t.posY === 'number') ? t.posY : band[0] + h2 * (band[1] - band[0]);
-    const left = (typeof t.posX === 'number') ? t.posX : 3 + h1 * 68;
+    const zone = boardZone(taskZone(t));
+    const kept = typeof t.posX === 'number' && typeof t.posY === 'number';
+    const top = kept ? t.posY : zone.y[0] + h2 * (zone.y[1] - zone.y[0]);
+    const left = kept ? t.posX : zone.x[0] + h1 * (zone.x[1] - zone.x[0]);
     const rot = -7 + h3 * 14;
     const fontSize = (11.5 + p * 0.9) * mScale;
     const width = (130 + p * 22) * mScale;
@@ -4220,6 +4291,7 @@ function renderBoard() {
           ${[1,2,3,4,5].map(n => `<div class="board-dot ${n <= basePriority ? 'filled' : ''}" data-n="${n}"></div>`).join('')}
         </div>
         <div class="board-badge-group">
+          ${isMobile ? '' : `<div class="board-zone-badge">${boardZone(taskZone(t)).name}</div>`}
           ${dueShort ? `<div class="board-due-badge${isOverdue ? ' overdue' : ''}">${dueShort}</div>` : ''}
           ${totalSub > 0 ? `<div class="board-sub-badge" title="Subtaken tonen/verbergen">${doneSub}/${totalSub}</div>` : ''}
         </div>
@@ -4328,9 +4400,25 @@ function renderBoard() {
       burnCard(card);
       setTimeout(finishTask, 1150);
     });
+    if (isMobile && taskZone(t) !== lastZone) {
+      lastZone = taskZone(t);
+      const head = document.createElement('div');
+      head.className = 'board-group-head';
+      head.textContent = boardZone(lastZone).name;
+      board.appendChild(head);
+    }
     if (!isMobile) makeCardDraggable(card, t, board);
     board.appendChild(card);
+    if (!isMobile) {
+      const pos = clampCardToZone(card, t, board);
+      if (pos && (Math.abs(pos.left - left) > 0.4 || Math.abs(pos.top - top) > 0.4)) {
+        t.posX = pos.left;
+        t.posY = pos.top;
+        boardDirty = true;
+      }
+    }
   });
+  if (boardDirty) saveTasks();
 }
 
 function makeCardDraggable(card, t, board) {
@@ -4363,16 +4451,34 @@ function makeCardDraggable(card, t, board) {
     newTop = Math.max(-10, Math.min(95, newTop));
     card.style.left = newLeft + '%';
     card.style.top = newTop + '%';
+    const centerX = newLeft + (card.offsetWidth / 2 / boardRect.width) * 100;
+    const centerY = newTop + (card.offsetHeight / 2 / boardRect.height) * 100;
+    const hot = zoneFromPos(centerX, centerY);
+    board.querySelectorAll('.board-zone').forEach(z => z.classList.toggle('hot', z.dataset.zone === hot));
   });
 
   function endDrag(e) {
     if (!dragging) return;
+    const prevZone = taskZone(t);
     dragging = false;
     card.style.transition = '';
     card.style.cursor = 'grab';
     t.posX = parseFloat(card.style.left) || 0;
     t.posY = parseFloat(card.style.top) || 0;
+    board.querySelectorAll('.board-zone').forEach(z => z.classList.remove('hot'));
+    const r = boardRect || board.getBoundingClientRect();
+    const centerX = t.posX + (card.offsetWidth / 2 / r.width) * 100;
+    const centerY = t.posY + (card.offsetHeight / 2 / r.height) * 100;
+    const newZone = zoneFromPos(centerX, centerY);
+    const changed = prevZone !== newZone;
+    t.zone = newZone;
+    const pos = clampCardToZone(card, t, board);
+    if (pos) { t.posX = pos.left; t.posY = pos.top; }
     saveTasks();
+    if (changed) {
+      renderBoard();
+      showUndoToast('Verplaatst naar ' + boardZone(newZone).name, null);
+    }
   }
   card.addEventListener('pointerup', endDrag);
   card.addEventListener('pointercancel', endDrag);
