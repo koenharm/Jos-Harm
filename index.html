@@ -942,10 +942,15 @@
 
   /* ---- Notities ---- */
   .notes-quick { display: flex; gap: 8px; margin-bottom: 14px; max-width: 900px; }
-  .notes-quick input {
-    flex: 1; font-family: 'League Spartan', sans-serif; font-size: 13.5px; color: var(--paper);
-    background: var(--panel); border: 1px solid var(--hairline); border-radius: 7px; padding: 10px 13px;
+  .notes-quick {
+    background: linear-gradient(150deg, var(--panel) 0%, #FBF8F2 100%); border: 1px solid var(--hairline);
+    border-radius: 3px 9px 9px 3px; border-left: 4px solid var(--ember); padding: 10px 12px; align-items: center;
   }
+  .notes-quick input {
+    flex: 1; font-family: 'League Spartan', sans-serif; font-size: 14px; color: var(--paper);
+    background: none; border: none; padding: 6px 4px;
+  }
+  .notes-quick input::placeholder { color: var(--smoke); }
   .notes-quick input:focus { outline: none; border-color: var(--ember); }
   .notes-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
   .notes-search { position: relative; flex: 0 1 260px; }
@@ -961,24 +966,54 @@
   .note-chip:hover { border-color: var(--ember); color: var(--paper); }
   .note-chip.active { background: var(--panel-raised); border-color: var(--ember); color: var(--paper); font-weight: 600; }
   .note-chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .notes-split { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+  .notes-split { display: grid; grid-template-columns: minmax(240px, 300px) minmax(420px, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 1150px) {
+    .notes-split { grid-template-columns: 1fr; }
+    .notes-list { max-height: none; }
+    .notes-split.note-open .notes-list { display: none; }
+    .notes-split:not(.note-open) .note-detail { display: none; }
+  }
   .notes-list { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 320px); overflow-y: auto; padding-right: 2px; }
   .note-card {
-    background: var(--panel); border: 1px solid var(--hairline); border-left: 3px solid var(--hairline); border-radius: 8px;
-    padding: 11px 13px; cursor: pointer; transition: border-color 0.15s;
+    position: relative; background: linear-gradient(150deg, var(--panel) 0%, #FBF8F2 100%);
+    border: 1px solid var(--hairline); border-left: 4px solid var(--hairline); border-radius: 3px 8px 8px 3px;
+    padding: 12px 15px 12px 14px; cursor: pointer; overflow: hidden;
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 1px 0 rgba(43,43,43,0.04);
   }
-  .note-card:hover { border-color: var(--ember); }
-  .note-card.active { background: var(--panel-raised); border-color: var(--ember); }
+  .note-card::after {
+    content: ''; position: absolute; right: 0; bottom: 0; width: 16px; height: 16px;
+    background: linear-gradient(315deg, var(--soot) 50%, rgba(222,213,198,0.9) 50%);
+    border-left: 1px solid var(--hairline); border-top: 1px solid var(--hairline);
+  }
+  .note-card:hover { border-color: var(--ember); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(43,43,43,0.08); }
+  .note-card.active { background: linear-gradient(150deg, #FDFBF6 0%, var(--panel-raised) 100%); border-color: var(--ember); box-shadow: 0 6px 16px rgba(43,43,43,0.08); }
+  .note-card.pinned::before {
+    content: ''; position: absolute; top: -7px; left: 50%; transform: translateX(-50%) rotate(-2deg);
+    width: 46px; height: 14px; background: rgba(211,177,115,0.35); border: 1px solid rgba(186,150,112,0.35);
+  }
+  .note-card.pinned { padding-top: 15px; }
   .note-card-top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
   .note-card-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .note-card-pin { font-size: 11px; color: var(--ember); }
   .note-card-body { font-size: 12px; color: var(--paper-dim); line-height: 1.45; max-height: 34px; overflow: hidden; white-space: pre-wrap; }
   .note-card-meta { display: flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--smoke); margin-top: 7px; }
-  .note-detail { background: var(--panel); border: 1px solid var(--hairline); border-radius: 10px; padding: 18px 20px; min-height: 320px; }
+  .note-detail {
+    position: relative; background: var(--panel);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 30px, rgba(222,213,198,0.4) 30px 31px);
+    background-position: 0 76px;
+    border: 1px solid var(--hairline); border-radius: 3px 10px 10px 3px; padding: 22px 26px 20px 34px; min-height: 340px;
+    box-shadow: 0 2px 14px rgba(43,43,43,0.05);
+  }
+  .note-detail::before {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 18px; width: 1px; background: rgba(211,177,115,0.55);
+  }
+  .note-detail > * { position: relative; }
   .note-detail-empty { color: var(--smoke); font-size: 13px; font-style: italic; }
   .note-title-input {
-    width: 100%; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 18px; color: var(--paper);
-    background: none; border: none; border-bottom: 1px solid var(--hairline); padding: 0 0 8px; margin-bottom: 12px;
+    width: 100%; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 22px;
+    letter-spacing: -0.01em; color: var(--paper); line-height: 1.25;
+    background: none; border: none; border-bottom: 2px solid var(--ember); padding: 0 0 10px; margin-bottom: 14px;
   }
   .note-title-input:focus { outline: none; border-bottom-color: var(--ember); }
   .note-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -993,10 +1028,16 @@
     background: var(--panel); border: 1px solid var(--hairline); border-radius: 7px; padding: 12px 14px;
   }
   .note-editor textarea:focus { outline: none; border-color: var(--ember); }
-  .note-read { font-size: 14px; line-height: 1.65; display: flex; flex-direction: column; gap: 5px; min-height: 200px; }
+  .note-read { font-size: 14.5px; line-height: 1.75; display: flex; flex-direction: column; gap: 4px; min-height: 200px; max-width: 62ch; }
+  .note-read-head {
+    display: flex; align-items: center; gap: 10px; margin: 16px 0 6px;
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper-dim);
+  }
+  .note-read-head::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+  .note-read-head:first-child { margin-top: 0; }
   .note-read-p { white-space: pre-wrap; }
   .note-read-bullet { display: flex; gap: 9px; }
-  .note-read-bullet::before { content: '•'; color: var(--ember); }
+  .note-read-bullet::before { content: '—'; color: var(--brass); }
   .note-read-check { display: flex; align-items: flex-start; gap: 9px; cursor: pointer; }
   .note-read-check .box {
     width: 17px; height: 17px; flex-shrink: 0; margin-top: 3px; border: 1.5px solid var(--smoke); border-radius: 4px;
@@ -1014,6 +1055,88 @@
   .note-client-link { font-size: 12.5px; color: var(--brass); cursor: pointer; }
   .note-client-link:hover { text-decoration: underline; }
   .notes-empty { font-size: 13px; color: var(--smoke); font-style: italic; padding: 6px 2px; }
+  .note-mic-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 7px; padding: 9px 13px;
+    font-family: 'League Spartan', sans-serif; font-size: 13px; color: var(--paper-dim); cursor: pointer; white-space: nowrap;
+  }
+  .note-mic-btn:hover { border-color: var(--ember); color: var(--paper); }
+  .note-mic-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+  .dict-panel { display: flex; flex-direction: column; gap: 12px; }
+  .dict-head { display: flex; align-items: center; gap: 11px; flex-wrap: wrap; margin-bottom: 4px; }
+  .dict-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--smoke); flex-shrink: 0; }
+  .dict-dot.live { background: var(--danger); box-shadow: 0 0 0 5px rgba(167,94,63,0.16); animation: dictPulse 1.3s ease-in-out infinite; }
+  .dict-dot.idle { background: var(--smoke); animation: none; }
+  @keyframes dictPulse { 0%,100% { box-shadow: 0 0 0 4px rgba(167,94,63,0.20); } 50% { box-shadow: 0 0 0 9px rgba(167,94,63,0); } }
+  .dict-status { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .dict-timer {
+    font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 600; color: var(--paper);
+    font-variant-numeric: tabular-nums; letter-spacing: 0.01em; margin-left: auto;
+  }
+  .dict-live {
+    position: relative; background: var(--panel);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 28px, rgba(222,213,198,0.4) 28px 29px);
+    border: 1px solid var(--hairline); border-radius: 3px 8px 8px 3px;
+    padding: 14px 18px 14px 22px; font-size: 14.5px; line-height: 1.75; min-height: 190px; max-height: 320px;
+    overflow-y: auto; white-space: pre-wrap;
+    box-shadow: inset 1px 0 0 rgba(211,177,115,0.55);
+  }
+  .dict-live .interim { color: var(--smoke); font-style: italic; }
+  .dict-hint { font-size: 12px; color: var(--smoke); line-height: 1.55; max-width: 58ch; }
+  .dict-working {
+    display: flex; align-items: center; gap: 10px; font-family: 'Poppins', sans-serif; font-size: 11.5px;
+    font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-dim);
+  }
+  .dict-working .spin { width: 14px; height: 14px; border: 2px solid var(--hairline); border-top-color: var(--ember); border-radius: 50%; animation: dictSpin 0.8s linear infinite; }
+  @keyframes dictSpin { to { transform: rotate(360deg); } }
+  .dict-modes { display: flex; gap: 22px; border-bottom: 1px solid var(--hairline); margin-bottom: 16px; }
+  .dict-mode {
+    font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0 0 9px; cursor: pointer; color: var(--smoke); border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .dict-mode:hover { color: var(--paper-dim); }
+  .dict-mode.active { color: var(--paper); border-bottom-color: var(--ember); }
+  .dict-audio-box {
+    background: linear-gradient(150deg, var(--panel) 0%, #FBF8F2 100%);
+    border: 1px solid var(--hairline); border-left: 4px solid var(--ember); border-radius: 3px 8px 8px 3px;
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 13px;
+  }
+  .dict-bars { display: flex; align-items: center; gap: 3px; height: 34px; }
+  .dict-bar { width: 4px; background: var(--ember); border-radius: 3px; height: 20%; min-height: 4px; transition: height 0.09s linear; }
+  .dict-audio-box audio { width: 100%; }
+  .dict-seg-label { font-size: 11.5px; color: var(--smoke); }
+  .dict-progress { height: 3px; background: var(--hairline); overflow: hidden; }
+  .dict-progress span { display: block; height: 100%; background: var(--ember); transition: width 0.35s ease; }
+  .dict-panel { gap: 14px; }
+  .dict-audio-box audio { width: 100%; filter: grayscale(0.35); }
+  .dict-steps { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: 'Poppins', sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--smoke); }
+  .dict-step { display: flex; align-items: center; gap: 6px; }
+  .dict-step .n { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; font-size: 10px; }
+  .dict-step.active { color: var(--paper); }
+  .dict-step.active .n { background: var(--ember); border-color: var(--ember); color: #fff; }
+  .dict-step.done { color: var(--paper-dim); }
+  .dict-step.done .n { background: var(--brass); border-color: var(--brass); color: #2B2B2B; }
+  .dict-step-sep { width: 16px; height: 1px; background: var(--hairline); }
+  .assist { margin-top: 18px; border-top: 1px solid var(--hairline); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; max-width: 62ch; }
+  .assist-head { display: flex; align-items: center; gap: 9px; font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper-dim); }
+  .assist-head .ico { width: 22px; height: 22px; border-radius: 50%; background: var(--ember); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; letter-spacing: 0; }
+  .assist-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .assist-chip { font-size: 12px; padding: 6px 12px; border: 1px solid var(--hairline); border-radius: 999px; cursor: pointer; background: #FBF8F2; color: var(--paper-dim); }
+  .assist-chip:hover { border-color: var(--ember); color: var(--paper); }
+  .assist-ask { display: flex; gap: 8px; align-items: flex-end; }
+  .assist-ask textarea { flex: 1; min-height: 40px; max-height: 130px; resize: none; font-family: inherit; font-size: 13.5px; padding: 10px 12px; background: #FBF8F2; border: 1px solid var(--hairline); color: var(--paper); line-height: 1.5; }
+  .assist-ask textarea:focus { outline: none; border-color: var(--ember); }
+  .assist-answer { background: linear-gradient(150deg, var(--panel) 0%, #FBF8F2 100%); border: 1px solid var(--hairline); border-left: 4px solid var(--brass); padding: 14px 16px; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; }
+  .assist-q { font-size: 11.5px; color: var(--smoke); font-style: italic; }
+  .note-read-head.assist-mark { color: var(--brass); }
+  .note-read-head.assist-mark::after { background: var(--brass); opacity: 0.5; }
+  .note-raw-toggle { font-size: 11.5px; color: var(--brass); cursor: pointer; }
+  .note-raw-toggle:hover { text-decoration: underline; }
+  .note-raw {
+    background: #FBF8F2; border: 1px solid var(--hairline); border-left: 3px solid var(--hairline);
+    border-radius: 3px 7px 7px 3px; padding: 12px 15px; font-size: 12.5px; line-height: 1.6;
+    color: var(--paper-dim); white-space: pre-wrap; margin-top: 8px;
+  }
   .note-label-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; }
   .topbar-note-btn {
     display: none; width: 34px; height: 34px; align-items: center; justify-content: center;
@@ -1029,10 +1152,18 @@
   .home-notes-link:hover { text-decoration: underline; }
   .home-notes-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .home-note-card {
-    flex: 1 1 200px; min-width: 0; background: var(--panel); border: 1px solid var(--hairline); border-left: 3px solid var(--hairline);
-    border-radius: 8px; padding: 10px 12px; cursor: pointer;
+    position: relative; flex: 1 1 200px; min-width: 0;
+    background: linear-gradient(150deg, var(--panel) 0%, #FBF8F2 100%);
+    border: 1px solid var(--hairline); border-left: 4px solid var(--hairline);
+    border-radius: 3px 8px 8px 3px; padding: 11px 13px; cursor: pointer; overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
   }
-  .home-note-card:hover { border-color: var(--ember); }
+  .home-note-card::after {
+    content: ''; position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;
+    background: linear-gradient(315deg, var(--soot) 50%, rgba(222,213,198,0.9) 50%);
+    border-left: 1px solid var(--hairline); border-top: 1px solid var(--hairline);
+  }
+  .home-note-card:hover { border-color: var(--ember); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(43,43,43,0.08); }
   .home-note-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 12.5px; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .home-note-body { font-size: 11.5px; color: var(--paper-dim); line-height: 1.4; max-height: 32px; overflow: hidden; }
 
@@ -1169,7 +1300,9 @@
     .notes-search { flex: 1 1 100%; }
     .note-editor textarea { font-size: 16px; min-height: 220px; }
     .note-title-input { font-size: 17px; }
-    .note-read { font-size: 15px; }
+    .note-read { font-size: 15px; max-width: none; }
+    .note-detail { padding: 18px 16px 18px 26px; }
+    .note-detail::before { left: 13px; }
 
     /* Bottom tab bar */
     .tabbar {
@@ -1455,6 +1588,10 @@
       <div class="notes-quick">
         <input type="text" id="note-quick-input" placeholder="Snel iets opschrijven — Enter bewaart het als notitie…" autocomplete="off" />
         <button class="btn btn-sm" id="note-quick-btn">Bewaren</button>
+        <div class="note-mic-btn" id="note-dictate-new" title="Gesprek dicteren en door AI laten uitwerken">
+          <svg viewBox="0 0 24 24"><path d="M12 4.5a3 3 0 0 1 3 3v4a3 3 0 0 1-6 0v-4a3 3 0 0 1 3-3z"/><path d="M6 11a6 6 0 0 0 12 0"/><path d="M12 17v3"/><path d="M9 20h6"/></svg>
+          <span>Gesprek dicteren</span>
+        </div>
       </div>
       <div class="notes-bar">
         <div class="notes-search"><input type="text" id="note-search-input" placeholder="Zoek in al je notities…" autocomplete="off" /></div>
@@ -2463,6 +2600,8 @@ function normalizeNotes() {
     n.pinned = !!n.pinned;
     n.archived = !!n.archived;
     if (n.clientId === undefined) n.clientId = null;
+    if (n.rawTranscript === undefined) n.rawTranscript = '';
+    if (!Array.isArray(n.audioClips)) n.audioClips = [];
     n.updatedAt = n.updatedAt || Date.now();
   });
 }
@@ -2556,7 +2695,19 @@ function renderNoteRead(n, host) {
     p.textContent = 'Nog geen tekst — klik op “Bewerken” om te schrijven.';
     read.appendChild(p);
   }
+  const HEADINGS = ['samenvatting', 'afspraken', 'maten en materialen', 'maten', 'actiepunten', 'open vragen', 'openstaande vragen', 'besluiten', 'vervolg', 'van de assistent', 'assistent', 'let op', 'nog uitzoeken', 'suggesties'];
+  const ASSIST_HEADS = ['van de assistent', 'assistent', 'let op', 'suggesties', 'nog uitzoeken'];
   lines.forEach((line, idx) => {
+    const bare = line.replace(/^#+\s*/, '').replace(/:$/, '').trim();
+    if (bare && HEADINGS.includes(bare.toLowerCase())) {
+      const head = document.createElement('div');
+      head.className = 'note-read-head' + (ASSIST_HEADS.includes(bare.toLowerCase()) ? ' assist-mark' : '');
+      const label = document.createElement('span');
+      label.textContent = bare;
+      head.appendChild(label);
+      read.appendChild(head);
+      return;
+    }
     const check = line.match(/^(\s*)\[([ xX])\]\s?(.*)$/);
     if (check) {
       const row = document.createElement('div');
@@ -2735,14 +2886,43 @@ function renderNoteDetail() {
     });
     tools.append(bulletBtn, checkBtn, doneBtn, saved);
     host.appendChild(tools);
+  } else if (dict.open && dict.noteId === n.id) {
+    renderDictPanel(host, n);
+    return;
   } else {
     renderNoteRead(n, host);
+    if ((n.audioClips || []).length) {
+      const audioWrap = document.createElement('div');
+      audioWrap.style.cssText = 'margin-top:14px; padding-top:12px; border-top:1px solid var(--hairline)';
+      mountAudioPlayer(audioWrap, n, {});
+      host.appendChild(audioWrap);
+    }
+    if ((n.rawTranscript || '').trim()) {
+      const toggle = document.createElement('div');
+      toggle.className = 'note-raw-toggle';
+      toggle.textContent = 'Ruwe opname bekijken';
+      const raw = document.createElement('div');
+      raw.className = 'note-raw';
+      raw.textContent = n.rawTranscript;
+      raw.style.display = 'none';
+      toggle.addEventListener('click', () => {
+        const open = raw.style.display !== 'none';
+        raw.style.display = open ? 'none' : 'block';
+        toggle.textContent = open ? 'Ruwe opname bekijken' : 'Ruwe opname verbergen';
+      });
+      host.append(toggle, raw);
+    }
+    renderAssistBar(host, n);
     const tools = document.createElement('div');
     tools.className = 'note-tools';
     const editBtn = document.createElement('button');
     editBtn.className = 'btn btn-sm btn-primary';
     editBtn.textContent = 'Bewerken';
     editBtn.addEventListener('click', () => { noteEditing = true; renderNoteDetail(); });
+    const dictBtn = document.createElement('button');
+    dictBtn.className = 'btn btn-sm';
+    dictBtn.textContent = (n.audioClips || []).length || (n.rawTranscript || '').trim() ? 'Opname / dicteren' : 'Dicteren';
+    dictBtn.addEventListener('click', () => dictOpen(n.id));
     const pinBtn = document.createElement('button');
     pinBtn.className = 'btn btn-sm';
     pinBtn.textContent = n.pinned ? 'Losmaken' : 'Vastpinnen';
@@ -2788,7 +2968,7 @@ function renderNoteDetail() {
       showUndoToast('Notitie verwijderd', async () => { notes.unshift(removed); await saveNotes(); renderNotes(); });
     });
     saved.textContent = 'Bijgewerkt ' + noteWhen(n.updatedAt);
-    tools.append(editBtn, pinBtn, taskBtn, copyBtn, waBtn, archBtn, delBtn, saved);
+    tools.append(editBtn, dictBtn, pinBtn, taskBtn, copyBtn, waBtn, archBtn, delBtn, saved);
     host.appendChild(tools);
   }
 }
@@ -2842,7 +3022,7 @@ function renderNotes() {
   }
   visible.forEach(n => {
     const card = document.createElement('div');
-    card.className = 'note-card' + (n.id === openNoteId ? ' active' : '');
+    card.className = 'note-card' + (n.id === openNoteId ? ' active' : '') + (n.pinned ? ' pinned' : '');
     card.style.borderLeftColor = noteLabel(n.label).color;
     card.innerHTML = '<div class="note-card-top"><div class="note-card-title"></div><div class="note-card-pin"></div></div><div class="note-card-body"></div><div class="note-card-meta"><span class="note-label-tag"><span class="note-chip-dot"></span><span class="lbl"></span></span><span class="when"></span></div>';
     card.querySelector('.note-card-title').textContent = noteHeading(n);
@@ -2858,6 +3038,656 @@ function renderNotes() {
   if (split) split.classList.toggle('note-open', !!openNoteId);
   renderNoteDetail();
 }
+// ---- Echte audio: opslag, opname en transcriptie ----
+const FN_BASE = 'https://europe-west1-' + firebaseConfig.projectId + '.cloudfunctions.net';
+const AUDIO_SEGMENT_MS = 4 * 60 * 1000;
+function audioDbOpen() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('werkplaats-audio', 1);
+    req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains('clips')) req.result.createObjectStore('clips', { keyPath: 'id' }); };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+async function audioPut(clip) {
+  const db = await audioDbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('clips', 'readwrite');
+    tx.objectStore('clips').put(clip);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+async function audioGet(id) {
+  const db = await audioDbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('clips', 'readonly');
+    const r = tx.objectStore('clips').get(id);
+    r.onsuccess = () => res(r.result || null);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function audioDel(id) {
+  const db = await audioDbOpen();
+  return new Promise((res) => {
+    const tx = db.transaction('clips', 'readwrite');
+    tx.objectStore('clips').delete(id);
+    tx.oncomplete = () => res();
+    tx.onerror = () => res();
+  });
+}
+function blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(String(fr.result).split(',')[1] || '');
+    fr.onerror = () => rej(fr.error);
+    fr.readAsDataURL(blob);
+  });
+}
+async function transcribeBlob(blob, mime) {
+  const audio = await blobToBase64(blob);
+  const res = await fetch(FN_BASE + '/transcribeAudio', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ audio, mimeType: mime || blob.type || 'audio/webm', language: 'nl' })
+  });
+  if (!res.ok) throw new Error('Transcriptie mislukt (' + res.status + ')');
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return (data.text || '').trim();
+}
+async function claudeMessage(payload) {
+  try {
+    const res = await fetch(FN_BASE + '/aiMessage', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.error) return data;
+    }
+  } catch (e) { /* geen proxy beschikbaar: probeer de directe route */ }
+  const direct = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+  });
+  return await direct.json();
+}
+
+const aud = {
+  stream: null, recorder: null, chunks: [], recording: false,
+  segments: [], startedAt: 0, elapsedBase: 0, rotateTimer: null, tickTimer: null,
+  transcribing: false, progress: { done: 0, total: 0 }, error: '', level: 0, analyser: null, rafId: null
+};
+function audElapsed() {
+  const ms = aud.elapsedBase + (aud.recording ? Date.now() - aud.startedAt : 0);
+  const s = Math.floor(ms / 1000);
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+}
+function pickAudioMime() {
+  const opts = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', ''];
+  return opts.find(t => !t || (window.MediaRecorder && MediaRecorder.isTypeSupported(t))) || '';
+}
+function audStartSegment() {
+  const mime = pickAudioMime();
+  const rec = mime ? new MediaRecorder(aud.stream, { mimeType: mime }) : new MediaRecorder(aud.stream);
+  aud.chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) aud.chunks.push(e.data); };
+  rec.onstop = async () => {
+    const type = rec.mimeType || mime || 'audio/webm';
+    const blob = new Blob(aud.chunks, { type });
+    aud.chunks = [];
+    if (!blob.size) return;
+    const n = notes.find(x => x.id === dict.noteId);
+    if (!n) return;
+    const id = 'clip-' + n.id + '-' + Date.now();
+    try { await audioPut({ id, noteId: n.id, blob, mime: type, createdAt: Date.now() }); }
+    catch (e) { console.error('Audio bewaren mislukt', e); aud.error = 'Audio kon niet lokaal worden bewaard.'; }
+    n.audioClips = (n.audioClips || []).concat([id]);
+    n.audioMime = type;
+    n.audioSeconds = Math.round((aud.elapsedBase + (aud.recording ? Date.now() - aud.startedAt : 0)) / 1000);
+    n.updatedAt = Date.now();
+    await saveNotes();
+    aud.segments = n.audioClips.slice();
+    renderNoteDetail();
+  };
+  rec.start();
+  aud.recorder = rec;
+  clearTimeout(aud.rotateTimer);
+  aud.rotateTimer = setTimeout(() => { if (aud.recording) { rec.stop(); audStartSegment(); } }, AUDIO_SEGMENT_MS);
+}
+function audMeter() {
+  if (!aud.analyser) return;
+  const data = new Uint8Array(aud.analyser.frequencyBinCount);
+  aud.analyser.getByteFrequencyData(data);
+  aud.level = data.reduce((a, b) => a + b, 0) / data.length / 255;
+  const bars = document.querySelectorAll('.dict-bar');
+  bars.forEach((b, i) => {
+    const f = 0.25 + Math.abs(Math.sin((Date.now() / 220) + i)) * 0.75;
+    b.style.height = Math.max(12, Math.min(100, aud.level * 150 * f)) + '%';
+  });
+  aud.rafId = requestAnimationFrame(audMeter);
+}
+async function audStart() {
+  aud.error = '';
+  try {
+    aud.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+  } catch (e) {
+    aud.error = 'Geen toegang tot de microfoon — sta dit toe in de instellingen van je telefoon of browser.';
+    renderNoteDetail();
+    return;
+  }
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ctx.createMediaStreamSource(aud.stream);
+    aud.analyser = ctx.createAnalyser();
+    aud.analyser.fftSize = 128;
+    src.connect(aud.analyser);
+    cancelAnimationFrame(aud.rafId);
+    audMeter();
+  } catch (e) { aud.analyser = null; }
+  aud.recording = true;
+  aud.startedAt = Date.now();
+  audStartSegment();
+  clearInterval(aud.tickTimer);
+  aud.tickTimer = setInterval(() => {
+    const t = document.getElementById('dict-timer');
+    if (t) t.textContent = audElapsed();
+  }, 500);
+  renderNoteDetail();
+}
+function audStop() {
+  aud.elapsedBase += aud.recording ? Date.now() - aud.startedAt : 0;
+  aud.recording = false;
+  clearTimeout(aud.rotateTimer);
+  clearInterval(aud.tickTimer);
+  cancelAnimationFrame(aud.rafId);
+  aud.analyser = null;
+  if (aud.recorder && aud.recorder.state !== 'inactive') aud.recorder.stop();
+  aud.recorder = null;
+  if (aud.stream) { aud.stream.getTracks().forEach(t => t.stop()); aud.stream = null; }
+  renderNoteDetail();
+}
+async function audTranscribe() {
+  const n = notes.find(x => x.id === dict.noteId);
+  if (!n || !(n.audioClips || []).length) return;
+  if (aud.recording) audStop();
+  aud.transcribing = true;
+  aud.error = '';
+  aud.progress = { done: 0, total: n.audioClips.length };
+  renderNoteDetail();
+  let text = '';
+  try {
+    for (const id of n.audioClips) {
+      const clip = await audioGet(id);
+      if (!clip) { aud.progress.done++; continue; }
+      const part = await transcribeBlob(clip.blob, clip.mime);
+      if (part) text += (text ? '\n' : '') + part;
+      aud.progress.done++;
+      n.rawTranscript = text;
+      await saveNotes();
+      renderNoteDetail();
+    }
+    dict.finalText = text;
+    aud.transcribing = false;
+    if (!text) { aud.error = 'Er kwam geen tekst uit de opname.'; renderNoteDetail(); return; }
+    await dictProcess();
+  } catch (e) {
+    console.error('Uittypen mislukt', e);
+    aud.transcribing = false;
+    aud.error = 'Uittypen mislukt — de opname blijft bewaard. Controleer of de transcriptie-service is ingesteld (zie leesmij) en probeer het opnieuw.';
+    renderNoteDetail();
+  }
+}
+async function audAddFile(file) {
+  const n = notes.find(x => x.id === dict.noteId);
+  if (!n || !file) return;
+  const id = 'clip-' + n.id + '-' + Date.now();
+  try { await audioPut({ id, noteId: n.id, blob: file, mime: file.type || 'audio/mpeg', createdAt: Date.now() }); }
+  catch (e) { aud.error = 'Bestand kon niet worden bewaard (te groot?).'; renderNoteDetail(); return; }
+  n.audioClips = (n.audioClips || []).concat([id]);
+  n.audioMime = file.type || 'audio/mpeg';
+  n.updatedAt = Date.now();
+  await saveNotes();
+  aud.segments = n.audioClips.slice();
+  renderNoteDetail();
+}
+async function audDeleteAll(n) {
+  for (const id of (n.audioClips || [])) await audioDel(id);
+  n.audioClips = [];
+  n.audioSeconds = 0;
+  n.updatedAt = Date.now();
+  aud.segments = [];
+  await saveNotes();
+  renderNoteDetail();
+}
+async function mountAudioPlayer(host, n, opts) {
+  const ids = n.audioClips || [];
+  if (!ids.length) return;
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex; flex-direction:column; gap:6px';
+  const player = document.createElement('audio');
+  player.controls = true;
+  const label = document.createElement('div');
+  label.className = 'dict-seg-label';
+  let idx = 0;
+  const load = async (i) => {
+    const clip = await audioGet(ids[i]);
+    if (!clip) return;
+    if (player.src) URL.revokeObjectURL(player.src);
+    player.src = URL.createObjectURL(clip.blob);
+    label.textContent = ids.length > 1 ? 'Deel ' + (i + 1) + ' van ' + ids.length : 'Opname' ;
+  };
+  player.addEventListener('ended', async () => {
+    if (idx < ids.length - 1) { idx++; await load(idx); player.play(); }
+  });
+  await load(0);
+  wrap.append(player, label);
+  if (opts && opts.withDelete) {
+    const del = document.createElement('div');
+    del.className = 'note-raw-toggle';
+    del.textContent = 'Opname verwijderen';
+    del.addEventListener('click', () => audDeleteAll(n));
+    wrap.appendChild(del);
+  }
+  host.appendChild(wrap);
+}
+
+// ---- Dicteren + AI-uitwerking ----
+const dict = { open: false, noteId: null, mode: 'audio', listening: false, finalText: '', interim: '', startedAt: 0, rec: null, timer: null, working: false, error: '' };
+function dictSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+function dictElapsed() {
+  const s = Math.floor((Date.now() - dict.startedAt) / 1000);
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+}
+function dictSaveRaw() {
+  const n = notes.find(x => x.id === dict.noteId);
+  if (!n) return;
+  n.rawTranscript = dict.finalText;
+  n.updatedAt = Date.now();
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer = setTimeout(saveNotes, 1200);
+}
+function dictStart() {
+  if (!dictSupported()) { dict.error = 'Dicteren werkt niet in deze browser. Op de iPhone werkt het in Safari; op de computer in Chrome of Edge.'; renderNoteDetail(); return; }
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new Rec();
+  rec.lang = 'nl-NL';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) {
+        const txt = (r[0].transcript || '').trim();
+        if (txt) dict.finalText += (dict.finalText ? ' ' : '') + txt;
+        dictSaveRaw();
+      } else {
+        interim += r[0].transcript;
+      }
+    }
+    dict.interim = interim;
+    dictPaint();
+  };
+  rec.onerror = (e) => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      dict.error = 'Geen toegang tot de microfoon — sta dit toe in de instellingen van je browser.';
+      dictStop();
+    }
+  };
+  rec.onend = () => { if (dict.listening) { try { rec.start(); } catch (e) {} } };
+  dict.rec = rec;
+  dict.listening = true;
+  dict.error = '';
+  dict.startedAt = dict.startedAt || Date.now();
+  try { rec.start(); } catch (e) {}
+  clearInterval(dict.timer);
+  dict.timer = setInterval(dictPaint, 1000);
+  renderNoteDetail();
+}
+function dictStop() {
+  dict.listening = false;
+  clearInterval(dict.timer);
+  dict.timer = null;
+  if (dict.rec) { try { dict.rec.stop(); } catch (e) {} }
+  dict.rec = null;
+  dict.interim = '';
+  dictSaveRaw();
+  renderNoteDetail();
+}
+function dictPaint() {
+  const live = document.getElementById('dict-live');
+  const timer = document.getElementById('dict-timer');
+  if (timer && dict.startedAt) timer.textContent = dictElapsed();
+  if (!live) return;
+  live.innerHTML = '';
+  const done = document.createTextNode(dict.finalText || '');
+  live.appendChild(done);
+  if (dict.interim) {
+    const sp = document.createElement('span');
+    sp.className = 'interim';
+    sp.textContent = (dict.finalText ? ' ' : '') + dict.interim;
+    live.appendChild(sp);
+  }
+  if (!dict.finalText && !dict.interim) {
+    const hint = document.createElement('span');
+    hint.className = 'interim';
+    hint.textContent = dict.listening ? 'Praat maar — je woorden komen hier te staan…' : 'Nog niets opgenomen.';
+    live.appendChild(hint);
+  }
+  live.scrollTop = live.scrollHeight;
+}
+function dictOpen(noteId) {
+  dict.open = true;
+  dict.noteId = noteId;
+  const n = notes.find(x => x.id === noteId);
+  dict.finalText = (n && n.rawTranscript) || '';
+  dict.interim = '';
+  dict.startedAt = 0;
+  dict.error = '';
+  dict.working = false;
+  aud.segments = (n && n.audioClips) ? n.audioClips.slice() : [];
+  aud.elapsedBase = 0;
+  aud.error = '';
+  openNoteId = noteId;
+  noteEditing = false;
+  renderNotes();
+}
+async function dictClose() {
+  if (dict.listening) dictStop();
+  if (aud.recording) audStop();
+  const n = notes.find(x => x.id === dict.noteId);
+  const leeg = n && !(n.title || '').trim() && !(n.text || '').trim() && !(n.rawTranscript || '').trim() && !((n.audioClips || []).length);
+  dict.open = false;
+  dict.noteId = null;
+  if (leeg) {
+    notes = notes.filter(x => x.id !== n.id);
+    openNoteId = null;
+    await saveNotes();
+  }
+  renderNotes();
+}
+const DICT_SYSTEM = [
+  'Je bent de vaste assistent van een medewerker bij een haardenbedrijf. Je zit als het ware mee in het gesprek: je schrijft mee, maakt het overzichtelijk, en je denkt mee.',
+  'De invoer is een ruwe spraaktranscriptie van een werkgesprek of vergadering. Er staan spraakfouten in; verbeter die stilzwijgend. Schrijf in het Nederlands, kort en zakelijk, in de taal van de werkvloer.',
+  'Geef ALLEEN de notitie terug, zonder inleiding, zonder uitleg en zonder codeblokken, in exact deze opbouw:',
+  'Regel 1: een korte titel (max. 8 woorden), zonder opmaakteken.',
+  'Dan een leesbare samenvatting van 2 tot 5 regels: waar ging het over en wat is de uitkomst.',
+  'Dan, alleen als er inhoud voor is, deze kopjes op een eigen regel — kopje precies zo spellen, gevolgd door de regels eronder:',
+  'Afspraken — elke afspraak op een eigen regel die begint met "• ", met wie en wanneer als dat genoemd is.',
+  'Maten en materialen — elke maat of materiaalspecificatie op een eigen regel die begint met "• ", met de maat exact zoals genoemd (bijv. "• Opening 1200 x 800 mm").',
+  'Actiepunten — elk actiepunt op een eigen regel die begint met "[ ] ", met wie het doet en de deadline als dat genoemd is.',
+  'Open vragen — wat in het gesprek onbeslist bleef, elk op een eigen regel met "• ".',
+  'Van de assistent — dit is jouw eigen bijdrage en dit kopje mag je ALTIJD opnemen: 2 tot 5 regels met "• " waarin je meedenkt. Denk aan: wat er nog niet is afgesproken maar wel geregeld moet worden, informatie die ontbreekt om dit te kunnen uitvoeren (maten, type toestel, rookkanaal, aansluiting, levertijd, prijsafspraak), een tegenstrijdigheid of risico dat je in het gesprek hoort, of een logische volgende stap. Begin zo\'n regel met een kort label, bijv. "• Ontbreekt: …", "• Let op: …", "• Voorstel: …", "• Vervolgstap: …".',
+  'Regels: verzin nooit maten, bedragen, namen of afspraken alsof ze gezegd zijn. Alles wat jij zelf toevoegt staat uitsluitend onder "Van de assistent" en is duidelijk als suggestie of vraag geformuleerd. Laat de andere kopjes weg als er niets over gezegd is.'
+].join('\n');
+function noteClientContext(n) {
+  const c = n && n.clientId ? clients.find(x => x.id === n.clientId) : null;
+  if (!c) return '';
+  const lines = Object.entries(c)
+    .filter(([k, v]) => typeof v === 'string' && v.trim() && !['id', 'photo', 'avatar'].includes(k))
+    .map(([k, v]) => '- ' + k + ': ' + v);
+  return lines.length ? '\nBekend over de klant bij deze notitie:\n' + lines.join('\n') + '\n' : '';
+}
+async function dictProcess() {
+  const n = notes.find(x => x.id === dict.noteId);
+  if (!n) return;
+  const raw = (dict.finalText || '').trim();
+  if (!raw) return;
+  if (dict.listening) dictStop();
+  dict.working = true;
+  dict.error = '';
+  renderNoteDetail();
+  try {
+    const data = await claudeMessage({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1800,
+      system: DICT_SYSTEM,
+      messages: [{ role: 'user', content: noteClientContext(n) + '\nRuwe transcriptie van het gesprek:\n\n' + raw }]
+    });
+    const block = (data.content || []).find(b => b.type === 'text');
+    if (!block) throw new Error('Geen antwoord ontvangen');
+    const lines = block.text.trim().split('\n');
+    const title = (lines.shift() || '').replace(/^#+\s*/, '').trim();
+    n.title = title || noteHeading(n);
+    n.text = lines.join('\n').trim();
+    n.rawTranscript = raw;
+    n.updatedAt = Date.now();
+    dict.working = false;
+    dict.open = false;
+    dict.noteId = null;
+    assist.noteId = n.id;
+    assist.answer = '';
+    assist.question = '';
+    assist.error = '';
+    await saveNotes();
+    renderNotes();
+    const body = n.text || '';
+    const acties = (body.match(/^\s*\[[ xX]\]/gm) || []).length;
+    const afspr = (body.split(/^Afspraken\s*$/m)[1] || '').split(/^\S.*$/m)[0];
+    const nAfspr = (afspr.match(/^\s*•/gm) || []).length;
+    const stukjes = ['Verslag klaar'];
+    if (nAfspr) stukjes.push(nAfspr + ' afspra' + (nAfspr === 1 ? 'ak' : 'ken'));
+    if (acties) stukjes.push(acties + ' actiepunt' + (acties === 1 ? '' : 'en'));
+    if (/^Van de assistent\s*$/m.test(body)) stukjes.push('en mijn aanvullingen');
+    showUndoToast(stukjes.join(' · '), null);
+  } catch (e) {
+    console.error('Uitwerken mislukt', e);
+    dict.working = false;
+    dict.error = 'Uitwerken mislukt — je opname staat nog bewaard bij de notitie. Probeer het later opnieuw.';
+    n.rawTranscript = raw;
+    await saveNotes();
+    renderNoteDetail();
+  }
+}
+function dictStepsEl(active) {
+  const el = document.createElement('div');
+  el.className = 'dict-steps';
+  [['1', 'Opnemen'], ['2', 'Uittypen'], ['3', 'Overzicht + aanvullingen']].forEach(([num, label], i) => {
+    if (i) { const sep = document.createElement('div'); sep.className = 'dict-step-sep'; el.appendChild(sep); }
+    const s = document.createElement('div');
+    s.className = 'dict-step' + (i === active ? ' active' : (i < active ? ' done' : ''));
+    s.innerHTML = '<span class="n">' + (i < active ? '✓' : num) + '</span><span>' + label + '</span>';
+    el.appendChild(s);
+  });
+  return el;
+}
+function renderDictPanel(host, n) {
+  const modes = document.createElement('div');
+  modes.className = 'dict-modes';
+  [['audio', 'Audio opnemen'], ['live', 'Live meeschrijven']].forEach(([key, label]) => {
+    const b = document.createElement('div');
+    b.className = 'dict-mode' + (dict.mode === key ? ' active' : '');
+    b.textContent = label;
+    b.addEventListener('click', () => {
+      if (dict.mode === key) return;
+      if (dict.listening) dictStop();
+      if (aud.recording) audStop();
+      dict.mode = key;
+      renderNoteDetail();
+    });
+    modes.appendChild(b);
+  });
+  host.appendChild(modes);
+  if (dict.mode === 'audio') { renderAudioPanel(host, n); return; }
+  const panel = document.createElement('div');
+  panel.className = 'dict-panel';
+  panel.innerHTML = `
+    <div class="dict-head">
+      <span class="dict-dot ${dict.listening ? 'live' : 'idle'}"></span>
+      <span class="dict-status">${dict.listening ? 'Opname loopt' : (dict.finalText ? 'Opname gepauzeerd' : 'Klaar om te dicteren')}</span>
+      <span class="dict-timer" id="dict-timer">${dict.startedAt ? dictElapsed() : '00:00'}</span>
+    </div>
+    <div class="dict-live" id="dict-live"></div>
+    <div class="dict-hint">Je spraak wordt live omgezet naar tekst en tussentijds bewaard. Klaar? Dan maak ik er een overzicht van met afspraken, maten en actiepunten — plus mijn eigen aanvullingen.</div>
+  `;
+  host.appendChild(panel);
+  panel.insertBefore(dictStepsEl(dict.working ? 2 : 0), panel.firstChild);
+  dictPaint();
+
+  if (dict.error) {
+    const err = document.createElement('div');
+    err.className = 'dict-hint';
+    err.style.color = 'var(--danger)';
+    err.textContent = dict.error;
+    panel.appendChild(err);
+  }
+  const tools = document.createElement('div');
+  tools.className = 'note-tools';
+  if (dict.working) {
+    const w = document.createElement('div');
+    w.className = 'dict-working';
+    w.innerHTML = '<span class="spin"></span><span>Ik maak er een overzicht van en denk mee…</span>';
+    tools.appendChild(w);
+  } else {
+    const startBtn = document.createElement('button');
+    startBtn.className = 'btn btn-sm btn-primary';
+    startBtn.textContent = dict.listening ? 'Pauzeren' : (dict.finalText ? 'Verder opnemen' : 'Start opname');
+    startBtn.addEventListener('click', () => { dict.listening ? dictStop() : dictStart(); });
+    tools.appendChild(startBtn);
+    if (dict.finalText.trim()) {
+      const aiBtn = document.createElement('button');
+      aiBtn.className = 'btn btn-sm';
+      aiBtn.textContent = 'Uitwerken + meedenken';
+      aiBtn.addEventListener('click', dictProcess);
+      const rawBtn = document.createElement('button');
+      rawBtn.className = 'btn btn-sm';
+      rawBtn.textContent = 'Ruwe tekst bewaren';
+      rawBtn.addEventListener('click', async () => {
+        if (dict.listening) dictStop();
+        n.text = (n.text ? n.text + '\n\n' : '') + dict.finalText.trim();
+        n.rawTranscript = dict.finalText.trim();
+        n.updatedAt = Date.now();
+        dict.open = false;
+        dict.noteId = null;
+        await saveNotes();
+        renderNotes();
+      });
+      tools.append(aiBtn, rawBtn);
+    }
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'note-del';
+    closeBtn.textContent = 'Sluiten';
+    closeBtn.addEventListener('click', dictClose);
+    tools.appendChild(closeBtn);
+  }
+  panel.appendChild(tools);
+}
+function renderAudioPanel(host, n) {
+  const panel = document.createElement('div');
+  panel.className = 'dict-panel';
+  const head = document.createElement('div');
+  head.className = 'dict-head';
+  head.innerHTML = '<span class="dict-dot ' + (aud.recording ? 'live' : 'idle') + '"></span>' +
+    '<span class="dict-status">' + (aud.recording ? 'Opname loopt' : ((n.audioClips || []).length ? 'Opname bewaard' : 'Klaar om op te nemen')) + '</span>' +
+    '<span class="dict-timer" id="dict-timer">' + audElapsed() + '</span>';
+  panel.appendChild(head);
+  panel.appendChild(dictStepsEl(aud.transcribing ? 1 : (dict.working ? 2 : 0)));
+
+  const box = document.createElement('div');
+  box.className = 'dict-audio-box';
+  if (aud.recording) {
+    const bars = document.createElement('div');
+    bars.className = 'dict-bars';
+    bars.innerHTML = Array.from({ length: 18 }).map(() => '<div class="dict-bar"></div>').join('');
+    box.appendChild(bars);
+    const hint = document.createElement('div');
+    hint.className = 'dict-hint';
+    hint.textContent = 'De opname wordt elke vier minuten in een stuk opgeslagen, zodat er niets verloren gaat bij een onderbreking.';
+    box.appendChild(hint);
+  } else if ((n.audioClips || []).length) {
+    mountAudioPlayer(box, n, { withDelete: true });
+  } else {
+    const hint = document.createElement('div');
+    hint.className = 'dict-hint';
+    hint.innerHTML = '<div class="note-read-head" style="margin:0 0 7px"><span>Ik schrijf met je mee</span></div>' +
+      'Neem het gesprek op met de microfoon van dit apparaat, of kies een audiobestand van je dictafoon. Ik typ het uit, maak er een overzicht van met afspraken, maten en actiepunten, en zet er mijn eigen aanvullingen bij: wat er nog ontbreekt, waar je op moet letten en wat de logische vervolgstap is.';
+    box.appendChild(hint);
+  }
+  panel.appendChild(box);
+
+  if (aud.transcribing) {
+    const prog = document.createElement('div');
+    const pct = aud.progress.total ? Math.round((aud.progress.done / aud.progress.total) * 100) : 10;
+    prog.innerHTML = '<div class="dict-working"><span class="spin"></span><span>Audio wordt uitgetypt — deel ' +
+      Math.min(aud.progress.done + 1, aud.progress.total) + ' van ' + aud.progress.total + '…</span></div>' +
+      '<div class="dict-progress" style="margin-top:8px"><span style="width:' + pct + '%"></span></div>';
+    panel.appendChild(prog);
+  }
+  if (dict.working) {
+    const w = document.createElement('div');
+    w.className = 'dict-working';
+    w.innerHTML = '<span class="spin"></span><span>Ik maak er een overzicht van en denk mee…</span>';
+    panel.appendChild(w);
+  }
+  if ((n.rawTranscript || '').trim() && !aud.transcribing && !dict.working) {
+    const raw = document.createElement('div');
+    raw.className = 'note-raw';
+    raw.textContent = n.rawTranscript;
+    panel.appendChild(raw);
+  }
+  if (aud.error) {
+    const err = document.createElement('div');
+    err.className = 'dict-hint';
+    err.style.color = 'var(--danger)';
+    err.textContent = aud.error;
+    panel.appendChild(err);
+  }
+
+  const tools = document.createElement('div');
+  tools.className = 'note-tools';
+  if (!aud.transcribing && !dict.working) {
+    const recBtn = document.createElement('button');
+    recBtn.className = 'btn btn-sm btn-primary';
+    recBtn.textContent = aud.recording ? 'Stop opname' : ((n.audioClips || []).length ? 'Verder opnemen' : 'Start opname');
+    recBtn.addEventListener('click', () => { aud.recording ? audStop() : audStart(); });
+    tools.appendChild(recBtn);
+
+    const fileBtn = document.createElement('button');
+    fileBtn.className = 'btn btn-sm';
+    fileBtn.textContent = 'Audiobestand kiezen';
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'audio/*';
+    fileInput.style.display = 'none';
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) audAddFile(fileInput.files[0]); });
+    fileBtn.addEventListener('click', () => fileInput.click());
+    tools.append(fileBtn, fileInput);
+
+    if ((n.audioClips || []).length && !aud.recording) {
+      const typeBtn = document.createElement('button');
+      typeBtn.className = 'btn btn-sm';
+      typeBtn.textContent = (n.rawTranscript || '').trim() ? 'Opnieuw uittypen' : 'Uittypen met AI';
+      typeBtn.addEventListener('click', audTranscribe);
+      tools.appendChild(typeBtn);
+    }
+    if ((n.rawTranscript || '').trim() && !aud.recording) {
+      const aiBtn = document.createElement('button');
+      aiBtn.className = 'btn btn-sm';
+      aiBtn.textContent = 'Verslag + aanvullingen';
+      aiBtn.addEventListener('click', () => { dict.finalText = n.rawTranscript; dictProcess(); });
+      tools.appendChild(aiBtn);
+    }
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'note-del';
+    closeBtn.textContent = 'Sluiten';
+    closeBtn.addEventListener('click', () => { if (aud.recording) audStop(); dictClose(); });
+    tools.appendChild(closeBtn);
+  }
+  panel.appendChild(tools);
+  host.appendChild(panel);
+}
+
+async function startDictationNote() {
+  const n = {
+    id: 'note-' + Date.now(), title: '', text: '', rawTranscript: '',
+    label: noteFilter === 'alles' || noteFilter === 'archief' ? 'algemeen' : noteFilter,
+    pinned: false, archived: false, clientId: null, updatedAt: Date.now()
+  };
+  notes.unshift(n);
+  await saveNotes();
+  dictOpen(n.id);
+}
+
 async function addQuickNote() {
   const input = document.getElementById('note-quick-input');
   const val = (input.value || '').trim();
@@ -2877,6 +3707,7 @@ document.getElementById('note-add-btn').addEventListener('click', () => {
 document.getElementById('note-quick-btn').addEventListener('click', addQuickNote);
 document.getElementById('note-quick-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addQuickNote(); } });
 document.getElementById('note-search-input').addEventListener('input', (e) => { noteQuery = e.target.value; renderNotes(); });
+document.getElementById('note-dictate-new').addEventListener('click', startDictationNote);
 
 // ---------- Navigation ----------
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -2891,14 +3722,171 @@ document.querySelectorAll('.nav-item').forEach(item => {
   });
 });
 
+// ---- Assistent bij een notitie ----
+const assist = { noteId: null, busy: false, question: '', answer: '', asked: '', error: '' };
+const ASSIST_SYSTEM = [
+  'Je bent de vaste assistent van een medewerker bij een haardenbedrijf. Je kent zijn notitie van een gesprek en helpt hem verder: overzichtelijk maken, meedenken en aanvullen.',
+  'Antwoord in het Nederlands, kort en concreet, zonder inleiding en zonder codeblokken. Gebruik "• " voor opsommingen en "[ ] " voor iets dat gedaan moet worden.',
+  'Alles wat niet in de notitie of transcriptie staat, formuleer je duidelijk als suggestie of vraag — nooit als een gemaakte afspraak. Verzin geen maten, bedragen of namen.',
+  'Houd het bij maximaal ongeveer 12 regels, tenzij er om een brief of mail wordt gevraagd.'
+].join('\n');
+const ASSIST_ACTIONS = [
+  ['Wat mis ik nog?', 'Kijk kritisch naar deze notitie: wat ontbreekt er nog of is te vaag om dit te kunnen uitvoeren? Maximaal 5 punten met "• ", elk met waarom het nodig is.'],
+  ['Actiepunten aanvullen', 'Geef de actiepunten die uit dit gesprek volgen, inclusief de logische stappen die niet expliciet genoemd zijn. Elk op een eigen regel met "[ ] ", met wie het doet als dat bekend is. Markeer wat jij zelf toevoegt met "(voorstel)".'],
+  ['Vragen voor de klant', 'Maak een lijstje vragen die ik de klant nog moet stellen om dit verder te kunnen brengen. Elk met "• ".'],
+  ['Mail naar de klant', 'Schrijf een korte, vriendelijke Nederlandse mail aan de klant met de afspraken en de vervolgstap uit deze notitie. Begin met de onderwerpregel op de eerste regel.'],
+  ['Werkbon voor de montage', 'Maak een beknopte werkopdracht voor de monteur: adres/klant, wat er gedaan moet worden, maten en materialen, en wat hij moet meenemen. Zet ontbrekende gegevens tussen haakjes als "(nog opvragen)".'],
+  ['Korter samenvatten', 'Vat deze notitie samen in maximaal 4 regels, zodat ik het in één blik zie.']
+];
+function assistContext(n) {
+  const raw = (n.rawTranscript || '').trim();
+  return 'Titel van de notitie: ' + (n.title || '(geen titel)') + '\n' +
+    noteClientContext(n) +
+    '\nDe notitie zoals die nu is:\n' + ((n.text || '').trim() || '(nog leeg)') +
+    (raw ? '\n\nRuwe transcriptie van het gesprek (achtergrond):\n' + raw.slice(0, 12000) : '');
+}
+async function assistAsk(n, instruction, label) {
+  assist.noteId = n.id;
+  assist.busy = true;
+  assist.answer = '';
+  assist.error = '';
+  assist.asked = label || instruction;
+  renderNoteDetail();
+  try {
+    const data = await claudeMessage({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1400,
+      system: ASSIST_SYSTEM,
+      messages: [{ role: 'user', content: assistContext(n) + '\n\nMijn vraag: ' + instruction }]
+    });
+    const block = (data.content || []).find(b => b.type === 'text');
+    assist.answer = block ? block.text.trim() : '';
+    if (!assist.answer) assist.error = 'Ik kreeg geen antwoord terug. Probeer het nog eens.';
+  } catch (e) {
+    console.error('Assistent mislukt', e);
+    assist.error = 'Ik kon de assistent niet bereiken. Controleer de verbinding en probeer het opnieuw.';
+  }
+  assist.busy = false;
+  renderNoteDetail();
+}
+function renderAssistBar(host, n) {
+  const wrap = document.createElement('div');
+  wrap.className = 'assist';
+  const head = document.createElement('div');
+  head.className = 'assist-head';
+  head.innerHTML = '<span class="ico">AI</span><span>Assistent</span>';
+  wrap.appendChild(head);
+
+  const chips = document.createElement('div');
+  chips.className = 'assist-chips';
+  ASSIST_ACTIONS.forEach(([label, instruction]) => {
+    const c = document.createElement('div');
+    c.className = 'assist-chip';
+    c.textContent = label;
+    c.addEventListener('click', () => { if (!assist.busy) assistAsk(n, instruction, label); });
+    chips.appendChild(c);
+  });
+  wrap.appendChild(chips);
+
+  const ask = document.createElement('div');
+  ask.className = 'assist-ask';
+  const ta = document.createElement('textarea');
+  ta.placeholder = 'Vraag iets over dit gesprek, of laat me iets aanvullen…';
+  ta.value = assist.noteId === n.id ? (assist.question || '') : '';
+  ta.addEventListener('input', () => { assist.noteId = n.id; assist.question = ta.value; });
+  const send = document.createElement('button');
+  send.className = 'btn btn-sm btn-primary';
+  send.textContent = 'Vraag';
+  const fire = () => {
+    const q = (ta.value || '').trim();
+    if (!q || assist.busy) return;
+    assist.question = '';
+    assistAsk(n, q, q);
+  };
+  send.addEventListener('click', fire);
+  ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); fire(); } });
+  ask.append(ta, send);
+  wrap.appendChild(ask);
+
+  if (assist.noteId === n.id && assist.busy) {
+    const w = document.createElement('div');
+    w.className = 'dict-working';
+    w.innerHTML = '<span class="spin"></span><span>Ik kijk het na…</span>';
+    wrap.appendChild(w);
+  }
+  if (assist.noteId === n.id && assist.error) {
+    const err = document.createElement('div');
+    err.className = 'dict-hint';
+    err.style.color = 'var(--danger)';
+    err.textContent = assist.error;
+    wrap.appendChild(err);
+  }
+  if (assist.noteId === n.id && assist.answer && !assist.busy) {
+    if (assist.asked) {
+      const q = document.createElement('div');
+      q.className = 'assist-q';
+      q.textContent = assist.asked;
+      wrap.appendChild(q);
+    }
+    const ans = document.createElement('div');
+    ans.className = 'assist-answer';
+    ans.textContent = assist.answer;
+    wrap.appendChild(ans);
+    const tools = document.createElement('div');
+    tools.className = 'note-tools';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn btn-sm btn-primary';
+    addBtn.textContent = 'In notitie zetten';
+    addBtn.addEventListener('click', async () => {
+      n.text = ((n.text || '').trim() ? n.text.trim() + '\n\n' : '') + 'Van de assistent\n' + assist.answer;
+      n.updatedAt = Date.now();
+      assist.answer = '';
+      assist.asked = '';
+      await saveNotes();
+      renderNotes();
+    });
+    const taskBtn = document.createElement('button');
+    taskBtn.className = 'btn btn-sm';
+    taskBtn.textContent = 'Actiepunten als taken';
+    taskBtn.addEventListener('click', async () => {
+      const items = assist.answer.split('\n').filter(l => /^\s*(\[[ xX]\]|•)/.test(l)).map(l => l.replace(/^\s*(\[[ xX]\]|•)\s*/, '').trim()).filter(Boolean);
+      if (!items.length) { showUndoToast('Hier staan geen punten die ik als taak kan zetten', null); return; }
+      const c = n.clientId ? clients.find(x => x.id === n.clientId) : null;
+      items.forEach(text => tasks.unshift({
+        id: 'task-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), text: text,
+        ref: (c && c.ref) || null, clientId: n.clientId || null, done: false, createdAt: Date.now(),
+        priority: 3, subtasks: [], dueDate: null, dueTime: null, reminderFired: false
+      }));
+      await saveTasks();
+      renderTasks();
+      showUndoToast(items.length + ' taak' + (items.length === 1 ? '' : 'en') + ' aangemaakt', null);
+    });
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'btn btn-sm';
+    copyBtn.textContent = 'Kopiëren';
+    copyBtn.addEventListener('click', () => {
+      copyNoteText(assist.answer);
+      copyBtn.textContent = 'Gekopieerd';
+      setTimeout(() => { copyBtn.textContent = 'Kopiëren'; }, 1400);
+    });
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'note-del';
+    closeBtn.textContent = 'Weg';
+    closeBtn.addEventListener('click', () => { assist.answer = ''; assist.asked = ''; renderNoteDetail(); });
+    tools.append(addBtn, taskBtn, copyBtn, closeBtn);
+    wrap.appendChild(tools);
+  }
+  host.appendChild(wrap);
+}
+
 // ---------- Toast / undo ----------
 let toastTimer = null;
 function showUndoToast(message, onUndo) {
   const toast = document.getElementById('toast');
   clearTimeout(toastTimer);
-  toast.innerHTML = `<div class="toast-text"></div><div class="toast-undo">Ongedaan maken</div>`;
+  toast.innerHTML = `<div class="toast-text"></div>` + (onUndo ? `<div class="toast-undo">Ongedaan maken</div>` : '');
   toast.querySelector('.toast-text').textContent = message;
-  toast.querySelector('.toast-undo').addEventListener('click', () => {
+  if (onUndo) toast.querySelector('.toast-undo').addEventListener('click', () => {
     onUndo();
     toast.classList.remove('show');
   });
