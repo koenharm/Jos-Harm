@@ -149,8 +149,25 @@
   /* ---- Main ---- */
   .main { padding: 34px 42px 60px; max-width: 1240px; min-width: 0; }
   .view { display: none; }
-  .view.active { display: block; animation: fadein 0.25s ease; }
-  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .view.active { display: block; animation: fadein 0.3s cubic-bezier(.2,.7,.3,1); }
+  @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ---- Beweging: knoppen, kaarten, getallen ---- */
+  button, .btn, .board-dot, .note-card-del, .calc-card-del, .assist-chip, .dict-kind, .note-del, .calc-drag-handle {
+    transition: transform 0.12s cubic-bezier(.3,.8,.3,1), background 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+  }
+  button:active, .btn:active, .assist-chip:active, .dict-kind:active, .note-del:active, .calc-card-del:active, .note-card-del:active { transform: scale(0.98); }
+  .num-roll { transition: color 0.25s ease; }
+  .num-roll.rolling { color: var(--ember); }
+  @keyframes valuePop { 0% { transform: none; } 40% { transform: translateY(-1.5px); } 100% { transform: none; } }
+  .num-roll.rolling { animation: valuePop 0.32s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important; animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+    }
+  }
 
   .view-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 26px; gap: 20px; flex-wrap: wrap; }
   .reminder-settings {
@@ -210,7 +227,11 @@
     position: absolute; top: 8px; left: 12px; font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700;
     letter-spacing: 0.14em; text-transform: uppercase; color: rgba(139,131,120,0.85);
   }
-  .board-zone.hot { border-color: var(--ember); background: rgba(216,90,44,0.07); }
+  .board-zone.hot { border-color: var(--ember); background: rgba(216,90,44,0.07); animation: zoneBreathe 1.9s ease-in-out infinite; }
+  @keyframes zoneBreathe {
+    0%, 100% { box-shadow: inset 0 0 0 0 rgba(216,90,44,0); background: rgba(216,90,44,0.05); }
+    50% { box-shadow: inset 0 0 22px 0 rgba(216,90,44,0.10); background: rgba(216,90,44,0.10); }
+  }
   .board-zone.hot .board-zone-label { color: var(--ember); }
   .board-zone-badge {
     font-family: 'Poppins', sans-serif; font-size: 0.68em; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
@@ -221,6 +242,24 @@
     color: var(--smoke); display: flex; align-items: center; gap: 10px; margin: 10px 0 2px;
   }
   .board-group-head::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+  .board-card { transition: box-shadow 0.18s ease, transform 0.2s cubic-bezier(.3,.8,.3,1); }
+  .board-card.lifted {
+    transform: rotate(-1.6deg) scale(1.035) !important;
+    box-shadow: 0 16px 34px rgba(43,43,43,0.26), 0 3px 8px rgba(43,43,43,0.14);
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+  }
+  .board-card.settling { animation: postitSettle 0.42s cubic-bezier(.25,1.5,.45,1); }
+  @keyframes postitSettle {
+    0% { transform: rotate(-1.6deg) scale(1.035); }
+    55% { transform: rotate(0.5deg) scale(0.985); }
+    100% { transform: none; }
+  }
+  .board-card.stuck { animation: postitStick 0.4s cubic-bezier(.2,1.3,.4,1); }
+  @keyframes postitStick {
+    0% { opacity: 0; transform: scale(0.94) rotate(-2.5deg); }
+    60% { opacity: 1; transform: scale(1.012) rotate(0.6deg); }
+    100% { opacity: 1; transform: none; }
+  }
   .board-ref-row { display: flex; margin-top: 7px; min-width: 0; }
   .board-badge-group { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
   .board-ref-copy {
@@ -1004,6 +1043,35 @@
   }
   .notes-list { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 320px); overflow-y: auto; padding-right: 2px; }
   .note-card {
+    transition: transform 0.18s cubic-bezier(.3,.8,.3,1), opacity 0.18s ease, border-color 0.15s ease, box-shadow 0.18s ease, margin 0.24s cubic-bezier(.3,.8,.3,1), max-height 0.24s cubic-bezier(.3,.8,.3,1);
+  }
+  .note-card.removing {
+    transform: translateX(-115%); opacity: 0; max-height: 0; margin-bottom: -8px;
+    padding-top: 0; padding-bottom: 0; overflow: hidden; pointer-events: none;
+  }
+  .note-detail.opening { animation: noteGrow 0.28s cubic-bezier(.2,.85,.3,1); }
+  @keyframes noteGrow {
+    from { opacity: 0; transform: scale(0.975) translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .note-card.just-pinned::before { animation: tapeSwing 0.6s cubic-bezier(.3,1.2,.4,1); transform-origin: 50% 0; }
+  @keyframes tapeSwing {
+    0% { transform: translateX(-50%) rotate(-9deg); }
+    45% { transform: translateX(-50%) rotate(4deg); }
+    75% { transform: translateX(-50%) rotate(-2deg); }
+    100% { transform: translateX(-50%) rotate(-2deg); }
+  }
+  .note-read.revealing > * { opacity: 0; animation: lineIn 0.34s cubic-bezier(.2,.8,.3,1) forwards; }
+  @keyframes lineIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  .calc-product-row.opening { animation: rowOpen 0.26s cubic-bezier(.2,.85,.3,1); }
+  @keyframes rowOpen {
+    from { opacity: 0; transform: translateY(-6px) scaleY(0.85); }
+    to { opacity: 1; transform: none; }
+  }
+  .calc-products.reflowing .calc-product-row:not(.dragging) { transition: transform 0.18s cubic-bezier(.3,.8,.3,1); }
+  .calc-drop-line { animation: dropLineIn 0.18s ease; }
+  @keyframes dropLineIn { from { transform: scaleX(0.3); opacity: 0; } to { transform: none; opacity: 1; } }
+  .note-card {
     position: relative; background: linear-gradient(150deg, var(--panel) 0%, #FBF8F2 100%);
     border: 1px solid var(--hairline); border-left: 4px solid var(--hairline); border-radius: 3px 8px 8px 3px;
     padding: 12px 15px 12px 14px; cursor: pointer; overflow: hidden;
@@ -1152,8 +1220,20 @@
     border: 1px solid var(--hairline); border-left: 4px solid var(--ember); border-radius: 3px 8px 8px 3px;
     padding: 16px 18px; display: flex; flex-direction: column; gap: 13px;
   }
-  .dict-bars { display: flex; align-items: center; gap: 3px; height: 34px; }
-  .dict-bar { width: 4px; background: var(--ember); border-radius: 3px; height: 20%; min-height: 4px; transition: height 0.09s linear; }
+  .dict-bars { display: flex; align-items: flex-end; gap: 3px; height: 34px; }
+  .dict-bar {
+    width: 4px; background: linear-gradient(to top, var(--ember-dim), var(--ember)); border-radius: 3px;
+    height: 14%; min-height: 4px; transition: height 0.11s cubic-bezier(.3,.9,.3,1), opacity 0.2s ease;
+    align-self: center;
+  }
+  .dict-dot.live { background: var(--danger); animation: dictHeartbeat 2.2s cubic-bezier(.4,0,.5,1) infinite; }
+  @keyframes dictHeartbeat {
+    0% { box-shadow: 0 0 0 3px rgba(167,94,63,0.22); transform: scale(1); }
+    12% { box-shadow: 0 0 0 10px rgba(167,94,63,0); transform: scale(1.18); }
+    26% { box-shadow: 0 0 0 3px rgba(167,94,63,0.22); transform: scale(1); }
+    38% { box-shadow: 0 0 0 8px rgba(167,94,63,0); transform: scale(1.1); }
+    52%, 100% { box-shadow: 0 0 0 3px rgba(167,94,63,0.22); transform: scale(1); }
+  }
   .dict-audio-box audio { width: 100%; }
   .dict-seg-label { font-size: 11.5px; color: var(--smoke); }
   .dict-progress { height: 3px; background: var(--hairline); overflow: hidden; }
@@ -1167,7 +1247,14 @@
   .dict-step.active .n { background: var(--ember); border-color: var(--ember); color: #fff; }
   .dict-step.done { color: var(--paper-dim); }
   .dict-step.done .n { background: var(--brass); border-color: var(--brass); color: #2B2B2B; }
-  .dict-step-sep { width: 16px; height: 1px; background: var(--hairline); }
+  .dict-step-sep { width: 16px; height: 1px; background: var(--hairline); position: relative; overflow: hidden; }
+  .dict-step-sep::after {
+    content: ''; position: absolute; inset: 0 100% 0 0; background: var(--brass);
+    transition: inset 0.5s cubic-bezier(.3,.8,.3,1);
+  }
+  .dict-step-sep.filled::after { inset: 0; }
+  .dict-step .n { transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s cubic-bezier(.3,1.4,.4,1); }
+  .dict-step.active .n { transform: scale(1.12); }
   .assist { margin-top: 18px; border-top: 1px solid var(--hairline); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; max-width: 62ch; }
   .assist-head { display: flex; align-items: center; gap: 9px; font-family: 'Poppins', sans-serif; font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--paper-dim); }
   .assist-head .ico { width: 22px; height: 22px; border-radius: 50%; background: var(--ember); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; letter-spacing: 0; }
@@ -1224,7 +1311,7 @@
     background: var(--panel-raised); border: 1px solid var(--hairline); border-radius: 9px;
     padding: 12px 14px 12px 16px; display: flex; align-items: center; gap: 14px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.5); z-index: 200; opacity: 0; pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.24s ease, transform 0.32s cubic-bezier(.2,1.2,.35,1);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
   .toast-text { font-size: 13px; }
@@ -2800,12 +2887,32 @@ function renderNoteRead(n, host) {
     read.appendChild(p);
   });
   host.appendChild(read);
+  if (noteRevealId && n && noteRevealId === n.id) {
+    noteRevealId = null;
+    read.classList.add('revealing');
+    [...read.children].forEach((el, i) => { el.style.animationDelay = (i * 55) + 'ms'; });
+    setTimeout(() => {
+      read.classList.remove('revealing');
+      [...read.children].forEach(el => { el.style.animationDelay = ''; });
+    }, read.children.length * 55 + 500);
+  }
 }
+let noteRevealId = null;
+let lastDetailId = null;
 function renderNoteDetail() {
   const host = document.getElementById('note-detail');
   if (!host) return;
   host.innerHTML = '';
   const n = notes.find(x => x.id === openNoteId);
+  if (openNoteId !== lastDetailId) {
+    lastDetailId = openNoteId;
+    if (openNoteId) {
+      host.classList.remove('opening');
+      void host.offsetWidth;
+      host.classList.add('opening');
+      setTimeout(() => host.classList.remove('opening'), 320);
+    }
+  }
   if (!n) {
     host.innerHTML = '<div class="note-detail-empty">Kies links een notitie, of maak een nieuwe aan.</div>';
     return;
@@ -2978,7 +3085,19 @@ function renderNoteDetail() {
     const pinBtn = document.createElement('button');
     pinBtn.className = 'btn btn-sm';
     pinBtn.textContent = n.pinned ? 'Losmaken' : 'Vastpinnen';
-    pinBtn.addEventListener('click', async () => { n.pinned = !n.pinned; await saveNotes(); renderNotes(); });
+    pinBtn.addEventListener('click', async () => {
+      n.pinned = !n.pinned;
+      const wasPinned = n.pinned;
+      await saveNotes();
+      renderNotes();
+      if (wasPinned) {
+        const card = document.querySelector('.note-card.pinned.active');
+        if (card) {
+          card.classList.add('just-pinned');
+          setTimeout(() => card.classList.remove('just-pinned'), 660);
+        }
+      }
+    });
     const taskBtn = document.createElement('button');
     taskBtn.className = 'btn btn-sm';
     taskBtn.textContent = 'Maak taak';
@@ -3051,6 +3170,11 @@ function openNotesView(noteId) {
 async function deleteNoteById(id, opts) {
   const removed = notes.find(x => x.id === id);
   if (!removed) return;
+  const card = [...document.querySelectorAll('.note-card')].find(el => el.dataset.noteId === id);
+  if (card && !(opts && opts.skipAnim)) {
+    card.classList.add('removing');
+    await new Promise(r => setTimeout(r, 230));
+  }
   const idx = notes.indexOf(removed);
   notes = notes.filter(x => x.id !== id);
   if (openNoteId === id) openNoteId = null;
@@ -3085,6 +3209,7 @@ function renderNotes() {
   visible.forEach(n => {
     const card = document.createElement('div');
     card.className = 'note-card' + (n.id === openNoteId ? ' active' : '') + (n.pinned ? ' pinned' : '');
+    card.dataset.noteId = n.id;
     card.style.borderLeftColor = noteLabel(n.label).color;
     card.innerHTML = '<div class="note-card-top"><div class="note-card-title"></div><div class="note-card-pin"></div><div class="note-card-del" title="Notitie verwijderen">×</div></div><div class="note-card-body"></div><div class="note-card-meta"><span class="note-label-tag"><span class="note-chip-dot"></span><span class="lbl"></span></span><span class="when"></span></div>';
     card.querySelector('.note-card-title').textContent = noteHeading(n);
@@ -3118,7 +3243,7 @@ function renderNotes() {
       if (dx < -90) {
         card.style.transform = 'translateX(-110%)';
         card.style.opacity = '0';
-        setTimeout(() => deleteNoteById(n.id), 170);
+        setTimeout(() => deleteNoteById(n.id, { skipAnim: true }), 170);
       } else {
         card.style.transform = '';
         card.style.opacity = '';
@@ -3254,11 +3379,17 @@ function audMeter() {
   if (!aud.analyser) return;
   const data = new Uint8Array(aud.analyser.frequencyBinCount);
   aud.analyser.getByteFrequencyData(data);
-  aud.level = data.reduce((a, b) => a + b, 0) / data.length / 255;
+  const raw = data.reduce((a, b) => a + b, 0) / data.length / 255;
+  aud.level = aud.level * 0.72 + raw * 0.28;
   const bars = document.querySelectorAll('.dict-bar');
+  const t = Date.now() / 300;
+  const nb = bars.length || 1;
   bars.forEach((b, i) => {
-    const f = 0.25 + Math.abs(Math.sin((Date.now() / 220) + i)) * 0.75;
-    b.style.height = Math.max(12, Math.min(100, aud.level * 150 * f)) + '%';
+    const centre = 1 - Math.abs((i / (nb - 1)) - 0.5) * 1.25;
+    const wave = 0.55 + 0.45 * Math.sin(t - i * 0.42);
+    const h = 10 + aud.level * 150 * centre * wave;
+    b.style.height = Math.max(9, Math.min(100, h)) + '%';
+    b.style.opacity = String(0.55 + Math.min(0.45, aud.level * 1.6));
   });
   aud.rafId = requestAnimationFrame(audMeter);
 }
@@ -3569,6 +3700,7 @@ async function dictProcess() {
     dict.working = false;
     dict.open = false;
     dict.noteId = null;
+    noteRevealId = n.id;
     assist.noteId = n.id;
     assist.answer = '';
     assist.question = '';
@@ -3597,7 +3729,7 @@ function dictStepsEl(active) {
   const el = document.createElement('div');
   el.className = 'dict-steps';
   [['1', 'Opnemen'], ['2', 'Uittypen'], ['3', 'Overzicht + aanvullingen']].forEach(([num, label], i) => {
-    if (i) { const sep = document.createElement('div'); sep.className = 'dict-step-sep'; el.appendChild(sep); }
+    if (i) { const sep = document.createElement('div'); sep.className = 'dict-step-sep' + (i <= active ? ' filled' : ''); el.appendChild(sep); }
     const s = document.createElement('div');
     s.className = 'dict-step' + (i === active ? ' active' : (i < active ? ' done' : ''));
     s.innerHTML = '<span class="n">' + (i < active ? '✓' : num) + '</span><span>' + label + '</span>';
@@ -4173,6 +4305,8 @@ const BOARD_ZONES = [
   { key: 'tekenwerk', name: 'Tekenwerk', x: [53, 90], y: [10, 40], css: { left: '51.5%', top: '1.5%', width: '47%', height: '48%' } },
   { key: 'algemeen', name: 'Algemeen', x: [3, 88], y: [57, 84], css: { left: '1.5%', top: '51%', width: '97%', height: '47.5%' } }
 ];
+const boardSeen = new Set();
+let boardSeenReady = false;
 function boardZone(key) { return BOARD_ZONES.find(z => z.key === key) || BOARD_ZONES[2]; }
 function zoneFromPos(x, y) { return y >= 50 ? 'algemeen' : (x < 50 ? 'klanten' : 'tekenwerk'); }
 function zoneBounds(key) {
@@ -4407,6 +4541,13 @@ function renderBoard() {
       head.textContent = boardZone(lastZone).name;
       board.appendChild(head);
     }
+    if (!boardSeen.has(t.id)) {
+      boardSeen.add(t.id);
+      if (boardSeenReady) {
+        card.classList.add('stuck');
+        setTimeout(() => card.classList.remove('stuck'), 460);
+      }
+    }
     if (!isMobile) makeCardDraggable(card, t, board);
     board.appendChild(card);
     if (!isMobile) {
@@ -4419,6 +4560,7 @@ function renderBoard() {
     }
   });
   if (boardDirty) saveTasks();
+  boardSeenReady = true;
 }
 
 function makeCardDraggable(card, t, board) {
@@ -4437,6 +4579,8 @@ function makeCardDraggable(card, t, board) {
     startTopPct = parseFloat(card.style.top) || 0;
     card.setPointerCapture(e.pointerId);
     card.style.transition = 'none';
+    card.classList.remove('settling');
+    card.classList.add('lifted');
     card.style.cursor = 'grabbing';
     card.style.zIndex = 5000;
   });
@@ -4462,6 +4606,9 @@ function makeCardDraggable(card, t, board) {
     const prevZone = taskZone(t);
     dragging = false;
     card.style.transition = '';
+    card.classList.remove('lifted');
+    card.classList.add('settling');
+    setTimeout(() => card.classList.remove('settling'), 460);
     card.style.cursor = 'grab';
     t.posX = parseFloat(card.style.left) || 0;
     t.posY = parseFloat(card.style.top) || 0;
@@ -6616,6 +6763,7 @@ function startProductDrag(e, row, wrap) {
   const calc = window.__editingCalc;
   if (!calc) return;
   row.classList.add('dragging');
+  wrap.classList.add('reflowing');
   const marker = document.createElement('div');
   marker.className = 'calc-drop-line';
   const place = (clientY) => {
@@ -6633,6 +6781,7 @@ function startProductDrag(e, row, wrap) {
     document.removeEventListener('pointerup', finish);
     document.removeEventListener('pointercancel', finish);
     row.classList.remove('dragging');
+    wrap.classList.remove('reflowing');
     if (marker.parentNode) wrap.insertBefore(row, marker);
     marker.remove();
     const order = [...wrap.children].map(el => parseInt(el.dataset.idx, 10)).filter(n => !isNaN(n));
@@ -6837,25 +6986,43 @@ function renderCalcCatalogSections() {
     }
   });
 }
+function rollMoney(el, value) {
+  if (!el) return;
+  const from = parseFloat(el.dataset.val);
+  el.dataset.val = String(value);
+  if (!isFinite(from) || from === value || Math.abs(value - from) < 0.005) { el.textContent = fmtEUR(value); return; }
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = fmtEUR(value); return; }
+  cancelAnimationFrame(el.__rollRaf);
+  el.classList.add('num-roll', 'rolling');
+  const t0 = performance.now(), dur = 360;
+  const tick = (now) => {
+    const p = Math.min(1, (now - t0) / dur);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = fmtEUR(from + (value - from) * e);
+    if (p < 1) el.__rollRaf = requestAnimationFrame(tick);
+    else { el.textContent = fmtEUR(value); el.classList.remove('rolling'); }
+  };
+  el.__rollRaf = requestAnimationFrame(tick);
+}
 function updateCalcTotals() {
   const calc = window.__editingCalc;
   if (!calc) return;
-  const subP = document.getElementById('calc-sub-products'); if (subP) subP.textContent = fmtEUR(calcProductsTotal(calc));
+  const subP = document.getElementById('calc-sub-products'); if (subP) rollMoney(subP, calcProductsTotal(calc));
   CALC_CATALOG.forEach(section => {
     let total = calcSectionTotal(calc, section.key);
     if (section.key === 'installatie') {
       const auto = calcInstallatieAutoTotal(calc);
       total += auto;
       const autoEl = document.getElementById('calc-installatie-auto');
-      if (autoEl) autoEl.textContent = fmtEUR(auto);
+      if (autoEl) rollMoney(autoEl, auto);
     }
     const subEl = document.querySelector(`[data-sub="${section.key}"]`);
-    if (subEl) subEl.textContent = fmtEUR(total);
+    if (subEl) rollMoney(subEl, total);
   });
   const grandEl = document.getElementById('calc-grand-total');
-  if (grandEl) grandEl.textContent = fmtEUR(calcGrandTotal(calc));
+  if (grandEl) rollMoney(grandEl, calcGrandTotal(calc));
   const stickyEl = document.getElementById('calc-sticky-total-num');
-  if (stickyEl) stickyEl.textContent = fmtEUR(calcGrandTotal(calc));
+  if (stickyEl) rollMoney(stickyEl, calcGrandTotal(calc));
   renderCalcSelected();
   renderCalcFilters();
 }
@@ -6965,6 +7132,14 @@ document.getElementById('calc-draft-btn').addEventListener('click', async () => 
 document.getElementById('calc-add-product-btn').addEventListener('click', () => {
   window.__editingCalc.products.push({ label: '', price: 0 });
   renderCalcProducts();
+  const rows = document.querySelectorAll('#calc-products .calc-product-row');
+  const last = rows[rows.length - 1];
+  if (last) {
+    last.classList.add('opening');
+    setTimeout(() => last.classList.remove('opening'), 300);
+    const input = last.querySelector('input[type="text"]');
+    if (input) input.focus();
+  }
 });
 document.getElementById('calc-client-select').addEventListener('change', (e) => {
   const calc = window.__editingCalc;
