@@ -3827,7 +3827,7 @@ async function claudeMessage(payload) {
 const aud = {
   stream: null, recorder: null, chunks: [], recording: false,
   segments: [], startedAt: 0, elapsedBase: 0, rotateTimer: null, tickTimer: null,
-  transcribing: false, progress: { done: 0, total: 0 }, error: '', level: 0, analyser: null, rafId: null
+  transcribing: false, progress: { done: 0, total: 0 }, error: '', level: 0, analyser: null, rafId: null, busyFile: ''
 };
 function audElapsed() {
   const ms = aud.elapsedBase + (aud.recording ? Date.now() - aud.startedAt : 0);
@@ -3973,18 +3973,53 @@ async function audTranscribe() {
     renderNoteDetail();
   }
 }
+const AUDIO_EXT = ['m4a','mp3','wav','aac','caf','ogg','oga','opus','webm','amr','mp4','mov','3gp','aiff','aif','flac','wma','mpga','mpeg'];
+function looksLikeAudio(file) {
+  const type = (file.type || '').toLowerCase();
+  if (type.startsWith('audio/')) return true;
+  if (type === 'video/mp4' || type === 'video/quicktime' || type === 'video/webm') return true;
+  const ext = (file.name || '').split('.').pop().toLowerCase();
+  return AUDIO_EXT.includes(ext);
+}
 async function audAddFile(file) {
   const n = notes.find(x => x.id === dict.noteId);
   if (!n || !file) return;
-  const id = 'clip-' + n.id + '-' + Date.now();
-  try { await audioPut({ id, noteId: n.id, blob: file, mime: file.type || 'audio/mpeg', createdAt: Date.now() }); }
-  catch (e) { aud.error = 'Bestand kon niet worden bewaard (te groot?).'; renderNoteDetail(); return; }
+  aud.error = '';
+  if (!looksLikeAudio(file)) {
+    aud.error = '\u201c' + (file.name || 'Dit bestand') + '\u201d lijkt geen audio te zijn. Kies een opname (m4a, mp3, wav, aac of een spraakmemo).';
+    renderNoteDetail();
+    return;
+  }
+  if (!file.size) {
+    aud.error = 'Dit bestand is leeg \u2014 mogelijk staat het nog in iCloud. Open het \u00e9\u00e9n keer in de Bestanden-app zodat het op je telefoon staat, en kies het daarna opnieuw.';
+    renderNoteDetail();
+    return;
+  }
+  const mb = file.size / 1048576;
+  const id = 'clip-' + n.id + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+  const mime = file.type || ('audio/' + ((file.name || '').split('.').pop().toLowerCase() || 'mpeg'));
+  aud.busyFile = file.name || 'bestand';
+  renderNoteDetail();
+  try {
+    await audioPut({ id, noteId: n.id, blob: file, mime, createdAt: Date.now() });
+  } catch (e) {
+    console.error('Audiobestand bewaren mislukt', e);
+    aud.busyFile = '';
+    aud.error = 'Dit bestand kon niet worden bewaard (' + mb.toFixed(0) + ' MB). Er is te weinig ruimte in de browseropslag; verwijder een oude opname of kies een korter bestand.';
+    renderNoteDetail();
+    return;
+  }
+  aud.busyFile = '';
   n.audioClips = (n.audioClips || []).concat([id]);
-  n.audioMime = file.type || 'audio/mpeg';
+  n.audioMime = mime;
   n.updatedAt = Date.now();
   await saveNotes();
   aud.segments = n.audioClips.slice();
+  if (mb > 24) aud.error = 'Let op: dit bestand is ' + mb.toFixed(0) + ' MB. Uittypen werkt tot ongeveer 25 MB per stuk \u2014 knip een lange opname in delen en voeg ze los toe.';
   renderNoteDetail();
+}
+async function audAddFiles(files) {
+  for (const f of Array.from(files || [])) await audAddFile(f);
 }
 async function audDeleteAll(n) {
   for (const id of (n.audioClips || [])) await audioDel(id);
@@ -4679,8 +4714,15 @@ function renderAudioPanel(host, n) {
     const hint = document.createElement('div');
     hint.className = 'dict-hint';
     hint.innerHTML = '<div class="note-read-head" style="margin:0 0 7px"><span>Ik schrijf met je mee</span></div>' +
-      'Neem het gesprek op met de microfoon van dit apparaat, of kies een audiobestand van je dictafoon. Ik typ het uit, maak er een overzicht van met afspraken, maten en actiepunten, en zet er mijn eigen aanvullingen bij: wat er nog ontbreekt, waar je op moet letten en wat de logische vervolgstap is.';
+      'Neem het gesprek op met de microfoon van dit apparaat, of kies een audiobestand \u2014 een spraakmemo, een opname van je dictafoon of een bestand uit iCloud Drive of WhatsApp. Op de computer kun je het bestand ook hierin slepen. Ik typ het uit, maak er een overzicht van met afspraken, maten en actiepunten, en zet er mijn eigen aanvullingen bij.';
     box.appendChild(hint);
+    box.addEventListener('dragover', (e) => { e.preventDefault(); box.style.borderColor = 'var(--ember)'; });
+    box.addEventListener('dragleave', () => { box.style.borderColor = ''; });
+    box.addEventListener('drop', (e) => {
+      e.preventDefault();
+      box.style.borderColor = '';
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) audAddFiles(e.dataTransfer.files);
+    });
   }
   panel.appendChild(box);
 
@@ -4724,12 +4766,19 @@ function renderAudioPanel(host, n) {
 
     const fileBtn = document.createElement('button');
     fileBtn.className = 'btn btn-sm';
-    fileBtn.textContent = 'Audiobestand kiezen';
+    fileBtn.textContent = aud.busyFile ? 'Bezig\u2026' : 'Audiobestand kiezen';
+    fileBtn.disabled = !!aud.busyFile;
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = 'audio/*';
+    fileInput.multiple = true;
+    // Geen 'accept' filter: op de iPhone verbergt dat spraakmemo's en bestanden uit iCloud Drive.
     fileInput.style.display = 'none';
-    fileInput.addEventListener('change', () => { if (fileInput.files[0]) audAddFile(fileInput.files[0]); });
+    fileInput.addEventListener('change', async () => {
+      const files = fileInput.files;
+      fileBtn.textContent = 'Bezig\u2026';
+      await audAddFiles(files);
+      fileInput.value = '';
+    });
     fileBtn.addEventListener('click', () => fileInput.click());
     tools.append(fileBtn, fileInput);
 
