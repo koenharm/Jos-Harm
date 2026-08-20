@@ -1100,12 +1100,15 @@
   .calc-search-hint button { background: none; border: none; padding: 0; font: inherit; color: var(--ember-dim); text-decoration: underline; cursor: pointer; }
   @media (max-width: 560px) {
     .calc-row {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      grid-template-areas: 'label label label' 'price qty total';
-      row-gap: 4px; padding: 9px 0;
+      grid-template-columns: 1fr auto;
+      grid-template-areas: 'label label' 'price total' 'qty qty';
+      row-gap: 6px; padding: 11px 0;
     }
-    .calc-qty { grid-area: qty; justify-content: center; }
-    .calc-qty .calc-row-qty { flex: 0 0 48px; width: 48px; }
+    .calc-row-price { grid-area: price; text-align: left; }
+    .calc-row-total { grid-area: total; text-align: right; }
+    .calc-qty { grid-area: qty; justify-content: flex-start; }
+    .calc-qty button { flex: 0 0 44px; width: 44px; height: 44px; }
+    .calc-qty .calc-row-qty { flex: 0 0 62px; width: 62px; min-height: 44px; }
     .calc-row-label { grid-area: label; }
     .calc-row-price { grid-area: price; text-align: left; }
     .calc-row-qty { min-height: 40px; }
@@ -3797,16 +3800,53 @@ function blobToBase64(blob) {
   });
 }
 async function transcribeBlob(blob, mime) {
+  const mb = blob.size / 1048576;
+  if (mb > 24) {
+    const tg = new Error('Dit deel is ' + mb.toFixed(0) + ' MB. Uittypen werkt tot ongeveer 25 MB per deel \u2014 knip de opname in stukken.');
+    throw tg;
+  }
   const audio = await blobToBase64(blob);
-  const res = await fetch(FN_BASE + '/transcribeAudio', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ audio, mimeType: mime || blob.type || 'audio/webm', language: 'nl' })
-  });
-  if (!res.ok) throw new Error('Transcriptie mislukt (' + res.status + ')');
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return (data.text || '').trim();
+  let res;
+  try {
+    res = await fetch(FN_BASE + '/transcribeAudio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ audio, mimeType: mime || blob.type || 'audio/webm', language: 'nl' })
+    });
+  } catch (e) {
+    throw new Error('Ik kon de transcriptie-service niet bereiken. Geen internet, of de functie \u201ctranscribeAudio\u201d staat nog niet online (zie leesmij-audio.md).');
+  }
+  let data = null;
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) {
+    const detail = (data && data.error) ? ' \u2014 ' + data.error : '';
+    const uitleg = res.status === 404 ? 'De functie is nog niet uitgerold. Voer \u201cfirebase deploy --only functions\u201d uit (zie leesmij-audio.md).'
+      : (res.status === 401 || res.status === 403) ? 'De service weigert de aanvraag \u2014 controleer de sleutel OPENAI_API_KEY.'
+      : res.status === 413 ? 'De opname is te groot voor \u00e9\u00e9n aanvraag \u2014 knip hem in kortere delen.'
+      : res.status === 502 ? 'De transcriptie-dienst gaf een fout terug \u2014 vaak een ontbrekende of verlopen OPENAI_API_KEY, of het Firebase-plan staat niet op Blaze.'
+      : res.status === 504 ? 'De aanvraag duurde te lang \u2014 probeer een korter deel.'
+      : 'Onverwachte fout van de server.';
+    throw new Error('Uittypen mislukt (foutcode ' + res.status + '). ' + uitleg + detail);
+  }
+  if (data && data.error) throw new Error('Uittypen mislukt \u2014 ' + data.error);
+  return ((data && data.text) || '').trim();
+}
+async function testTranscribeService() {
+  aud.error = 'Verbinding testen\u2026';
+  renderNoteDetail();
+  try {
+    const res = await fetch(FN_BASE + '/transcribeAudio', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
+    });
+    aud.error = res.status === 400
+      ? 'De transcriptie-service is bereikbaar en werkt (hij meldt terecht dat er geen audio bij zat). Probeer het uittypen opnieuw.'
+      : res.status === 404
+        ? 'De service bestaat nog niet op ' + FN_BASE + '/transcribeAudio \u2014 de functie is nog niet uitgerold (zie leesmij-audio.md).'
+        : 'De service antwoordde met foutcode ' + res.status + '. Controleer de sleutels en het Firebase-plan (zie leesmij-audio.md).';
+  } catch (e) {
+    aud.error = 'Geen verbinding met ' + FN_BASE + ' \u2014 geen internet, of de functies staan niet online.';
+  }
+  renderNoteDetail();
 }
 async function claudeMessage(payload) {
   try {
@@ -3969,7 +4009,7 @@ async function audTranscribe() {
   } catch (e) {
     console.error('Uittypen mislukt', e);
     aud.transcribing = false;
-    aud.error = 'Uittypen mislukt — de opname blijft bewaard. Controleer of de transcriptie-service is ingesteld (zie leesmij) en probeer het opnieuw.';
+    aud.error = (e && e.message ? e.message : 'Uittypen mislukt.') + ' Je opname blijft bewaard.';
     renderNoteDetail();
   }
 }
@@ -4714,8 +4754,28 @@ function renderAudioPanel(host, n) {
     const hint = document.createElement('div');
     hint.className = 'dict-hint';
     hint.innerHTML = '<div class="note-read-head" style="margin:0 0 7px"><span>Ik schrijf met je mee</span></div>' +
-      'Neem het gesprek op met de microfoon van dit apparaat, of kies een audiobestand \u2014 een spraakmemo, een opname van je dictafoon of een bestand uit iCloud Drive of WhatsApp. Op de computer kun je het bestand ook hierin slepen. Ik typ het uit, maak er een overzicht van met afspraken, maten en actiepunten, en zet er mijn eigen aanvullingen bij.';
+      'Neem het gesprek op met de microfoon van dit apparaat, of kies een bestaande opname. Op de computer kun je een bestand ook hierin slepen. Ik typ het uit, maak er een overzicht van met afspraken, maten en actiepunten, en zet er mijn eigen aanvullingen bij.';
     box.appendChild(hint);
+    const help = document.createElement('div');
+    help.className = 'note-raw-toggle';
+    help.textContent = 'Zie je geen audiobestanden op je telefoon?';
+    const helpText = document.createElement('div');
+    helpText.className = 'dict-hint';
+    helpText.style.display = 'none';
+    helpText.innerHTML = 'Op de iPhone staan spraakmemo\u2019s in de app <b>Spraakmemo\u2019s</b> en niet in Bestanden \u2014 daarom zie je ze niet in de kiezer.<br><br>' +
+      '<b>Zo krijg je ze hier binnen:</b><br>' +
+      '1. Open <b>Spraakmemo\u2019s</b> en tik op de opname.<br>' +
+      '2. Tik op het deel-icoon en kies <b>Bewaar in Bestanden</b> (bijv. map \u201cOp mijn iPhone\u201d).<br>' +
+      '3. Kom hier terug, tik op <b>Uit Bestanden</b> en kies het bestand.<br><br>' +
+      'Een opname uit WhatsApp: houd het spraakbericht ingedrukt \u2192 <b>Doorsturen</b> of <b>Delen</b> \u2192 <b>Bewaar in Bestanden</b>.<br>' +
+      'Werkt de knop <b>Uit Bestanden</b> niet, probeer dan <b>Ander bestand</b> \u2014 daar krijg je het volledige keuzemenu (iCloud Drive, Dropbox, Drive).<br><br>' +
+      'Makkelijker: gebruik hier gewoon <b>Start opname</b>, dan hoef je niets over te zetten.';
+    help.addEventListener('click', () => {
+      const open = helpText.style.display !== 'none';
+      helpText.style.display = open ? 'none' : 'block';
+      help.textContent = open ? 'Zie je geen audiobestanden op je telefoon?' : 'Uitleg verbergen';
+    });
+    box.append(help, helpText);
     box.addEventListener('dragover', (e) => { e.preventDefault(); box.style.borderColor = 'var(--ember)'; });
     box.addEventListener('dragleave', () => { box.style.borderColor = ''; });
     box.addEventListener('drop', (e) => {
@@ -4764,23 +4824,28 @@ function renderAudioPanel(host, n) {
     recBtn.addEventListener('click', () => { aud.recording ? audStop() : audStart(); });
     tools.appendChild(recBtn);
 
-    const fileBtn = document.createElement('button');
-    fileBtn.className = 'btn btn-sm';
-    fileBtn.textContent = aud.busyFile ? 'Bezig\u2026' : 'Audiobestand kiezen';
-    fileBtn.disabled = !!aud.busyFile;
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.multiple = true;
-    // Geen 'accept' filter: op de iPhone verbergt dat spraakmemo's en bestanden uit iCloud Drive.
-    fileInput.style.display = 'none';
-    fileInput.addEventListener('change', async () => {
-      const files = fileInput.files;
-      fileBtn.textContent = 'Bezig\u2026';
-      await audAddFiles(files);
-      fileInput.value = '';
-    });
-    fileBtn.addEventListener('click', () => fileInput.click());
-    tools.append(fileBtn, fileInput);
+    // Twee routes: de iPhone opent bij 'audio/*' meteen de Bestanden-app; zonder filter
+    // krijg je het keuzemenu waarin ook andere apps (iCloud Drive, Dropbox) staan.
+    const mkPicker = (label, accept) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-sm';
+      btn.textContent = aud.busyFile ? 'Bezig\u2026' : label;
+      btn.disabled = !!aud.busyFile;
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.multiple = true;
+      if (accept) inp.accept = accept;
+      inp.style.cssText = 'position:absolute; width:1px; height:1px; opacity:0; pointer-events:none';
+      inp.addEventListener('change', async () => {
+        btn.textContent = 'Bezig\u2026';
+        await audAddFiles(inp.files);
+        inp.value = '';
+      });
+      btn.addEventListener('click', () => inp.click());
+      tools.append(btn, inp);
+    };
+    mkPicker('Uit Bestanden', 'audio/*,.m4a,.mp3,.wav,.aac,.caf,.opus,.amr,.flac,.ogg,.m4b,.mp4');
+    mkPicker('Ander bestand', '');
 
     if ((n.audioClips || []).length && !aud.recording) {
       const typeBtn = document.createElement('button');
@@ -4803,6 +4868,13 @@ function renderAudioPanel(host, n) {
       aiBtn.textContent = 'Verslag + aanvullingen';
       aiBtn.addEventListener('click', () => { dict.finalText = n.rawTranscript; dictProcess(); });
       tools.appendChild(aiBtn);
+    }
+    if (aud.error) {
+      const testBtn = document.createElement('button');
+      testBtn.className = 'btn btn-sm';
+      testBtn.textContent = 'Verbinding testen';
+      testBtn.addEventListener('click', testTranscribeService);
+      tools.appendChild(testBtn);
     }
     const closeBtn = document.createElement('button');
     closeBtn.className = 'note-del';
@@ -7775,6 +7847,15 @@ CALC_CATALOG.sort((a, b) => {
   const ia = CALC_SECTION_ORDER.indexOf(a.key), ib = CALC_SECTION_ORDER.indexOf(b.key);
   return (ia < 0 ? 998 : ia) - (ib < 0 ? 998 : ib);
 });
+function parseQty(v) {
+  const n = parseFloat(String(v == null ? '' : v).replace(',', '.').replace(/[^0-9.]/g, ''));
+  return isNaN(n) || n < 0 ? 0 : Math.round(n * 100) / 100;
+}
+function fmtQty(v) {
+  const n = parseQty(v);
+  if (!n) return '';
+  return (Math.round(n * 100) / 100).toString().replace('.', ',');
+}
 function calcDisplayName(calc) {
   if (!calc) return 'Naamloze berekening';
   return (calc.title || '').trim() || calc.clientName || 'Naamloze berekening';
@@ -8524,7 +8605,7 @@ function renderCalcSelected() {
         <div class="calc-selected-sub">${l.sectionLabel} · ${fmtEUR(l.price)}</div>
       </div>
       <div class="calc-selected-qty">
-        <button type="button" data-step="-1">−</button><span>${l.qty}</span><button type="button" data-step="1">+</button>
+        <button type="button" data-step="-1" title="Eén minder">−</button><span>${fmtQty(l.qty)}</span><button type="button" data-step="1" title="Eén meer">+</button>
       </div>
       <div class="calc-selected-amount">${fmtEUR(l.qty * l.price)}</div>
       <div class="calc-selected-del" title="Verwijderen">&times;</div>
@@ -8541,9 +8622,8 @@ function renderCalcSelected() {
       focusCatalogItem(l.section, l.key);
     });
     row.querySelectorAll('.calc-selected-qty button').forEach(b => b.addEventListener('click', () => {
-      const step = parseFloat(b.dataset.step);
-      const cur = parseFloat(calc.qty[l.section][l.key]) || 0;
-      const next = Math.max(0, cur + step);
+      const cur = parseQty(calc.qty[l.section][l.key]);
+      const next = Math.max(0, Math.round((cur + parseFloat(b.dataset.step)) * 100) / 100);
       if (next) calc.qty[l.section][l.key] = next; else delete calc.qty[l.section][l.key];
       renderCalcCatalogSections();
       updateCalcTotals();
@@ -8598,23 +8678,24 @@ function renderCalcCatalogSections() {
         <div class="calc-row-price">${fmtEUR(it.price)}</div>
         <div class="calc-qty">
           <button type="button" data-step="-1" title="E\u00e9n minder" aria-label="E\u00e9n minder">\u2212</button>
-          <input class="calc-row-qty" type="number" min="0" step="1" inputmode="numeric" value="${q}" />
+          <input class="calc-row-qty" type="text" inputmode="decimal" autocomplete="off" placeholder="0" value="${fmtQty(q)}" />
           <button type="button" data-step="1" title="E\u00e9n meer" aria-label="E\u00e9n meer">+</button>
         </div>
         <div class="calc-row-total">${fmtEUR((q||0) * it.price)}</div>
       `;
       const input = row.querySelector('.calc-row-qty');
-      const apply = (v) => {
+      const apply = (v, retype) => {
+        v = Math.max(0, Math.round(v * 100) / 100);
         if (v) calc.qty[section.key][it.key] = v; else delete calc.qty[section.key][it.key];
-        input.value = v || '';
+        if (retype) input.value = fmtQty(v);
         row.classList.toggle('has-qty', !!v);
         row.querySelector('.calc-row-total').textContent = fmtEUR(v * it.price);
         updateCalcTotals();
       };
-      input.addEventListener('input', () => apply(parseFloat(input.value) || 0));
+      input.addEventListener('input', () => apply(parseQty(input.value), false));
+      input.addEventListener('blur', () => { input.value = fmtQty(parseQty(input.value)); });
       row.querySelectorAll('.calc-qty button').forEach(b => b.addEventListener('click', () => {
-        const step = parseFloat(b.dataset.step);
-        apply(Math.max(0, (parseFloat(input.value) || 0) + step));
+        apply(parseQty(input.value) + parseFloat(b.dataset.step), true);
       }));
       rowsWrap.appendChild(row);
     });
