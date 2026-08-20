@@ -9,6 +9,7 @@
 <!-- Cloud-sync (Firebase Realtime Database) — zorgt dat telefoon en computer dezelfde data zien -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 
 <!-- PWA / "Zet op beginscherm" ondersteuning -->
@@ -139,6 +140,53 @@
   .sidebar .nav-item.active .nav-count { color: var(--ember); border-color: rgba(216,90,44,0.35); background: rgba(216,90,44,0.08); }
 
   .sidebar-foot { margin-top: auto; flex-shrink: 0; padding: 14px 4px 0; border-top: 1px solid var(--hairline); }
+  .sidebar-search { position: relative; flex-shrink: 0; }
+  .sidebar-search input {
+    width: 100%; box-sizing: border-box; font-family: 'League Spartan', sans-serif; font-size: 13px;
+    padding: 10px 11px 10px 32px; background: var(--panel); border: 1px solid var(--hairline);
+    color: var(--paper); border-radius: 6px;
+  }
+  .sidebar-search input:focus { outline: none; border-color: var(--ember); }
+  .sidebar-search input::placeholder { color: var(--smoke); }
+  .sidebar-search .ico {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px;
+    fill: none; stroke: var(--smoke); stroke-width: 1.9; stroke-linecap: round; pointer-events: none;
+  }
+  .search-results {
+    display: none; flex-direction: column; gap: 2px; margin-top: 8px;
+    max-height: 46vh; overflow-y: auto; padding-right: 2px;
+  }
+  .search-results.open { display: flex; }
+  .search-group {
+    font-family: 'Poppins', sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--smoke); margin: 8px 0 3px;
+  }
+  .search-hit {
+    display: flex; flex-direction: column; gap: 2px; padding: 8px 9px; cursor: pointer;
+    border-left: 2px solid transparent; border-radius: 4px;
+  }
+  .search-hit:hover, .search-hit.sel { background: rgba(216,90,44,0.08); border-left-color: var(--ember); }
+  .search-hit-title { font-size: 12.5px; color: var(--paper); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .search-hit-sub { font-size: 10.5px; color: var(--smoke); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .search-empty { font-size: 12px; color: var(--smoke); font-style: italic; padding: 8px 9px; }
+  .search-overlay {
+    display: none; position: fixed; inset: 0; z-index: 60;
+    background: var(--soot); padding: calc(10px + env(safe-area-inset-top)) 14px 14px;
+    flex-direction: column; gap: 10px;
+  }
+  .search-overlay.open { display: flex; }
+  .search-overlay-bar { display: flex; gap: 8px; align-items: center; }
+  .search-overlay-bar #search-overlay-close {
+    min-height: 44px; padding: 0 18px; font-size: 13.5px; flex-shrink: 0;
+    display: inline-flex; align-items: center;
+  }
+  .search-overlay-bar .sidebar-search input { font-size: 16px; min-height: 44px; }
+  .search-overlay #mobile-search-results { flex: 1; max-height: none; overflow-y: auto; }
+  .search-overlay .search-hit { padding: 12px 10px; min-height: 44px; justify-content: center; }
+  .search-overlay .search-hit-title { font-size: 14px; }
+  .search-overlay .search-hit-sub { font-size: 11.5px; }
+  #topbar-search-btn { display: none; }
+  @media (max-width: 900px) { #topbar-search-btn { display: flex; } }
   .sidebar-foot-text { font-size: 11px; color: var(--smoke); line-height: 1.5; }
   .save-status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--smoke); margin-top: 8px; }
   .save-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex-shrink: 0; transition: background 0.2s; }
@@ -148,6 +196,56 @@
 
   /* ---- Main ---- */
   .main { padding: 34px 42px 60px; max-width: 1240px; min-width: 0; }
+
+  /* ---- Dagpaneel (alleen breed bureaublad) ---- */
+  .rail { display: none; }
+  @media (min-width: 1500px) {
+    .app { grid-template-columns: 248px minmax(0, 1fr) 320px; }
+    .main { max-width: none; }
+    .rail {
+      display: flex; flex-direction: column; gap: 20px;
+      padding: 34px 30px 60px; border-left: 1px solid var(--hairline);
+      align-self: stretch; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+  }
+  .rail-block { display: flex; flex-direction: column; gap: 9px; }
+  .rail-head {
+    display: flex; align-items: baseline; gap: 8px; font-family: 'Poppins', sans-serif;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--smoke);
+  }
+  .rail-head .count { margin-left: auto; font-size: 11px; letter-spacing: 0; color: var(--ember-dim); }
+  .rail-day { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; }
+  .rail-day-num { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 40px; line-height: 0.95; color: var(--paper); }
+  .rail-day-rest { font-family: 'League Spartan', sans-serif; font-size: 12.5px; color: var(--smoke); text-transform: capitalize; }
+  .rail-item {
+    display: grid; grid-template-columns: 18px 1fr; gap: 9px; align-items: start;
+    background: var(--panel); border: 1px solid var(--hairline); border-left: 3px solid var(--hairline);
+    padding: 9px 11px; cursor: pointer; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .rail-item:hover { border-color: var(--ember); transform: translateX(-2px); box-shadow: 0 4px 12px rgba(43,43,43,0.07); }
+  .rail-item.late { border-left-color: var(--danger); }
+  .rail-item.today { border-left-color: var(--ember); }
+  .rail-item.soon { border-left-color: var(--brass); }
+  .rail-check {
+    width: 18px; height: 18px; border: 1.5px solid var(--hairline); background: #FBF8F2;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .rail-check:hover { border-color: var(--ember); }
+  .rail-check svg { width: 11px; height: 11px; fill: none; stroke: var(--ember); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity 0.12s; }
+  .rail-check:hover svg, .rail-check.on svg { opacity: 1; }
+  .rail-item-text { font-size: 13px; line-height: 1.4; color: var(--paper); }
+  .rail-item-meta { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 4px; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--smoke); }
+  .rail-item-meta .when { color: var(--ember-dim); font-weight: 600; }
+  .rail-item-meta .when.late { color: var(--danger); }
+  .rail-q {
+    border-left: 3px solid var(--brass); background: linear-gradient(150deg, var(--panel) 0%, #FBF8F2 100%);
+    border: 1px solid var(--hairline); border-left: 3px solid var(--brass);
+    padding: 9px 11px; font-size: 12.5px; line-height: 1.5; cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+  }
+  .rail-q:hover { border-color: var(--ember); transform: translateX(-2px); }
+  .rail-q-src { display: block; margin-top: 5px; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--smoke); }
+  .rail-empty { font-size: 12.5px; color: var(--smoke); font-style: italic; }
+  .rail-sep { height: 1px; background: var(--hairline); }
   .view { display: none; }
   .view.active { display: block; animation: fadein 0.3s cubic-bezier(.2,.7,.3,1); }
   @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -698,6 +796,33 @@
     background: var(--panel-raised); border: 1px solid var(--hairline); padding: 4px 10px; border-radius: 20px; margin-bottom: 16px;
   }
   .detail-photos { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
+  .maten-block { border: 1px solid var(--hairline); background: #FBF8F2; padding: 14px 14px 4px; margin-bottom: 16px; border-radius: 6px; }
+  .maten-head { font-family: 'Poppins', sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--smoke); margin-bottom: 12px; }
+  .maten-checks { display: flex; gap: 22px; flex-wrap: wrap; padding-bottom: 12px; }
+  .detail-maten { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px 16px; }
+  .detail-maat { display: flex; flex-direction: column; gap: 2px; }
+  .detail-maat-label { font-size: 9.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--smoke); }
+  .detail-maat-val { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; color: var(--paper); }
+  .detail-maat-val.off { color: var(--smoke); font-weight: 400; }
+  .contact-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 4px; }
+  .contact-action {
+    display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 15px;
+    background: var(--panel-raised); border: 1px solid var(--hairline); border-radius: 8px;
+    font-family: 'League Spartan', sans-serif; font-size: 13px; color: var(--paper); cursor: pointer;
+    text-decoration: none; transition: border-color 0.15s, transform 0.12s, background 0.15s;
+  }
+  .contact-action:hover { border-color: var(--ember); background: #FDFBF6; }
+  .contact-action:active { transform: scale(0.98); }
+  .contact-action svg { width: 16px; height: 16px; fill: none; stroke: var(--ember-dim); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .afronden-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .afronden-row select, .afronden-row input {
+    font-family: 'League Spartan', sans-serif; font-size: 13px; padding: 10px 11px; min-height: 44px;
+    background: var(--panel-raised); border: 1px solid var(--hairline); color: var(--paper); border-radius: 6px;
+  }
+  .afronden-row select:focus, .afronden-row input:focus { outline: none; border-color: var(--ember); }
+  .afronden-row #detail-close-other { flex: 1 1 170px; min-width: 0; }
+  .afronden-done { margin-top: 10px; font-size: 13px; color: var(--paper-dim); }
+  .afronden-done b { font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--paper); }
   .detail-photo { width: 90px; height: 90px; border-radius: 8px; object-fit: cover; border: 1px solid var(--hairline); cursor: zoom-in; transition: transform 0.15s; }
   .detail-photo:hover { transform: scale(1.04); border-color: var(--brass); }
   .lightbox-backdrop { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(20,19,17,0.88); align-items: center; justify-content: center; padding: 30px; }
@@ -834,7 +959,7 @@
   .calc-section-sub { margin-left: auto; font-family: 'League Spartan', sans-serif; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--ember-dim); font-size: 13.5px; }
   .calc-rows { padding: 4px 16px 14px; display: flex; flex-direction: column; }
   .calc-group-label { font-family: 'League Spartan', sans-serif; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--smoke); padding: 10px 0 4px; }
-  .calc-row { display: grid; grid-template-columns: 1fr 74px 64px 88px; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--hairline); }
+  .calc-row { display: grid; grid-template-columns: 1fr 74px 148px 88px; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--hairline); }
   .calc-row:last-child { border-bottom: none; }
   .calc-row-label { font-size: 12.5px; color: var(--paper); }
   .calc-row-price { font-family: 'League Spartan', sans-serif; font-size: 11.5px; color: var(--smoke); text-align: right; }
@@ -949,15 +1074,41 @@
   .calc-version-row:last-child { border-bottom: none; }
   .calc-version-meta { font-size: 12.5px; color: var(--paper-dim); }
   .calc-version-total { font-family: 'League Spartan', sans-serif; font-weight: 600; font-size: 13px; }
+  /* aantal-stepper in de onderdelenlijst */
+  .calc-row-qty::-webkit-outer-spin-button, .calc-row-qty::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .calc-row-qty { -moz-appearance: textfield; }
+  .calc-qty { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+  .calc-qty button {
+    flex: 0 0 40px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--hairline); background: var(--soot); color: var(--paper); border-radius: 8px;
+    font-size: 21px; line-height: 1; cursor: pointer; padding: 0;
+    transition: border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  .calc-qty button:hover { border-color: var(--ember); color: var(--ember); }
+  .calc-qty button:active { transform: scale(0.9); }
+  .calc-qty .calc-row-qty { width: 54px; flex: 0 0 54px; min-height: 40px; }
+  .calc-row.has-qty .calc-row-label { color: var(--paper); font-weight: 600; }
+  .calc-row.hit { animation: calcHit 1.3s ease; }
+  @keyframes calcHit {
+    0% { background: rgba(167,94,63,0); }
+    18%, 55% { background: rgba(167,94,63,0.22); }
+    100% { background: rgba(167,94,63,0); }
+  }
+  .calc-rows.opening { overflow: hidden; }
+  .calc-search-row { cursor: pointer; }
+  .calc-search-hint { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--smoke); padding: 4px 6px 6px; }
+  .calc-search-hint button { background: none; border: none; padding: 0; font: inherit; color: var(--ember-dim); text-decoration: underline; cursor: pointer; }
   @media (max-width: 560px) {
     .calc-row {
-      grid-template-columns: 1fr 64px 84px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
       grid-template-areas: 'label label label' 'price qty total';
       row-gap: 4px; padding: 9px 0;
     }
+    .calc-qty { grid-area: qty; justify-content: center; }
+    .calc-qty .calc-row-qty { flex: 0 0 48px; width: 48px; }
     .calc-row-label { grid-area: label; }
     .calc-row-price { grid-area: price; text-align: left; }
-    .calc-row-qty { grid-area: qty; min-height: 38px; }
+    .calc-row-qty { min-height: 40px; }
     .calc-row-total { grid-area: total; }
     .calc-selected-row { grid-template-columns: 1fr auto; grid-template-areas: 'label label' 'qty amount' 'qty del'; row-gap: 6px; }
     .calc-selected-label { grid-area: label; }
@@ -967,7 +1118,7 @@
   }
   @media (max-width: 980px) {
     .calc-top-row { grid-template-columns: 1fr; }
-    .calc-row { grid-template-columns: 1fr 60px 56px 76px; font-size: 12px; }
+    .calc-row { grid-template-columns: 1fr 60px 144px 76px; font-size: 12px; }
     .calc-product-row { grid-template-columns: 46px 1fr 88px 28px; gap: 6px; }
     .calc-drag-handle { width: 46px; height: 48px; border-color: var(--hairline); background: var(--soot); }
   }
@@ -976,6 +1127,12 @@
   .psheet-preview-wrap { background: #fff; border-radius: 10px; max-width: 800px; width: 100%; margin: 0 auto; box-shadow: 0 20px 60px rgba(0,0,0,0.35); overflow: hidden; }
   .psheet-toolbar { display: flex; align-items: center; gap: 10px; padding: 14px 20px; background: var(--panel-raised); border-bottom: 1px solid var(--hairline); position: sticky; top: 0; }
   .psheet-toolbar-title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; color: var(--paper); }
+  #psheet-vat-mode {
+    font-family: 'League Spartan', sans-serif; font-size: 12.5px; padding: 8px 10px; min-height: 40px;
+    background: var(--panel); border: 1px solid var(--hairline); color: var(--paper); border-radius: 6px;
+  }
+  #psheet-vat-mode:focus { outline: none; border-color: var(--ember); }
+  @media print { #psheet-vat-mode { display: none !important; } }
   .psheet-page { max-width: 720px; margin: 0 auto; padding: 46px 40px; font-family: 'League Spartan', sans-serif; color: #2B2B2B; background: #fff; }
   .psheet-head { display: flex; align-items: center; gap: 16px; border-bottom: 3px solid var(--ember); padding-bottom: 18px; margin-bottom: 34px; }
   .psheet-logo { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
@@ -991,6 +1148,14 @@
   .psheet-table td:last-child { text-align: right; font-weight: 600; white-space: nowrap; padding-left: 16px; }
   .psheet-total-row td { border-top: 2px solid #2B2B2B; border-bottom: none; padding-top: 18px; font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; }
   .psheet-note { margin-top: 24px; font-size: 11.5px; color: var(--smoke); line-height: 1.6; }
+  .psheet-sub-row td { border-bottom: none; padding: 4px 0; font-size: 12.5px; color: var(--smoke); }
+  .psheet-sub-row:first-of-type td { padding-top: 12px; border-top: 1px solid var(--hairline); }
+  .psheet-group-row td { border-bottom: none; padding: 20px 0 4px; font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ember); }
+  .psheet-group-row:first-child td { padding-top: 0; }
+  .psheet-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
+  .psheet-sign-label { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--smoke); margin-bottom: 34px; }
+  .psheet-sign-line { border-bottom: 1px solid #2B2B2B; }
+  .psheet-sign-hint { font-size: 10.5px; color: var(--smoke); margin-top: 5px; }
   .psheet-foot { margin-top: 60px; padding-top: 16px; border-top: 1px solid var(--hairline); font-size: 11px; color: var(--smoke); display: flex; justify-content: space-between; }
   @media print {
     @page { margin: 12mm; }
@@ -1042,6 +1207,8 @@
     .notes-split:not(.note-open) .note-detail { display: none; }
   }
   .notes-list { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 320px); overflow-y: auto; padding-right: 2px; }
+  .note-photos { margin-top: 18px; border-top: 1px solid var(--hairline); padding-top: 14px; }
+  .note-photos .detail-photo { width: 74px; height: 74px; }
   .note-card {
     transition: transform 0.18s cubic-bezier(.3,.8,.3,1), opacity 0.18s ease, border-color 0.15s ease, box-shadow 0.18s ease, margin 0.24s cubic-bezier(.3,.8,.3,1), max-height 0.24s cubic-bezier(.3,.8,.3,1);
   }
@@ -1239,6 +1406,44 @@
   .dict-progress { height: 3px; background: var(--hairline); overflow: hidden; }
   .dict-progress span { display: block; height: 100%; background: var(--ember); transition: width 0.35s ease; }
   .dict-panel { gap: 14px; }
+  /* ---- Opnamemodus + toestemming ---- */
+  .rec-modes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .rec-mode { flex: 1 1 180px; text-align: left; padding: 10px 12px; border: 1px solid var(--hairline); border-radius: 3px; cursor: pointer; background: var(--panel); transition: border-color 0.16s ease, background 0.16s ease; }
+  .rec-mode:hover { border-color: var(--ember-dim); }
+  .rec-mode.active { border-color: var(--ember); background: linear-gradient(150deg, var(--panel) 0%, #FBF8F2 100%); }
+  .rec-mode-name { font-family: 'Poppins', sans-serif; font-size: 12.5px; font-weight: 600; }
+  .rec-mode-sub { font-size: 11.5px; color: var(--smoke); margin-top: 2px; line-height: 1.35; }
+  .consent-box { border: 1px solid var(--ember-dim); border-left: 4px solid var(--ember); border-radius: 3px 8px 8px 3px; padding: 12px 14px; background: var(--panel); display: flex; flex-direction: column; gap: 9px; }
+  .consent-title { font-family: 'Poppins', sans-serif; font-size: 12.5px; font-weight: 600; }
+  .consent-text { font-size: 12px; color: var(--smoke); line-height: 1.45; }
+  .consent-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; line-height: 1.4; cursor: pointer; }
+  .consent-row input { margin-top: 2px; accent-color: var(--ember); }
+  /* ---- Sprekers ---- */
+  .speaker-turn { display: flex; gap: 10px; padding: 5px 0; font-size: 13.5px; line-height: 1.5; }
+  .speaker-name { flex: 0 0 92px; font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ember); padding-top: 2px; }
+  /* ---- Mindmap ---- */
+  .mm { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .mm-root { font-family: 'League Spartan', sans-serif; font-size: 17px; font-weight: 600; padding: 9px 13px; border: 2px solid var(--ember); border-radius: 3px; align-self: flex-start; }
+  .mm-branches { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .mm-branch { border: 1px solid var(--hairline); border-top: 3px solid var(--ember-dim); border-radius: 3px; padding: 10px 12px; background: var(--panel); }
+  .mm-branch-name { font-family: 'Poppins', sans-serif; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+  .mm-item { font-size: 12.5px; line-height: 1.45; padding-left: 11px; position: relative; color: var(--paper-dim); }
+  .mm-item::before { content: '–'; position: absolute; left: 0; color: var(--ember); }
+  /* ---- Herschrijven ---- */
+  .rw { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--hairline); }
+  .rw-label { font-family: 'Poppins', sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--smoke); }
+  .rw select { font-family: inherit; font-size: 12.5px; padding: 5px 7px; border: 1px solid var(--hairline); border-radius: 3px; background: var(--panel); color: inherit; }
+  /* ---- Vraag het aan je notities ---- */
+  .ask-thread { display: flex; flex-direction: column; gap: 12px; max-height: 52vh; overflow-y: auto; padding-right: 4px; }
+  .ask-q { align-self: flex-end; max-width: 85%; background: var(--ember); color: #fff; padding: 8px 12px; border-radius: 3px; font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; }
+  .ask-a { max-width: 92%; border: 1px solid var(--hairline); border-left: 4px solid var(--ember); border-radius: 3px 8px 8px 3px; background: var(--panel); padding: 10px 13px; font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; }
+  .ask-srcs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 9px; }
+  .ask-src { font-size: 11.5px; padding: 3px 8px; border: 1px solid var(--hairline); border-radius: 999px; cursor: pointer; color: var(--paper-dim); }
+  .ask-src:hover { border-color: var(--ember); color: var(--ember); }
+  .ask-bar { display: flex; gap: 8px; align-items: flex-end; margin-top: 14px; }
+  .ask-bar textarea { flex: 1; min-height: 44px; max-height: 120px; resize: vertical; font-family: inherit; font-size: 13.5px; padding: 10px 12px; border: 1px solid var(--hairline); border-radius: 3px; background: var(--panel); color: inherit; }
+  .ask-empty { font-size: 13px; color: var(--smoke); line-height: 1.5; }
+  .ask-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 2px; }
   .dict-audio-box audio { width: 100%; filter: grayscale(0.35); }
   .dict-steps { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: 'Poppins', sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--smoke); background: var(--panel); padding: 4px 6px; margin-left: -6px; border-radius: 4px; }
   .dict-step { display: flex; align-items: center; gap: 6px; }
@@ -1573,7 +1778,7 @@
   <img class="splash-photo" src="showroom.png" alt="" />
   <div class="splash-overlay"></div>
   <div class="splash-glow"></div>
-  <img class="splash-logo" id="splash-logo" />
+  <img class="splash-logo" id="splash-logo" alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
   <div class="splash-brand">Werkplaats</div>
   <div class="splash-sub">Jos Harm</div>
   <div class="splash-line"></div>
@@ -1596,6 +1801,20 @@
   <div class="topbar-note-btn nav-item" data-view="notities" id="topbar-note-btn" title="Notities">
     <svg viewBox="0 0 24 24"><path d="M5 3.5h14v17H5z"/><path d="M8.5 8h7"/><path d="M8.5 12h7"/><path d="M8.5 16h4"/></svg>
   </div>
+  <div class="topbar-note-btn" id="topbar-search-btn" title="Zoeken">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+  </div>
+</div>
+
+<div class="search-overlay" id="search-overlay">
+  <div class="search-overlay-bar">
+    <div class="sidebar-search" style="flex:1">
+      <svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <input type="text" id="mobile-search" placeholder="Zoek in alles…" autocomplete="off" />
+    </div>
+    <button class="btn btn-ghost btn-sm" id="search-overlay-close">Sluiten</button>
+  </div>
+  <div class="search-results open" id="mobile-search-results"></div>
 </div>
 
 <div class="tabbar">
@@ -1633,6 +1852,11 @@
         <div class="brand-sub">Jos Harm &middot; Kantoorbeheer</div>
       </div>
     </div>
+    <div class="sidebar-search">
+      <svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <input type="text" id="global-search" placeholder="Zoek in alles…" autocomplete="off" />
+    </div>
+    <div class="search-results" id="search-results"></div>
     <div class="nav">
       <div class="nav-group-label">Overzicht</div>
       <div class="nav-item active" data-view="home">
@@ -1721,7 +1945,10 @@
           <div class="view-title">Notities</div>
           <div class="view-desc">Even snel iets voor jezelf opschrijven, later teruglezen en afvinken. Alles wordt tijdens het typen bewaard.</div>
         </div>
-        <button class="btn btn-primary" id="note-add-btn">Nieuwe notitie</button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <button class="btn" id="note-ask-btn">Vraag het aan je notities</button>
+          <button class="btn btn-primary" id="note-add-btn">Nieuwe notitie</button>
+        </div>
       </div>
       <div class="notes-quick">
         <input type="text" id="note-quick-input" placeholder="Snel iets opschrijven — Enter bewaart het als notitie…" autocomplete="off" />
@@ -1900,6 +2127,10 @@
             <div class="calc-filterrow calc-jumprow" id="calc-jump-row"></div>
           </div>
           <div class="calc-top-row">
+            <div class="field" style="grid-column: 1 / -1">
+              <label>Naam van deze calculatie</label>
+              <input type="text" id="calc-title" placeholder="bijv. Calculatie gashaard" autocomplete="off" />
+            </div>
             <div class="field">
               <label>Klant</label>
               <select id="calc-client-select">
@@ -1998,6 +2229,8 @@
     </div>
 
   </div>
+
+  <aside class="rail" id="rail" aria-label="Dagoverzicht"></aside>
 </div>
 
 <!-- Client Add/Edit Modal -->
@@ -2091,6 +2324,54 @@
       </label>
       <input type="checkbox" id="cf-simar" style="display:none" />
     </div>
+    <div class="maten-block">
+      <div class="maten-head">Maten en aansluitingen</div>
+      <div class="field-row-3">
+        <div class="field">
+          <label>Opening breedte (mm)</label>
+          <input type="number" id="cf-open-b" placeholder="bijv. 1200" />
+        </div>
+        <div class="field">
+          <label>Opening hoogte (mm)</label>
+          <input type="number" id="cf-open-h" placeholder="bijv. 800" />
+        </div>
+        <div class="field">
+          <label>Opening diepte (mm)</label>
+          <input type="number" id="cf-open-d" placeholder="bijv. 400" />
+        </div>
+      </div>
+      <div class="field-row-3">
+        <div class="field">
+          <label>Rookkanaal &oslash; (mm)</label>
+          <input type="number" id="cf-rk-dia" placeholder="bijv. 150" />
+        </div>
+        <div class="field">
+          <label>Rookkanaal lengte (m)</label>
+          <input type="number" id="cf-rk-len" step="0.1" placeholder="bijv. 8" />
+        </div>
+        <div class="field">
+          <label>Type rookkanaal</label>
+          <select id="cf-rk-type">
+            <option value="">&mdash; Kies type &mdash;</option>
+            <option value="EW">EW &mdash; enkelwandig</option>
+            <option value="DW">DW &mdash; dubbelwandig</option>
+            <option value="CC">CC &mdash; concentrisch</option>
+          </select>
+        </div>
+      </div>
+      <div class="maten-checks">
+        <label class="checkbox-field">
+          <div class="checkbox-box" id="cf-gas-box"></div>
+          <span>Gasaansluiting aanwezig</span>
+        </label>
+        <input type="checkbox" id="cf-gas" style="display:none" />
+        <label class="checkbox-field">
+          <div class="checkbox-box" id="cf-elek-box"></div>
+          <span>Elektra aanwezig</span>
+        </label>
+        <input type="checkbox" id="cf-elek" style="display:none" />
+      </div>
+    </div>
     <div class="field">
       <label>Wensen</label>
       <textarea id="cf-wishes" rows="3" placeholder="Wat zoekt deze klant? Type haard, stijl, budget, planning…"></textarea>
@@ -2127,6 +2408,7 @@
       <div class="simar-badge" id="detail-simar-badge" style="display:none">Simar</div>
     </div>
     <div class="detail-photos" id="detail-photos"></div>
+    <div class="contact-actions" id="detail-actions"></div>
     <div class="detail-block">
       <div class="detail-label">Contact</div>
       <div class="detail-value" id="detail-contact"></div>
@@ -2153,6 +2435,10 @@
         <div class="detail-value" id="detail-room-size"></div>
       </div>
     </div>
+    <div class="detail-block" id="detail-maten-block">
+      <div class="detail-label">Maten en aansluitingen</div>
+      <div class="detail-maten" id="detail-maten"></div>
+    </div>
     <div class="detail-block">
       <div class="detail-label">Wensen</div>
       <div class="detail-value" id="detail-wishes"></div>
@@ -2169,6 +2455,24 @@
         <input type="text" id="detail-task-input" placeholder="Nieuwe taak voor deze klant…" />
         <button class="btn btn-sm btn-primary" id="detail-task-add-btn">+</button>
       </div>
+    </div>
+
+    <div class="detail-block" id="detail-afronden-block">
+      <div class="detail-label">Afronden</div>
+      <div class="afronden-row">
+        <select id="detail-close-reason">
+          <option value="">&mdash; Reden &mdash;</option>
+          <option value="Geplaatst en opgeleverd">Geplaatst en opgeleverd</option>
+          <option value="Geannuleerd door klant">Geannuleerd door klant</option>
+          <option value="Offerte afgewezen">Offerte afgewezen</option>
+          <option value="Geen reactie meer">Geen reactie meer</option>
+          <option value="anders">Anders&hellip;</option>
+        </select>
+        <input type="text" id="detail-close-other" placeholder="Reden zelf invullen…" style="display:none" />
+        <input type="date" id="detail-close-date" />
+        <button class="btn btn-sm btn-primary" id="detail-close-btn">Afronden</button>
+      </div>
+      <div class="afronden-done" id="detail-close-info" style="display:none"></div>
     </div>
 
     <div class="project-section" id="project-section" style="display:none">
@@ -2282,7 +2586,7 @@
 <div class="lightbox-backdrop" id="lightbox-backdrop">
   <div class="lightbox-close">&times;</div>
   <div class="lightbox-arrow" id="lightbox-prev"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div>
-  <img id="lightbox-img" src="" />
+  <img id="lightbox-img" alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
   <div class="lightbox-arrow" id="lightbox-next"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></div>
   <div class="lightbox-counter" id="lightbox-counter"></div>
 </div>
@@ -2302,13 +2606,17 @@
     <div class="psheet-toolbar">
       <div class="psheet-toolbar-title">Afdrukvoorbeeld</div>
       <div style="flex:1"></div>
+      <select id="psheet-vat-mode" title="Staan de prijzen in de calculatie in- of exclusief btw?">
+        <option value="incl">Calculatieprijzen zijn incl. btw</option>
+        <option value="excl">Calculatieprijzen zijn excl. btw</option>
+      </select>
       <button class="btn btn-ghost" id="psheet-close-btn">Sluiten</button>
       <button class="btn btn-primary" id="psheet-print-btn">Printen / Opslaan als PDF</button>
     </div>
     <div class="print-sheet" id="calc-print-sheet">
       <div class="psheet-page">
         <div class="psheet-head">
-          <img class="psheet-logo" id="psheet-logo" />
+          <img class="psheet-logo" id="psheet-logo" alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
           <div>
             <div class="psheet-brand">Jos Harm</div>
             <div class="psheet-brand-sub">Exclusieve haarden</div>
@@ -2332,7 +2640,9 @@
         </div>
         <table class="psheet-table">
           <tbody id="psheet-rows"></tbody>
-          <tr class="psheet-total-row"><td>Totaal (incl. installatie)</td><td id="psheet-total"></td></tr>
+          <tr class="psheet-sub-row"><td>Subtotaal excl. btw</td><td id="psheet-excl"></td></tr>
+          <tr class="psheet-sub-row"><td>Btw 21%</td><td id="psheet-btw"></td></tr>
+          <tr class="psheet-total-row"><td>Totaal incl. btw</td><td id="psheet-total"></td></tr>
         </table>
         <div class="psheet-note">
           <p style="margin:0 0 12px">Deze begroting is gemaakt op basis van de door u aangeleverde informatie en of documenten. Voor een definitieve offerte of order dienen wij de situatie ter plaatse te beoordelen en in te meten. Het uiteindelijke order bedrag kan hierdoor nog aangepast worden.</p>
@@ -2340,6 +2650,18 @@
           <p style="margin:0 0 12px">Geldigheidstermijn van deze prijsopgave is 1 maand na dagtekening.</p>
           <p style="margin:0 0 12px">Vertrouwende u hiermee een passende aanbieding te hebben gedaan, zien wij uw reactie met belangstelling tegemoet.</p>
           <p style="margin:0">Levering: In nader overleg.<br>Betaling: 40% bij opdracht, 40% voor aanvang werkzaamheden, 20% na gereedkomen werkzaamheden.</p>
+        </div>
+        <div class="psheet-sign">
+          <div class="psheet-sign-col">
+            <div class="psheet-sign-label">Voor akkoord &mdash; opdrachtgever</div>
+            <div class="psheet-sign-line"></div>
+            <div class="psheet-sign-hint">Naam en datum</div>
+          </div>
+          <div class="psheet-sign-col">
+            <div class="psheet-sign-label">Jos Harm</div>
+            <div class="psheet-sign-line"></div>
+            <div class="psheet-sign-hint">Koen Harm</div>
+          </div>
         </div>
         <div class="psheet-foot">
           <div>Jos Harm</div>
@@ -2451,19 +2773,77 @@ const firebaseConfig = {
   apiKey: "AIzaSyAlBj9lTKbI6I1Cl4HTGIVS9A5hiCzPQ14",
   databaseURL: "https://jos-harm-werkplaats-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "jos-harm-werkplaats",
+  storageBucket: "jos-harm-werkplaats.firebasestorage.app",
   messagingSenderId: "125238066819",
   appId: "1:125238066819:web:942b468c85591691cc65b6"
 };
 const VAPID_KEY = "BIVTIDcU0kKkT9HZPmgYWp8Lp9I5yo9nEgPccr2xNhtCxQU4s0IYc6dx2rsXC09fCja3jpZBwzSZGsI5RlK815k";
 let fbDb = null;
+let fbStorage = null;
 let fbReady = false;
 try {
   if (firebaseConfig.apiKey !== "VUL_HIER_IN" && window.firebase) {
     firebase.initializeApp(firebaseConfig);
     fbDb = firebase.database();
     fbReady = true;
+    try {
+      const savedBucket = localStorage.getItem('werkplaats:bucket');
+      fbStorage = savedBucket ? firebase.app().storage(savedBucket) : firebase.storage();
+    } catch (e) { fbStorage = null; }
   }
 } catch (e) { console.error('Firebase init mislukt', e); }
+
+// Foto's: verkleinen, uploaden naar Firebase Storage, en terugvallen op een data-URL als dat niet kan.
+const ALT_BUCKETS = ['gs://jos-harm-werkplaats.firebasestorage.app', 'gs://jos-harm-werkplaats.appspot.com'];
+function fileToImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Kon foto niet lezen')); };
+    img.src = url;
+  });
+}
+async function shrinkToBlob(file, maxDim, quality) {
+  const img = await fileToImage(file);
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+  const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+  return await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+}
+async function putBlob(blob, path) {
+  let lastErr = null;
+  const tries = [];
+  if (fbStorage) tries.push(fbStorage);
+  ALT_BUCKETS.forEach(b => { try { tries.push(firebase.app().storage(b)); } catch (e) {} });
+  for (const st of tries) {
+    try {
+      const ref = st.ref().child(path);
+      await ref.put(blob, { contentType: 'image/jpeg', cacheControl: 'public,max-age=31536000' });
+      const url = await ref.getDownloadURL();
+      try { localStorage.setItem('werkplaats:bucket', 'gs://' + st.app.options.storageBucket); } catch (e) {}
+      fbStorage = st;
+      return url;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Geen opslag beschikbaar');
+}
+function blobToDataUrl(blob) {
+  return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(blob); });
+}
+// Levert een URL op die direct in een <img src> kan.
+async function uploadPhoto(file, folder) {
+  const blob = await shrinkToBlob(file, 1800, 0.82);
+  const id = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+  if (fbReady && window.firebase && firebase.storage) {
+    try { return await putBlob(blob, folder + '/' + id + '.jpg'); }
+    catch (e) { console.error('Foto-upload mislukt, val terug op lokale opslag', e); }
+  }
+  const small = await shrinkToBlob(file, 900, 0.7);
+  return await blobToDataUrl(small);
+}
 
 let suppressRemote = false;
 function listenRemote(key, onChange) {
@@ -2561,7 +2941,7 @@ async function loadData() {
     const cd = await storageGet('calculations-data');
     calculations = cd ? JSON.parse(cd.value) : [];
   } catch (e) { console.error('Laden calculaties mislukt', e); calculations = []; }
-  calculations.forEach(c => { if (!c.createdAt) c.createdAt = Date.now(); if (!c.products) c.products = []; if (!c.qty) c.qty = {}; });
+  calculations.forEach(c => { if (!c.createdAt) c.createdAt = Date.now(); if (!c.products) c.products = []; if (!c.qty) c.qty = {}; if (c.title === undefined) c.title = ''; });
   try {
     const s = await storageGet('settings-data');
     const settings = s ? JSON.parse(s.value) : {};
@@ -2737,10 +3117,15 @@ function normalizeNotes() {
     n.text = n.text || '';
     n.label = n.label || 'algemeen';
     n.pinned = !!n.pinned;
+    if (!Array.isArray(n.photos)) n.photos = [];
     n.archived = !!n.archived;
     if (n.clientId === undefined) n.clientId = null;
     if (n.rawTranscript === undefined) n.rawTranscript = '';
     if (!Array.isArray(n.audioClips)) n.audioClips = [];
+    if (n.speakerTranscript === undefined) n.speakerTranscript = '';
+    if (n.mindmap === undefined) n.mindmap = null;
+    if (!n.recMode) n.recMode = 'ruimte';
+    if (!n.style) n.style = n.label === 'vergadering' ? 'overleg' : 'werkplaats';
     n.updatedAt = n.updatedAt || Date.now();
   });
 }
@@ -2896,6 +3281,60 @@ function renderNoteRead(n, host) {
       [...read.children].forEach(el => { el.style.animationDelay = ''; });
     }, read.children.length * 55 + 500);
   }
+}
+function renderNotePhotos(host, n) {
+  const block = document.createElement('div');
+  block.className = 'note-photos';
+  const head = document.createElement('div');
+  head.className = 'note-read-head';
+  head.style.margin = '0 0 8px';
+  head.innerHTML = '<span>Foto’s</span>';
+  block.appendChild(head);
+  const row = document.createElement('div');
+  row.className = 'photo-upload-row detail-photos';
+  row.style.margin = '0';
+  (n.photos || []).forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'photo-thumb-wrap';
+    el.innerHTML = '<img class="detail-photo" /><div class="photo-remove">&times;</div>';
+    el.querySelector('img').src = p;
+    el.querySelector('.photo-remove').addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      n.photos.splice(i, 1);
+      n.updatedAt = Date.now();
+      await saveNotes();
+      renderNotes();
+    });
+    row.appendChild(el);
+  });
+  const add = document.createElement('div');
+  add.className = 'photo-add-btn';
+  add.textContent = '+';
+  add.title = 'Foto toevoegen';
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.setAttribute('capture', 'environment');
+  input.multiple = true;
+  input.style.display = 'none';
+  add.addEventListener('click', () => input.click());
+  input.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    n.photos = n.photos || [];
+    for (let i = 0; i < files.length; i++) {
+      add.textContent = files.length > 1 ? (i + 1) + '/' + files.length : '…';
+      try { n.photos.push(await uploadPhoto(files[i], 'notities')); } catch (err) { console.error('Notitiefoto mislukt', err); }
+    }
+    add.textContent = '+';
+    n.updatedAt = Date.now();
+    await saveNotes();
+    renderNotes();
+  });
+  row.appendChild(add);
+  block.appendChild(row);
+  block.appendChild(input);
+  host.appendChild(block);
 }
 let noteRevealId = null;
 let lastDetailId = null;
@@ -3071,6 +3510,45 @@ function renderNoteDetail() {
       });
       host.append(toggle, raw);
     }
+    if ((n.speakerTranscript || '').trim()) {
+      const toggle = document.createElement('div');
+      toggle.className = 'note-raw-toggle';
+      toggle.textContent = 'Gesprek per spreker bekijken';
+      const box = document.createElement('div');
+      box.style.cssText = 'display:none; margin-top:8px; padding:10px 12px; border:1px solid var(--hairline); border-radius:3px; background:var(--panel)';
+      renderSpeakerTurns(box, n.speakerTranscript);
+      toggle.addEventListener('click', () => {
+        const open = box.style.display !== 'none';
+        box.style.display = open ? 'none' : 'block';
+        toggle.textContent = open ? 'Gesprek per spreker bekijken' : 'Sprekers verbergen';
+      });
+      host.append(toggle, box);
+    }
+    if (n.mindmap && Array.isArray(n.mindmap.takken)) renderMindmap(host, n);
+    if ((n.text || '').trim()) {
+      const rw = document.createElement('div');
+      rw.className = 'rw';
+      const lab = document.createElement('span');
+      lab.className = 'rw-label';
+      lab.textContent = 'Herschrijven';
+      const toneSel = document.createElement('select');
+      RW_TONES.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; toneSel.appendChild(o); });
+      const lenSel = document.createElement('select');
+      RW_LENGTHS.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; if (v === 'gelijk') o.selected = true; lenSel.appendChild(o); });
+      const go = document.createElement('button');
+      go.className = 'btn btn-sm';
+      go.textContent = noteBusy.rewrite === n.id ? 'Bezig\u2026' : 'Schrijf om';
+      go.disabled = noteBusy.rewrite === n.id;
+      go.addEventListener('click', () => noteRewrite(n, toneSel.value, lenSel.value));
+      const mmBtn = document.createElement('button');
+      mmBtn.className = 'btn btn-sm';
+      mmBtn.textContent = noteBusy.mindmap === n.id ? 'Mindmap\u2026' : (n.mindmap ? 'Mindmap bijwerken' : 'Mindmap maken');
+      mmBtn.disabled = noteBusy.mindmap === n.id;
+      mmBtn.addEventListener('click', () => noteMindmap(n));
+      rw.append(lab, toneSel, lenSel, go, mmBtn);
+      host.appendChild(rw);
+    }
+    renderNotePhotos(host, n);
     renderAssistBar(host, n);
     const tools = document.createElement('div');
     tools.className = 'note-tools';
@@ -3134,7 +3612,19 @@ function renderNoteDetail() {
       await deleteNoteById(n.id);
     });
     saved.textContent = 'Bijgewerkt ' + noteWhen(n.updatedAt);
-    tools.append(editBtn, dictBtn, pinBtn, taskBtn, copyBtn, waBtn, archBtn, delBtn, saved);
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'btn btn-sm';
+    shareBtn.textContent = 'Delen';
+    shareBtn.addEventListener('click', () => shareNote(n));
+    const mdBtn = document.createElement('button');
+    mdBtn.className = 'btn btn-sm';
+    mdBtn.textContent = 'Markdown';
+    mdBtn.addEventListener('click', () => downloadNoteMarkdown(n));
+    const pdfBtn = document.createElement('button');
+    pdfBtn.className = 'btn btn-sm';
+    pdfBtn.textContent = 'PDF';
+    pdfBtn.addEventListener('click', () => printNote(n));
+    tools.append(editBtn, dictBtn, pinBtn, taskBtn, copyBtn, shareBtn, waBtn, mdBtn, pdfBtn, archBtn, delBtn, saved);
     host.appendChild(tools);
   }
 }
@@ -3189,6 +3679,7 @@ async function deleteNoteById(id, opts) {
 }
 function renderNotes() {
   normalizeNotes();
+  if (typeof renderRail === 'function') renderRail();
   const countEl = document.getElementById('count-notities');
   if (countEl) countEl.textContent = notes.filter(n => !n.archived).length;
   renderHomeNotes();
@@ -3393,10 +3884,28 @@ function audMeter() {
   });
   aud.rafId = requestAnimationFrame(audMeter);
 }
+function audAnnounce() {
+  return new Promise((res) => {
+    if (!dict.announce || !window.speechSynthesis) { res(); return; }
+    try {
+      const u = new SpeechSynthesisUtterance('Let op: dit gesprek wordt opgenomen.');
+      u.lang = 'nl-NL';
+      u.onend = () => res();
+      u.onerror = () => res();
+      speechSynthesis.speak(u);
+      setTimeout(res, 4000);
+    } catch (e) { res(); }
+  });
+}
 async function audStart() {
   aud.error = '';
+  const phone = dict.recMode === 'telefoon';
+  if (phone && !dict.consent) { aud.error = 'Zet eerst de vinkjes bij toestemming.'; renderNoteDetail(); return; }
+  if (phone) await audAnnounce();
   try {
-    aud.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    aud.stream = await navigator.mediaDevices.getUserMedia({ audio: phone
+      ? { echoCancellation: false, noiseSuppression: false, autoGainControl: true }
+      : { echoCancellation: true, noiseSuppression: true } });
   } catch (e) {
     aud.error = 'Geen toegang tot de microfoon — sta dit toe in de instellingen van je telefoon of browser.';
     renderNoteDetail();
@@ -3518,8 +4027,222 @@ async function mountAudioPlayer(host, n, opts) {
   host.appendChild(wrap);
 }
 
+// ---- Sprekerslabels ----
+const SPEAKER_SYSTEM = [
+  'Je krijgt een ruwe spraaktranscriptie van een gesprek zonder sprekersaanduiding. Verdeel de tekst in spreekbeurten.',
+  'Geef ALLEEN de verdeelde tekst terug, elke spreekbeurt op \u00e9\u00e9n regel in de vorm "Naam: wat er gezegd is".',
+  'Gebruik de echte naam als die in het gesprek duidelijk genoemd wordt; anders "Spreker 1", "Spreker 2". Gebruik "Ik" voor degene die het gesprek opnam als dat duidelijk is.',
+  'Verander de woorden niet, behalve duidelijke spraakfouten. Voeg niets toe, laat niets weg en verzin geen extra spreker.'
+].join('\n');
+async function noteDiarize(n) {
+  const raw = (n.rawTranscript || '').trim();
+  if (!raw) return;
+  aud.error = '';
+  noteBusy.speakers = n.id;
+  renderNoteDetail();
+  try {
+    const data = await claudeMessage({
+      model: 'claude-sonnet-4-6', max_tokens: 4000, system: SPEAKER_SYSTEM,
+      messages: [{ role: 'user', content: raw.slice(0, 20000) }]
+    });
+    const block = (data.content || []).find(b => b.type === 'text');
+    if (!block) throw new Error('geen antwoord');
+    n.speakerTranscript = block.text.trim();
+    n.updatedAt = Date.now();
+    await saveNotes();
+    showUndoToast('Sprekers gelabeld', null);
+  } catch (e) {
+    console.error('Sprekers labelen mislukt', e);
+    aud.error = 'Sprekers labelen mislukt \u2014 probeer het later opnieuw.';
+  }
+  noteBusy.speakers = null;
+  renderNoteDetail();
+}
+function renderSpeakerTurns(host, text) {
+  text.split('\n').filter(l => l.trim()).forEach(line => {
+    const m = line.match(/^\s*([^:]{1,40}):\s*(.*)$/);
+    const row = document.createElement('div');
+    row.className = 'speaker-turn';
+    if (m) {
+      const who = document.createElement('div');
+      who.className = 'speaker-name';
+      who.textContent = m[1].trim();
+      const what = document.createElement('div');
+      what.textContent = m[2];
+      row.append(who, what);
+    } else {
+      const what = document.createElement('div');
+      what.textContent = line;
+      row.appendChild(what);
+    }
+    host.appendChild(row);
+  });
+}
+const noteBusy = { speakers: null, mindmap: null, rewrite: null };
+
+// ---- Mindmap ----
+function parseJsonBlock(text) {
+  const s = text.indexOf('{');
+  const e = text.lastIndexOf('}');
+  if (s < 0 || e < s) return null;
+  try { return JSON.parse(text.slice(s, e + 1)); } catch (err) { return null; }
+}
+async function noteMindmap(n) {
+  noteBusy.mindmap = n.id;
+  renderNoteDetail();
+  try {
+    const data = await claudeMessage({
+      model: 'claude-sonnet-4-6', max_tokens: 1500,
+      system: 'Je maakt van een werknotitie een mindmap. Antwoord ALLEEN met JSON, zonder codeblok, in de vorm {"onderwerp":"korte kern","takken":[{"naam":"onderwerp","punten":["kort punt","kort punt"]}]}. Maximaal 6 takken, per tak maximaal 5 punten van maximaal 10 woorden. Nederlands. Verzin geen inhoud die er niet staat.',
+      messages: [{ role: 'user', content: assistContext(n) }]
+    });
+    const block = (data.content || []).find(b => b.type === 'text');
+    const json = block ? parseJsonBlock(block.text) : null;
+    if (!json || !Array.isArray(json.takken)) throw new Error('geen mindmap');
+    n.mindmap = json;
+    n.updatedAt = Date.now();
+    await saveNotes();
+  } catch (e) {
+    console.error('Mindmap mislukt', e);
+    showUndoToast('Mindmap maken mislukt \u2014 probeer het opnieuw', null);
+  }
+  noteBusy.mindmap = null;
+  renderNoteDetail();
+}
+function renderMindmap(host, n) {
+  const mm = document.createElement('div');
+  mm.className = 'mm';
+  const root = document.createElement('div');
+  root.className = 'mm-root';
+  root.textContent = n.mindmap.onderwerp || noteHeading(n);
+  mm.appendChild(root);
+  const branches = document.createElement('div');
+  branches.className = 'mm-branches';
+  (n.mindmap.takken || []).forEach(t => {
+    const b = document.createElement('div');
+    b.className = 'mm-branch';
+    const name = document.createElement('div');
+    name.className = 'mm-branch-name';
+    name.textContent = t.naam || '';
+    b.appendChild(name);
+    (t.punten || []).forEach(p => {
+      const it = document.createElement('div');
+      it.className = 'mm-item';
+      it.textContent = p;
+      b.appendChild(it);
+    });
+    branches.appendChild(b);
+  });
+  mm.appendChild(branches);
+  host.appendChild(mm);
+}
+
+// ---- Herschrijven op toon en lengte ----
+const RW_TONES = [['zakelijk', 'Zakelijk'], ['vriendelijk', 'Vriendelijk'], ['kort', 'Kort en direct'], ['klant', 'Voor de klant']];
+const RW_LENGTHS = [['korter', 'Korter'], ['gelijk', 'Zelfde lengte'], ['langer', 'Uitgebreider']];
+const RW_TONE_TEXT = {
+  zakelijk: 'zakelijk en neutraal, korte zinnen, geen omhaal',
+  vriendelijk: 'vriendelijk en persoonlijk, maar nog steeds bondig',
+  kort: 'zo kort en direct mogelijk, telegramstijl waar dat kan',
+  klant: 'begrijpelijk voor een klant zonder vakkennis; leg vakjargon in \u00e9\u00e9n woord uit'
+};
+const RW_LENGTH_TEXT = { korter: 'ongeveer de helft korter', gelijk: 'ongeveer dezelfde lengte', langer: 'uitgebreider, met de losse punten verder uitgewerkt' };
+async function noteRewrite(n, tone, length) {
+  if (!(n.text || '').trim()) return;
+  noteBusy.rewrite = n.id;
+  renderNoteDetail();
+  const vorige = n.text;
+  try {
+    const data = await claudeMessage({
+      model: 'claude-sonnet-4-6', max_tokens: 2200,
+      system: 'Je herschrijft een bestaande werknotitie. Behoud exact dezelfde kopjes, de "\u2022 "-opsommingen en de "[ ] "-actiepunten, en behoud alle maten, bedragen, namen en afspraken letterlijk. Verzin niets nieuws en laat geen feit weg. Geef ALLEEN de herschreven notitie terug, zonder titelregel, inleiding of codeblok.',
+      messages: [{ role: 'user', content: 'Schrijf deze notitie ' + (RW_TONE_TEXT[tone] || '') + ', en ' + (RW_LENGTH_TEXT[length] || '') + '.\n\n' + n.text }]
+    });
+    const block = (data.content || []).find(b => b.type === 'text');
+    if (!block || !block.text.trim()) throw new Error('geen antwoord');
+    n.text = block.text.trim();
+    n.updatedAt = Date.now();
+    await saveNotes();
+    noteBusy.rewrite = null;
+    renderNotes();
+    showUndoToast('Notitie herschreven', async () => { n.text = vorige; n.updatedAt = Date.now(); await saveNotes(); renderNotes(); });
+    return;
+  } catch (e) {
+    console.error('Herschrijven mislukt', e);
+    showUndoToast('Herschrijven mislukt \u2014 de notitie is niet gewijzigd', null);
+  }
+  noteBusy.rewrite = null;
+  renderNoteDetail();
+}
+
+// ---- Delen en exporteren ----
+function noteMarkdown(n) {
+  const lines = ['# ' + noteHeading(n), ''];
+  const c = n.clientId ? clients.find(x => x.id === n.clientId) : null;
+  if (c) lines.push('**Klant:** ' + (c.name || '') + (c.ref ? ' (' + c.ref + ')' : ''), '');
+  lines.push('_Bijgewerkt ' + new Date(n.updatedAt || Date.now()).toLocaleString('nl-NL') + '_', '');
+  (n.text || '').split('\n').forEach(l => {
+    const bare = l.replace(/^#+\s*/, '').trim();
+    if (bare && /^(samenvatting|afspraken|maten en materialen|actiepunten|open vragen|besluiten|aanwezig|van de assistent|idee\u00ebn|kansrijk|nog uitzoeken|bezwaren en twijfels|prijs en voorwaarden|wat de klant wil|bouwkundig|vervolgstap|kans|teruggebeld over|volgend overleg)$/i.test(bare)) {
+      lines.push('', '## ' + bare);
+    } else if (/^\s*\[[ xX]\]/.test(l)) {
+      lines.push(l.replace(/^\s*\[ \]/, '- [ ]').replace(/^\s*\[[xX]\]/, '- [x]'));
+    } else if (/^\s*\u2022\s?/.test(l)) {
+      lines.push('- ' + l.replace(/^\s*\u2022\s?/, ''));
+    } else lines.push(l);
+  });
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n');
+}
+async function shareNote(n) {
+  const text = noteFullText(n);
+  if (navigator.share) {
+    try { await navigator.share({ title: noteHeading(n), text }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  copyNoteText(text);
+  showUndoToast('Gekopieerd \u2014 plak het waar je het wilt delen', null);
+}
+function downloadNoteMarkdown(n) {
+  const blob = new Blob([noteMarkdown(n)], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (noteHeading(n) || 'notitie').replace(/[^a-z0-9\u00e0-\u00ff -]/gi, '').slice(0, 60).trim() + '.md';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function printNote(n) {
+  const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const c = n.clientId ? clients.find(x => x.id === n.clientId) : null;
+  const body = (n.text || '').split('\n').map(l => {
+    const bare = l.replace(/^#+\s*/, '').trim();
+    if (!l.trim()) return '<div style="height:8px"></div>';
+    if (/^\s*\[[ xX]\]/.test(l)) return '<p class="chk">' + (/\[[xX]\]/.test(l) ? '\u2611' : '\u2610') + ' ' + esc(l.replace(/^\s*\[[ xX]\]\s?/, '')) + '</p>';
+    if (/^\s*\u2022\s?/.test(l)) return '<p class="bul">' + esc(l.replace(/^\s*\u2022\s?/, '')) + '</p>';
+    if (bare.length < 40 && /^[A-Z\u00c0-\u00dd][^.!?]*$/.test(bare)) return '<h2>' + esc(bare) + '</h2>';
+    return '<p>' + esc(l) + '</p>';
+  }).join('');
+  const html = '<!doctype html><meta charset="utf-8"><title>' + esc(noteHeading(n)) + '</title><style>' +
+    '@page{margin:20mm}body{font:12pt/1.55 Georgia,serif;color:#201e1d;margin:0}' +
+    'h1{font:600 20pt/1.2 Helvetica,Arial,sans-serif;margin:0 0 4pt}' +
+    'h2{font:600 10pt/1.3 Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em;margin:14pt 0 4pt;border-bottom:1px solid #ccc;padding-bottom:3pt}' +
+    '.meta{font:9.5pt Helvetica,Arial,sans-serif;color:#666;margin:0 0 14pt;padding-bottom:8pt;border-bottom:2px solid #201e1d}' +
+    'p{margin:2pt 0}.bul{padding-left:14pt;text-indent:-9pt}.bul:before{content:"\u2013  "}.chk{padding-left:14pt;text-indent:-11pt}' +
+    '</style><h1>' + esc(noteHeading(n)) + '</h1><div class="meta">' +
+    (c ? esc(c.name || '') + (c.ref ? ' \u00b7 ' + esc(c.ref) : '') + ' \u2014 ' : '') +
+    new Date(n.updatedAt || Date.now()).toLocaleString('nl-NL') + '</div>' + body;
+  const fr = document.createElement('iframe');
+  fr.style.cssText = 'position:fixed;width:0;height:0;border:0;left:-9999px';
+  document.body.appendChild(fr);
+  fr.srcdoc = html;
+  fr.onload = () => {
+    try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e) {}
+    setTimeout(() => fr.remove(), 60000);
+  };
+}
+
 // ---- Dicteren + AI-uitwerking ----
-const dict = { open: false, noteId: null, mode: 'audio', kind: 'gesprek', listening: false, finalText: '', interim: '', startedAt: 0, rec: null, timer: null, working: false, error: '' };
+const dict = { open: false, noteId: null, mode: 'audio', kind: 'werkplaats', recMode: 'ruimte', consent: false, announce: false, listening: false, finalText: '', interim: '', startedAt: 0, rec: null, timer: null, working: false, error: '' };
+try { dict.announce = localStorage.getItem('werkplaats:opnameAankondiging') === '1'; } catch (e) {}
 function dictSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
 function dictElapsed() {
   const s = Math.floor((Date.now() - dict.startedAt) / 1000);
@@ -3612,7 +4335,9 @@ function dictOpen(noteId) {
   dict.startedAt = 0;
   dict.error = '';
   dict.working = false;
-  dict.kind = (n && n.label === 'vergadering') ? 'vergadering' : 'gesprek';
+  dict.kind = (n && n.style) || (n && n.label === 'vergadering' ? 'overleg' : 'werkplaats');
+  dict.recMode = (n && n.recMode) || 'ruimte';
+  dict.consent = false;
   aud.segments = (n && n.audioClips) ? n.audioClips.slice() : [];
   aud.elapsedBase = 0;
   aud.error = '';
@@ -3649,11 +4374,42 @@ const DICT_SYSTEM = [
   'Regels: verzin nooit maten, bedragen, namen of afspraken alsof ze gezegd zijn. Alles wat jij zelf toevoegt staat uitsluitend onder "Van de assistent" en is duidelijk als suggestie of vraag geformuleerd. Laat de andere kopjes weg als er niets over gezegd is.'
 ].join('\n');
 const DICT_KINDS = [
-  { key: 'gesprek', name: 'Gesprek' },
-  { key: 'vergadering', name: 'Vergadering' }
+  { key: 'werkplaats', name: 'Werkplaats' },
+  { key: 'klantgesprek', name: 'Klantgesprek' },
+  { key: 'inmeet', name: 'Inmeetbezoek' },
+  { key: 'telefoon', name: 'Telefoonnotitie' },
+  { key: 'overleg', name: 'Overleg' },
+  { key: 'brainstorm', name: 'Brainstorm' }
 ];
 const DICT_KIND_EXTRA = {
-  vergadering: [
+  klantgesprek: [
+    'Dit is een KLANTGESPREK of verkoopgesprek. Houd deze opbouw aan:',
+    'Zet na de samenvatting het kopje "Wat de klant wil" met de wensen en voorkeuren, elk op een regel met "\u2022 ".',
+    'Dan "Bezwaren en twijfels" — wat de klant nog tegenhoudt, elk met "\u2022 ".',
+    'Dan "Prijs en voorwaarden" — alleen bedragen, kortingen en levertijden die daadwerkelijk genoemd zijn, elk met "\u2022 ".',
+    'Dan "Kans" — in \u00e9\u00e9n regel hoe warm dit is en waarom.',
+    'Sluit af met "Vervolgstap" en de concrete afspraak die het gesprek verder brengt.'
+  ].join('\n'),
+  inmeet: [
+    'Dit is een INMEETBEZOEK op locatie. De maten zijn het belangrijkste; wees hier extreem precies en verzin nooit een maat.',
+    'Zet "Maten en materialen" direct na de samenvatting, met de maat exact zoals genoemd (bijv. "\u2022 Opening 1200 x 800 mm").',
+    'Voeg daarna het kopje "Bouwkundig" toe: rookkanaal, doorvoer, vloer, wand, ventilatie en aansluitingen (gas/elektra), elk met "\u2022 ".',
+    'Zet onder "Van de assistent" expliciet welke maten of gegevens nog ontbreken om te kunnen bestellen of monteren, elk beginnend met "\u2022 Ontbreekt: ".'
+  ].join('\n'),
+  telefoon: [
+    'Dit is een korte TELEFOONNOTITIE. Houd het compact: maximaal 2 regels samenvatting.',
+    'Gebruik alleen de kopjes waar echt inhoud voor is, en houd elke regel bij \u00e9\u00e9n zin.',
+    'Zet "Teruggebeld over" als eerste kopje met de reden van het gesprek in \u00e9\u00e9n regel met "\u2022 ".',
+    'Sluit af met "Vervolgstap" — wat er nu moet gebeuren en door wie.'
+  ].join('\n'),
+  brainstorm: [
+    'Dit is een BRAINSTORM. Er zijn nog geen besluiten; behandel alles als idee, niet als afspraak.',
+    'Gebruik na de samenvatting het kopje "Idee\u00ebn" met elk idee op een eigen regel met "\u2022 ".',
+    'Dan "Kansrijk" met de twee of drie idee\u00ebn die het meest opleveren, elk met "\u2022 " en \u00e9\u00e9n reden.',
+    'Dan "Nog uitzoeken" met wat er onderzocht moet worden, elk met "\u2022 ".',
+    'Laat "Afspraken" weg tenzij er echt iets is vastgelegd.'
+  ].join('\n'),
+  overleg: [
     'Dit is een VERGADERING met meerdere deelnemers. Houd dat aan in de opbouw:',
     'Zet direct na de samenvatting het kopje "Aanwezig" met de namen die genoemd worden, elk op een regel met "• " (laat het kopje weg als er geen namen vallen).',
     'Gebruik daarna het kopje "Besluiten" voor wat er definitief besloten is, elk op een regel met "• ".',
@@ -3661,9 +4417,16 @@ const DICT_KIND_EXTRA = {
     'Sluit af met het kopje "Volgend overleg" als er een datum, tijd of vervolgmoment genoemd is.'
   ].join('\n')
 };
+const DICT_MODE_EXTRA = {
+  telefoongesprek: 'De opname is een TELEFOONGESPREK dat via de speaker is opgenomen. Verwacht slechtere audio: onduidelijke woorden, afgebroken zinnen en soms twee mensen door elkaar. Corrigeer stilzwijgend wat duidelijk is, maar noteer onder "Van de assistent" met "\u2022 Onzeker: " wat je niet met zekerheid hebt kunnen verstaan en beter nagevraagd wordt.'
+};
 function dictSystemPrompt(kind) {
+  let out = DICT_SYSTEM;
   const extra = DICT_KIND_EXTRA[kind];
-  return extra ? DICT_SYSTEM + '\n' + extra : DICT_SYSTEM;
+  if (extra) out += '\n' + extra;
+  const n = notes.find(x => x.id === dict.noteId);
+  if ((n && n.recMode === 'telefoon') || dict.recMode === 'telefoon') out += '\n' + DICT_MODE_EXTRA.telefoongesprek;
+  return out;
 }
 function noteClientContext(n) {
   const c = n && n.clientId ? clients.find(x => x.id === n.clientId) : null;
@@ -3850,6 +4613,55 @@ function renderAudioPanel(host, n) {
   panel.appendChild(head);
   panel.appendChild(dictStepsEl(aud.transcribing ? 1 : (dict.working ? 2 : 0)));
 
+  const modes = document.createElement('div');
+  modes.className = 'rec-modes';
+  [['ruimte', 'Gesprek in de ruimte', 'Microfoon van dit apparaat \u2014 voor klanten, monteurs en overleg.'],
+   ['telefoon', 'Telefoongesprek (speaker)', 'Zet het gesprek op de speaker en leg de telefoon neer; ik neem mee via de microfoon.']].forEach(([key, name, sub]) => {
+    const b = document.createElement('div');
+    b.className = 'rec-mode' + (dict.recMode === key ? ' active' : '');
+    b.innerHTML = '<div class="rec-mode-name"></div><div class="rec-mode-sub"></div>';
+    b.querySelector('.rec-mode-name').textContent = name;
+    b.querySelector('.rec-mode-sub').textContent = sub;
+    b.addEventListener('click', async () => {
+      if (dict.recMode === key || aud.recording) return;
+      dict.recMode = key;
+      dict.consent = false;
+      n.recMode = key;
+      if (key === 'telefoon' && n.style === 'werkplaats') { n.style = 'telefoon'; dict.kind = 'telefoon'; }
+      n.updatedAt = Date.now();
+      await saveNotes();
+      renderNoteDetail();
+    });
+    modes.appendChild(b);
+  });
+  panel.appendChild(modes);
+
+  if (dict.recMode === 'telefoon' && !aud.recording) {
+    const cons = document.createElement('div');
+    cons.className = 'consent-box';
+    const t = document.createElement('div');
+    t.className = 'consent-title';
+    t.textContent = 'Voor je een telefoongesprek opneemt';
+    const txt = document.createElement('div');
+    txt.className = 'consent-text';
+    txt.textContent = 'Een gesprek opnemen zonder dat de ander het weet mag niet overal. Meld het altijd \u2014 dan mag het, en heb je er ook meer aan.';
+    const row1 = document.createElement('label');
+    row1.className = 'consent-row';
+    row1.innerHTML = '<input type="checkbox"><span>Ik heb de andere partij gemeld dat dit gesprek wordt opgenomen.</span>';
+    row1.querySelector('input').checked = dict.consent;
+    row1.querySelector('input').addEventListener('change', (e) => { dict.consent = e.target.checked; renderNoteDetail(); });
+    const row2 = document.createElement('label');
+    row2.className = 'consent-row';
+    row2.innerHTML = '<input type="checkbox"><span>Spreek de melding voor mij uit bij het starten van de opname.</span>';
+    row2.querySelector('input').checked = dict.announce;
+    row2.querySelector('input').addEventListener('change', (e) => {
+      dict.announce = e.target.checked;
+      try { localStorage.setItem('werkplaats:opnameAankondiging', dict.announce ? '1' : '0'); } catch (err) {}
+    });
+    cons.append(t, txt, row1, row2);
+    panel.appendChild(cons);
+  }
+
   const box = document.createElement('div');
   box.className = 'dict-audio-box';
   if (aud.recording) {
@@ -3906,6 +4718,7 @@ function renderAudioPanel(host, n) {
     const recBtn = document.createElement('button');
     recBtn.className = 'btn btn-sm btn-primary';
     recBtn.textContent = aud.recording ? 'Stop opname' : ((n.audioClips || []).length ? 'Verder opnemen' : 'Start opname');
+    if (!aud.recording && dict.recMode === 'telefoon' && !dict.consent) recBtn.disabled = true;
     recBtn.addEventListener('click', () => { aud.recording ? audStop() : audStart(); });
     tools.appendChild(recBtn);
 
@@ -3926,6 +4739,14 @@ function renderAudioPanel(host, n) {
       typeBtn.textContent = (n.rawTranscript || '').trim() ? 'Opnieuw uittypen' : 'Uittypen met AI';
       typeBtn.addEventListener('click', audTranscribe);
       tools.appendChild(typeBtn);
+    }
+    if ((n.rawTranscript || '').trim() && !aud.recording) {
+      const spkBtn = document.createElement('button');
+      spkBtn.className = 'btn btn-sm';
+      spkBtn.textContent = noteBusy.speakers === n.id ? 'Sprekers labelen\u2026' : ((n.speakerTranscript || '').trim() ? 'Sprekers opnieuw labelen' : 'Sprekers labelen');
+      spkBtn.disabled = noteBusy.speakers === n.id;
+      spkBtn.addEventListener('click', () => noteDiarize(n));
+      tools.appendChild(spkBtn);
     }
     if ((n.rawTranscript || '').trim() && !aud.recording) {
       const aiBtn = document.createElement('button');
@@ -3975,6 +4796,181 @@ document.getElementById('note-quick-btn').addEventListener('click', addQuickNote
 document.getElementById('note-quick-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addQuickNote(); } });
 document.getElementById('note-search-input').addEventListener('input', (e) => { noteQuery = e.target.value; renderNotes(); });
 document.getElementById('note-dictate-new').addEventListener('click', startDictationNote);
+
+// ---- Vraag het aan je notities ----
+const ask = { busy: false, thread: [], error: '' };
+const ASK_SYSTEM = [
+  'Je bent de vaste assistent van een medewerker bij een haardenbedrijf. Je krijgt genummerde fragmenten uit zijn eigen notities en antwoordt op zijn vraag.',
+  'Antwoord in het Nederlands, kort en concreet, zonder inleiding en zonder codeblokken. Gebruik "\u2022 " voor opsommingen.',
+  'Zet achter elk feit de bron als [1], [2] \u2014 het nummer van de notitie waar het uit komt. Combineer meerdere bronnen als [1][3].',
+  'Staat het antwoord niet in de notities, zeg dat dan gewoon en verwijs niet naar een bron. Verzin nooit maten, bedragen, namen of afspraken.'
+].join('\n');
+const ASK_SUGGESTIONS = [
+  'Wat heb ik deze week afgesproken?',
+  'Welke actiepunten staan nog open?',
+  'Waar wachten we nog op maten?',
+  'Welke klanten moet ik terugbellen?'
+];
+function askRetrieve(q) {
+  const terms = q.toLowerCase().split(/[^a-z0-9\u00e0-\u00ff]+/).filter(t => t.length > 2);
+  const scored = notes.map(n => {
+    const hay = ((n.title || '') + ' ' + (n.text || '') + ' ' + (n.rawTranscript || '')).toLowerCase();
+    let score = terms.reduce((s, t) => s + (hay.split(t).length - 1), 0);
+    if (n.archived) score *= 0.5;
+    score += Math.max(0, 3 - (Date.now() - (n.updatedAt || 0)) / (14 * 86400000));
+    return { n, score };
+  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 8);
+  return scored.map(x => x.n);
+}
+function askContext(sources) {
+  return sources.map((n, i) => {
+    const c = n.clientId ? clients.find(x => x.id === n.clientId) : null;
+    return '[' + (i + 1) + '] ' + noteHeading(n) +
+      (c ? ' \u2014 klant: ' + (c.name || '') : '') +
+      ' (' + new Date(n.updatedAt || Date.now()).toLocaleDateString('nl-NL') + ')\n' +
+      ((n.text || '').trim() || (n.rawTranscript || '').slice(0, 1500));
+  }).join('\n\n');
+}
+async function askSend(q) {
+  if (!q.trim() || ask.busy) return;
+  ask.busy = true;
+  ask.error = '';
+  const sources = askRetrieve(q);
+  ask.thread.push({ role: 'q', text: q.trim() });
+  ask.thread.push({ role: 'a', text: '', sources: sources });
+  renderAsk();
+  try {
+    if (!sources.length) throw new Error('geen notities');
+    const history = ask.thread.filter(m => m.role === 'q' || (m.role === 'a' && m.text)).slice(-6);
+    const data = await claudeMessage({
+      model: 'claude-sonnet-4-6', max_tokens: 1400, system: ASK_SYSTEM,
+      messages: [{ role: 'user', content: 'Mijn notities:\n\n' + askContext(sources) +
+        (history.length > 2 ? '\n\nEerder in dit gesprek:\n' + history.slice(0, -1).map(m => (m.role === 'q' ? 'Ik: ' : 'Jij: ') + m.text).join('\n') : '') +
+        '\n\nMijn vraag: ' + q.trim() }]
+    });
+    const block = (data.content || []).find(b => b.type === 'text');
+    const last = ask.thread[ask.thread.length - 1];
+    last.text = block ? block.text.trim() : '';
+    if (!last.text) throw new Error('leeg antwoord');
+    const used = new Set((last.text.match(/\[(\d+)\]/g) || []).map(m => parseInt(m.slice(1, -1), 10)));
+    if (used.size) last.sources = sources.filter((s, i) => used.has(i + 1));
+  } catch (e) {
+    console.error('Vraag mislukt', e);
+    ask.thread.pop();
+    ask.error = notes.length
+      ? 'Ik kon geen antwoord ophalen. Controleer de verbinding en probeer het opnieuw.'
+      : 'Er staan nog geen notities om in te zoeken.';
+  }
+  ask.busy = false;
+  renderAsk();
+}
+function buildAskModal() {
+  let bd = document.getElementById('ask-backdrop');
+  if (bd) return bd;
+  bd = document.createElement('div');
+  bd.className = 'modal-backdrop';
+  bd.id = 'ask-backdrop';
+  bd.innerHTML = '<div class="modal"><div class="modal-head"><h2>Vraag het aan je notities</h2><div class="modal-close" id="ask-close">&times;</div></div>' +
+    '<div id="ask-body"></div></div>';
+  document.body.appendChild(bd);
+  bd.querySelector('#ask-close').addEventListener('click', () => bd.classList.remove('open'));
+  bd.addEventListener('click', (e) => { if (e.target === bd) bd.classList.remove('open'); });
+  return bd;
+}
+function renderAsk() {
+  const bd = buildAskModal();
+  const body = bd.querySelector('#ask-body');
+  body.innerHTML = '';
+  const thread = document.createElement('div');
+  thread.className = 'ask-thread';
+  if (!ask.thread.length) {
+    const empty = document.createElement('div');
+    empty.className = 'ask-empty';
+    empty.textContent = 'Ik zoek in al je notities \u2014 ook in de ruwe opnames \u2014 en zet erbij waar het vandaan komt. Vraag bijvoorbeeld: \u201cwat had ik met de familie De Vries afgesproken over het rookkanaal?\u201d';
+    thread.appendChild(empty);
+    const chips = document.createElement('div');
+    chips.className = 'ask-chips';
+    ASK_SUGGESTIONS.forEach(s => {
+      const c = document.createElement('div');
+      c.className = 'assist-chip';
+      c.textContent = s;
+      c.addEventListener('click', () => askSend(s));
+      chips.appendChild(c);
+    });
+    thread.appendChild(chips);
+  }
+  ask.thread.forEach(m => {
+    if (m.role === 'q') {
+      const q = document.createElement('div');
+      q.className = 'ask-q';
+      q.textContent = m.text;
+      thread.appendChild(q);
+      return;
+    }
+    const a = document.createElement('div');
+    a.className = 'ask-a';
+    if (!m.text) {
+      a.innerHTML = '<div class="dict-working"><span class="spin"></span><span>Ik zoek het op in je notities\u2026</span></div>';
+      thread.appendChild(a);
+      return;
+    }
+    const txt = document.createElement('div');
+    txt.textContent = m.text;
+    a.appendChild(txt);
+    if ((m.sources || []).length) {
+      const srcs = document.createElement('div');
+      srcs.className = 'ask-srcs';
+      m.sources.forEach((n, i) => {
+        const chip = document.createElement('div');
+        chip.className = 'ask-src';
+        chip.textContent = noteHeading(n);
+        chip.addEventListener('click', () => {
+          bd.classList.remove('open');
+          openNotesView(n.id);
+        });
+        srcs.appendChild(chip);
+      });
+      a.appendChild(srcs);
+    }
+    thread.appendChild(a);
+  });
+  body.appendChild(thread);
+  if (ask.error) {
+    const err = document.createElement('div');
+    err.className = 'dict-hint';
+    err.style.color = 'var(--danger)';
+    err.textContent = ask.error;
+    body.appendChild(err);
+  }
+  const bar = document.createElement('div');
+  bar.className = 'ask-bar';
+  const ta = document.createElement('textarea');
+  ta.placeholder = 'Wat wil je weten uit je notities?';
+  ta.rows = 2;
+  const send = document.createElement('button');
+  send.className = 'btn btn-sm btn-primary';
+  send.textContent = 'Vraag';
+  send.disabled = ask.busy;
+  const fire = () => { const v = ta.value; ta.value = ''; askSend(v); };
+  send.addEventListener('click', fire);
+  ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); fire(); } });
+  bar.append(ta, send);
+  body.appendChild(bar);
+  if (ask.thread.length) {
+    const clear = document.createElement('div');
+    clear.className = 'note-raw-toggle';
+    clear.textContent = 'Gesprek wissen';
+    clear.addEventListener('click', () => { ask.thread = []; ask.error = ''; renderAsk(); });
+    body.appendChild(clear);
+  }
+  thread.scrollTop = thread.scrollHeight;
+  if (!ask.busy) setTimeout(() => ta.focus(), 60);
+}
+function openAsk() {
+  renderAsk();
+  document.getElementById('ask-backdrop').classList.add('open');
+}
+document.getElementById('note-ask-btn').addEventListener('click', openAsk);
 
 // ---------- Navigation ----------
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -4242,6 +5238,148 @@ document.getElementById('home-weather').addEventListener('click', () => {
     if (cacheRaw) renderWeather(JSON.parse(cacheRaw).data);
   } catch (e) {}
 });
+function railTasks() {
+  const soon = Date.now() + 7 * 24 * 3600000;
+  return tasks.filter(t => {
+    if (t.done) return false;
+    const d = getTaskDeadline(t);
+    return d && d.getTime() <= soon;
+  }).sort((a, b) => getTaskDeadline(a) - getTaskDeadline(b));
+}
+function railWhen(t) {
+  const d = getTaskDeadline(t);
+  if (!d) return { text: '', cls: '' };
+  const now = new Date();
+  const days = Math.round((new Date(t.dueDate + 'T12:00:00') - new Date(now.toISOString().slice(0, 10) + 'T12:00:00')) / 86400000);
+  const time = t.dueTime ? ' ' + t.dueTime : '';
+  if (d.getTime() < Date.now()) return { text: 'te laat', cls: 'late' };
+  if (days === 0) return { text: 'vandaag' + time, cls: '' };
+  if (days === 1) return { text: 'morgen' + time, cls: '' };
+  return { text: d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }), cls: '' };
+}
+function railOpenQuestions() {
+  const out = [];
+  const stop = /^(samenvatting|afspraken|maten en materialen|maten|actiepunten|besluiten|vervolg|van de assistent|assistent|let op|nog uitzoeken|suggesties|aanwezig|volgend overleg)\s*$/i;
+  notes.filter(n => !n.archived).forEach(n => {
+    const lines = (n.text || '').split('\n');
+    let inside = false;
+    lines.forEach(line => {
+      const bare = line.trim();
+      if (/^open(staande)? vragen\s*$/i.test(bare)) { inside = true; return; }
+      if (inside && stop.test(bare)) { inside = false; return; }
+      if (inside && /^[\u2022-]\s*/.test(bare)) {
+        out.push({ text: bare.replace(/^[\u2022-]\s*/, ''), note: n });
+      }
+    });
+  });
+  return out.slice(0, 5);
+}
+function renderRail() {
+  const rail = document.getElementById('rail');
+  if (!rail || window.innerWidth < 1500) return;
+  rail.innerHTML = '';
+  const now = new Date();
+
+  const day = document.createElement('div');
+  day.className = 'rail-day';
+  day.innerHTML = '<div class="rail-day-num"></div><div class="rail-day-rest"></div>';
+  day.querySelector('.rail-day-num').textContent = now.getDate();
+  day.querySelector('.rail-day-rest').textContent =
+    now.toLocaleDateString('nl-NL', { weekday: 'long' }) + ' · ' +
+    now.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
+  rail.appendChild(day);
+  const sep = document.createElement('div');
+  sep.className = 'rail-sep';
+  rail.appendChild(sep);
+
+  const items = railTasks();
+  const late = items.filter(t => isTaskOverdue(t));
+  const rest = items.filter(t => !isTaskOverdue(t));
+  const makeBlock = (label, list, cls) => {
+    if (!list.length) return;
+    const block = document.createElement('div');
+    block.className = 'rail-block';
+    const head = document.createElement('div');
+    head.className = 'rail-head';
+    head.innerHTML = '<span></span><span class="count"></span>';
+    head.children[0].textContent = label;
+    head.children[1].textContent = list.length;
+    block.appendChild(head);
+    list.slice(0, 6).forEach(t => {
+      const when = railWhen(t);
+      const row = document.createElement('div');
+      row.className = 'rail-item ' + cls;
+      row.innerHTML = '<div class="rail-check" title="Afvinken"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>' +
+        '<div><div class="rail-item-text"></div><div class="rail-item-meta"><span class="when"></span><span class="ref"></span></div></div>';
+      row.querySelector('.rail-item-text').textContent = t.text || '';
+      const w = row.querySelector('.when');
+      w.textContent = when.text;
+      if (when.cls) w.classList.add(when.cls);
+      const c = t.clientId ? clients.find(x => x.id === t.clientId) : null;
+      row.querySelector('.ref').textContent = (c && (c.name || c.ref)) || t.ref || '';
+      row.querySelector('.rail-check').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        e.currentTarget.classList.add('on');
+        t.done = true;
+        await saveTasks();
+        renderTasks();
+        renderBoard();
+        renderRail();
+        showUndoToast('Taak afgevinkt', async () => {
+          t.done = false;
+          await saveTasks();
+          renderTasks();
+          renderBoard();
+          renderRail();
+        });
+      });
+      row.addEventListener('click', () => {
+        const nav = document.querySelector('.nav-item[data-view="taken"]');
+        if (nav) nav.click();
+      });
+      block.appendChild(row);
+    });
+    rail.appendChild(block);
+  };
+  makeBlock('Te laat', late, 'late');
+  makeBlock('Deze week', rest, 'soon');
+  if (!items.length) {
+    const block = document.createElement('div');
+    block.className = 'rail-block';
+    block.innerHTML = '<div class="rail-head"><span>Deze week</span></div><div class="rail-empty">Geen deadlines deze week — lekker rustig.</div>';
+    rail.appendChild(block);
+  }
+  const planned = new Set(items.map(t => t.id));
+  const noDate = tasks.filter(t => !t.done && !planned.has(t.id))
+    .sort((a, b) => getEffectivePriority(b) - getEffectivePriority(a) || (b.createdAt || 0) - (a.createdAt || 0));
+  makeBlock('Zonder datum', noDate, '');
+
+  const qs = railOpenQuestions();
+  if (qs.length) {
+    const block = document.createElement('div');
+    block.className = 'rail-block';
+    const head = document.createElement('div');
+    head.className = 'rail-head';
+    head.innerHTML = '<span>Open vragen</span><span class="count"></span>';
+    head.children[1].textContent = qs.length;
+    block.appendChild(head);
+    qs.forEach(q => {
+      const el = document.createElement('div');
+      el.className = 'rail-q';
+      el.innerHTML = '<span class="txt"></span><span class="rail-q-src"></span>';
+      el.querySelector('.txt').textContent = q.text;
+      el.querySelector('.rail-q-src').textContent = noteHeading(q.note);
+      el.addEventListener('click', () => openNotesView(q.note.id));
+      block.appendChild(el);
+    });
+    rail.appendChild(block);
+  }
+}
+window.addEventListener('resize', () => {
+  const rail = document.getElementById('rail');
+  if (!rail) return;
+  if (window.innerWidth >= 1500) renderRail(); else rail.innerHTML = '';
+});
 function renderHomeStats() {
   const titleEl = document.getElementById('home-greeting-text');
   const quipEl = document.getElementById('home-greeting-quip');
@@ -4282,6 +5420,7 @@ function renderHomeStats() {
   const elA = document.getElementById('stat-open-taken'); if (elA) elA.textContent = openTaken;
   const elB = document.getElementById('stat-deadlines'); if (elB) elB.textContent = deadlinesWeek;
   const elC = document.getElementById('stat-klanten'); if (elC) elC.textContent = activeKlanten;
+  renderRail();
 }
 function initSplash() {
   const splash = document.getElementById('splash-screen');
@@ -4688,6 +5827,7 @@ function burnCard(cardEl) {
 
 // ---------- Tasks ----------
 function renderTasks() {
+  if (typeof renderRail === 'function') renderRail();
   const todoList = document.getElementById('list-todo');
   const doneList = document.getElementById('list-done');
   todoList.innerHTML = '';
@@ -5222,6 +6362,17 @@ function openClientModal(clientId) {
   document.getElementById('cf-simar-box').classList.toggle('checked', simarChecked);
   document.getElementById('cf-wishes').value = c ? c.wishes || '' : '';
   document.getElementById('cf-notes').value = c ? c.notes || '' : '';
+  const m = (c && c.maten) || {};
+  document.getElementById('cf-open-b').value = m.openB || '';
+  document.getElementById('cf-open-h').value = m.openH || '';
+  document.getElementById('cf-open-d').value = m.openD || '';
+  document.getElementById('cf-rk-dia').value = m.rkDia || '';
+  document.getElementById('cf-rk-len').value = m.rkLen || '';
+  document.getElementById('cf-rk-type').value = m.rkType || '';
+  document.getElementById('cf-gas').checked = !!m.gas;
+  document.getElementById('cf-gas-box').classList.toggle('checked', !!m.gas);
+  document.getElementById('cf-elek').checked = !!m.elek;
+  document.getElementById('cf-elek-box').classList.toggle('checked', !!m.elek);
   pendingPhotos = c ? [...(c.photos || [])] : [];
   renderPendingPhotos();
   document.getElementById('client-delete-btn').style.display = c ? 'inline-flex' : 'none';
@@ -5247,24 +6398,33 @@ function renderPendingPhotos() {
   });
 }
 document.getElementById('cf-photo-add').addEventListener('click', () => document.getElementById('cf-photo-input').click());
-document.getElementById('cf-photo-input').addEventListener('change', (e) => {
+document.getElementById('cf-photo-input').addEventListener('change', async (e) => {
   const files = Array.from(e.target.files || []);
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const compressed = await compressImage(reader.result);
-      pendingPhotos.push(compressed);
-      renderPendingPhotos();
-    };
-    reader.readAsDataURL(file);
-  });
   e.target.value = '';
+  const addBtn = document.getElementById('cf-photo-add');
+  const oldLabel = addBtn.textContent;
+  for (let i = 0; i < files.length; i++) {
+    addBtn.textContent = files.length > 1 ? (i + 1) + '/' + files.length : '…';
+    try {
+      pendingPhotos.push(await uploadPhoto(files[i], 'klanten'));
+      renderPendingPhotos();
+    } catch (err) { console.error('Foto toevoegen mislukt', err); }
+  }
+  addBtn.textContent = oldLabel;
 });
 document.getElementById('cf-simar-box').addEventListener('click', () => {
   const box = document.getElementById('cf-simar-box');
   const input = document.getElementById('cf-simar');
   input.checked = !input.checked;
   box.classList.toggle('checked', input.checked);
+});
+[['cf-gas-box', 'cf-gas'], ['cf-elek-box', 'cf-elek']].forEach(([boxId, inputId]) => {
+  document.getElementById(boxId).addEventListener('click', () => {
+    const box = document.getElementById(boxId);
+    const input = document.getElementById(inputId);
+    input.checked = !input.checked;
+    box.classList.toggle('checked', input.checked);
+  });
 });
 document.getElementById('client-modal-close').addEventListener('click', closeClientModal);
 document.getElementById('client-cancel-btn').addEventListener('click', closeClientModal);
@@ -5324,6 +6484,16 @@ document.getElementById('client-save-btn').addEventListener('click', async () =>
     simar: document.getElementById('cf-simar').checked,
     wishes: document.getElementById('cf-wishes').value.trim(),
     notes: document.getElementById('cf-notes').value.trim(),
+    maten: {
+      openB: document.getElementById('cf-open-b').value.trim(),
+      openH: document.getElementById('cf-open-h').value.trim(),
+      openD: document.getElementById('cf-open-d').value.trim(),
+      rkDia: document.getElementById('cf-rk-dia').value.trim(),
+      rkLen: document.getElementById('cf-rk-len').value.trim(),
+      rkType: document.getElementById('cf-rk-type').value,
+      gas: document.getElementById('cf-gas').checked,
+      elek: document.getElementById('cf-elek').checked
+    },
     photos: pendingPhotos,
   };
   if (editingClientId) {
@@ -5347,6 +6517,241 @@ document.getElementById('client-delete-btn').addEventListener('click', async () 
   closeClientModal();
 });
 
+function clientAddressLine(c) {
+  return [[c.street, c.houseNumber].filter(Boolean).join(' '), [c.postcode, c.city].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+}
+const ACT_ICONS = {
+  phone: '<svg viewBox="0 0 24 24"><path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5z"/></svg>',
+  mail: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14"/><path d="M3 6l9 7 9-7"/></svg>',
+  whatsapp: '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.7 13.6L3.5 21l4.5-.8A9 9 0 1 0 12 3z"/><path d="M8.8 8.4c0 3 2.3 5.3 5.3 5.3l.9-1.4 1.5.6v1.3c0 .6-.6 1-1.2.9a8 8 0 0 1-6.8-6.8c0-.6.3-1.2.9-1.2h1.3l.6 1.5-1 .9"/></svg>',
+  route: '<svg viewBox="0 0 24 24"><path d="M12 21s6.5-6.2 6.5-11a6.5 6.5 0 0 0-13 0C5.5 14.8 12 21 12 21z"/><circle cx="12" cy="10" r="2.4"/></svg>'
+};
+function renderContactActions(c) {
+  const wrap = document.getElementById('detail-actions');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const add = (icon, label, href) => {
+    const a = document.createElement('a');
+    a.className = 'contact-action';
+    a.href = href;
+    if (!href.startsWith('tel:')) { a.target = '_blank'; a.rel = 'noopener'; }
+    a.innerHTML = ACT_ICONS[icon] + '<span></span>';
+    a.querySelector('span').textContent = label;
+    wrap.appendChild(a);
+  };
+  const digits = (c.phone || '').replace(/[^\d+]/g, '');
+  if (digits) {
+    add('phone', 'Bellen', 'tel:' + digits);
+    const intl = digits.startsWith('+') ? digits.slice(1) : digits.replace(/^0/, '31');
+    add('whatsapp', 'WhatsApp', 'https://wa.me/' + intl);
+  }
+  if (c.email) {
+    add('mail', 'Mailen', 'mailto:' + c.email + '?subject=' + encodeURIComponent('Jos Harm — ' + (c.name || '')));
+  }
+  const addr = clientAddressLine(c);
+  if (addr) {
+    add('route', 'Route', 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(addr));
+  }
+  wrap.style.display = wrap.children.length ? 'flex' : 'none';
+}
+const MAAT_LABELS = [
+  ['openB', 'Opening breedte', 'mm'],
+  ['openH', 'Opening hoogte', 'mm'],
+  ['openD', 'Opening diepte', 'mm'],
+  ['rkDia', 'Rookkanaal ø', 'mm'],
+  ['rkLen', 'Rookkanaal lengte', 'm'],
+  ['rkType', 'Type rookkanaal', '']
+];
+function renderClientMaten(c) {
+  const block = document.getElementById('detail-maten-block');
+  const wrap = document.getElementById('detail-maten');
+  if (!block || !wrap) return;
+  const m = c.maten || {};
+  const filled = MAAT_LABELS.filter(([k]) => m[k]);
+  if (!filled.length && !m.gas && !m.elek) { block.style.display = 'none'; return; }
+  block.style.display = '';
+  wrap.innerHTML = '';
+  filled.forEach(([k, label, unit]) => {
+    const el = document.createElement('div');
+    el.className = 'detail-maat';
+    el.innerHTML = '<div class="detail-maat-label"></div><div class="detail-maat-val"></div>';
+    el.children[0].textContent = label;
+    el.children[1].textContent = m[k] + (unit ? ' ' + unit : '');
+    wrap.appendChild(el);
+  });
+  [['gas', 'Gasaansluiting'], ['elek', 'Elektra']].forEach(([k, label]) => {
+    const el = document.createElement('div');
+    el.className = 'detail-maat';
+    el.innerHTML = '<div class="detail-maat-label"></div><div class="detail-maat-val"></div>';
+    el.children[0].textContent = label;
+    el.children[1].textContent = m[k] ? 'Aanwezig' : 'Niet aanwezig';
+    if (!m[k]) el.children[1].classList.add('off');
+    wrap.appendChild(el);
+  });
+}
+function renderAfronden(c) {
+  const block = document.getElementById('detail-afronden-block');
+  if (!block) return;
+  const info = document.getElementById('detail-close-info');
+  const row = block.querySelector('.afronden-row');
+  const sel = document.getElementById('detail-close-reason');
+  const other = document.getElementById('detail-close-other');
+  const dateEl = document.getElementById('detail-close-date');
+  if (c.phase === 'afgerond' && c.closedAt) {
+    row.style.display = 'none';
+    info.style.display = '';
+    info.innerHTML = 'Afgerond op <b></b>' + (c.closedReason ? ' — <b class="reason"></b>' : '');
+    info.querySelector('b').textContent = new Date(c.closedAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+    if (c.closedReason) info.querySelector('.reason').textContent = c.closedReason;
+    return;
+  }
+  row.style.display = 'flex';
+  info.style.display = 'none';
+  sel.value = '';
+  other.value = '';
+  other.style.display = 'none';
+  dateEl.value = new Date().toISOString().slice(0, 10);
+  sel.onchange = () => { other.style.display = sel.value === 'anders' ? '' : 'none'; if (sel.value === 'anders') other.focus(); };
+  document.getElementById('detail-close-btn').onclick = async () => {
+    const reason = sel.value === 'anders' ? other.value.trim() : sel.value;
+    if (!reason) { sel.focus(); return; }
+    c.closedReason = reason;
+    c.closedAt = new Date(dateEl.value + 'T12:00:00').getTime() || Date.now();
+    c.phase = 'afgerond';
+    await saveClients();
+    renderClients();
+    openDetail(c.id);
+    showUndoToast('Klant afgerond — ' + reason, null);
+  };
+}
+// ---------- Zoeken over alles ----------
+function searchAll(q) {
+  const t = q.toLowerCase();
+  const hit = (s) => (s || '').toLowerCase().includes(t);
+  const groups = [];
+  const cl = clients.filter(c => hit(c.name) || hit(c.ref) || hit(c.city) || hit(c.street) || hit(c.phone) || hit(c.email) || hit(c.wishes) || hit(c.notes));
+  if (cl.length) groups.push({ label: 'Klanten', items: cl.slice(0, 6).map(c => ({
+    title: c.name || 'Naamloos',
+    sub: [c.ref, c.city, phaseInfo(c.phase).label].filter(Boolean).join(' · '),
+    go: () => openDetail(c.id)
+  })) });
+  const nt = notes.filter(n => !n.archived && (hit(n.title) || hit(n.text)));
+  if (nt.length) groups.push({ label: 'Notities', items: nt.slice(0, 6).map(n => ({
+    title: noteHeading(n),
+    sub: notePreview(n),
+    go: () => openNotesView(n.id)
+  })) });
+  const tk = tasks.filter(x => hit(x.text) || hit(x.ref));
+  if (tk.length) groups.push({ label: 'Taken', items: tk.slice(0, 6).map(x => ({
+    title: x.text || '',
+    sub: [x.done ? 'Afgevinkt' : 'Open', x.ref].filter(Boolean).join(' · '),
+    go: () => { const nav = document.querySelector('.nav-item[data-view="taken"]'); if (nav) nav.click(); }
+  })) });
+  const ca = calculations.filter(c => hit(c.clientName) || hit(c.title));
+  if (ca.length) groups.push({ label: 'Calculaties', items: ca.slice(0, 5).map(c => ({
+    title: c.clientName || 'Naamloze berekening',
+    sub: [c.date, fmtEUR(calcGrandTotal(c))].filter(Boolean).join(' · '),
+    go: () => { const nav = document.querySelector('.nav-item[data-view="calculatie"]'); if (nav) nav.click(); openCalcEditor(c); }
+  })) });
+  const fp = fireplaces.filter(f => hit(f.name) || hit(f.brand) || hit(f.type));
+  if (fp.length) groups.push({ label: 'Haarden', items: fp.slice(0, 5).map(f => ({
+    title: [f.brand, f.name].filter(Boolean).join(' ') || 'Haard',
+    sub: [f.type, f.uitvoering].filter(Boolean).join(' · '),
+    go: () => { const nav = document.querySelector('.nav-item[data-view="haarden"]'); if (nav) nav.click(); openFireplaceModal(f.id); }
+  })) });
+  return groups;
+}
+function renderSearchResults(inputId, boxId) {
+  const input = document.getElementById(inputId || 'global-search');
+  const box = document.getElementById(boxId || 'search-results');
+  if (!input || !box) return;
+  const isOverlay = box.id === 'mobile-search-results';
+  const q = input.value.trim();
+  if (q.length < 2) {
+    box.innerHTML = isOverlay ? '<div class="search-empty">Typ minstens twee letters.</div>' : '';
+    if (!isOverlay) box.classList.remove('open');
+    return;
+  }
+  box.innerHTML = '';
+  const groups = searchAll(q);
+  if (!groups.length) {
+    box.innerHTML = '<div class="search-empty">Niets gevonden.</div>';
+    box.classList.add('open');
+    return;
+  }
+  groups.forEach(g => {
+    const head = document.createElement('div');
+    head.className = 'search-group';
+    head.textContent = g.label;
+    box.appendChild(head);
+    g.items.forEach(it => {
+      const el = document.createElement('div');
+      el.className = 'search-hit';
+      el.innerHTML = '<div class="search-hit-title"></div><div class="search-hit-sub"></div>';
+      el.children[0].textContent = it.title;
+      el.children[1].textContent = it.sub || '';
+      if (!it.sub) el.children[1].remove();
+      el.addEventListener('click', () => {
+        input.value = '';
+        box.classList.remove('open');
+        box.innerHTML = '';
+        const overlay = document.getElementById('search-overlay');
+        if (overlay) overlay.classList.remove('open');
+        it.go();
+      });
+      box.appendChild(el);
+    });
+  });
+  box.classList.add('open');
+}
+(function initGlobalSearch() {
+  const wire = (inputId, boxId, onEscape) => {
+    const input = document.getElementById(inputId);
+    const box = document.getElementById(boxId);
+    if (!input || !box) return;
+    let timer = null;
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => renderSearchResults(inputId, boxId), 130);
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        input.value = '';
+        box.innerHTML = '';
+        box.classList.remove('open');
+        input.blur();
+        if (onEscape) onEscape();
+      }
+      if (e.key === 'Enter') {
+        const first = box.querySelector('.search-hit');
+        if (first) first.click();
+      }
+    });
+  };
+  const overlay = document.getElementById('search-overlay');
+  const closeOverlay = () => {
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    const mi = document.getElementById('mobile-search');
+    if (mi) mi.value = '';
+    const mb = document.getElementById('mobile-search-results');
+    if (mb) mb.innerHTML = '';
+  };
+  wire('global-search', 'search-results');
+  wire('mobile-search', 'mobile-search-results', closeOverlay);
+  const btn = document.getElementById('topbar-search-btn');
+  if (btn && overlay) {
+    btn.addEventListener('click', () => {
+      overlay.classList.add('open');
+      const mi = document.getElementById('mobile-search');
+      renderSearchResults('mobile-search', 'mobile-search-results');
+      if (mi) setTimeout(() => mi.focus(), 60);
+    });
+  }
+  const closeBtn = document.getElementById('search-overlay-close');
+  if (closeBtn) closeBtn.addEventListener('click', closeOverlay);
+})();
+
 function openDetail(clientId) {
   detailClientId = clientId;
   const c = clients.find(x => x.id === clientId);
@@ -5360,7 +6765,10 @@ function openDetail(clientId) {
     c.email ? `<a href="https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(c.name + ' <' + c.email + '>')}&subject=${encodeURIComponent('Jos Harm — ' + c.name)}" target="_blank" rel="noopener">${c.email}</a>` : '',
     c.phone ? `<a href="tel:${c.phone.replace(/\s+/g,'')}">${c.phone}</a>` : ''
   ].filter(Boolean).join('  ·  ') || '—';
-  document.getElementById('detail-address').textContent = [[c.street, c.houseNumber].filter(Boolean).join(' '), [c.postcode, c.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || '—';
+  document.getElementById('detail-address').textContent = clientAddressLine(c) || '—';
+  renderContactActions(c);
+  renderClientMaten(c);
+  renderAfronden(c);
   document.getElementById('detail-ref').textContent = c.ref || '—';
   document.getElementById('detail-height').textContent = c.height ? c.height + ' mm' : '—';
   document.getElementById('detail-fireplace-type').textContent = c.fireplaceType || '—';
@@ -5486,27 +6894,41 @@ document.addEventListener('keydown', (e) => {
 });
 function renderProjectPhotos(c) {
   const wrap = document.getElementById('project-photos');
-  wrap.innerHTML = (c.projectPhotos || []).map(p => `<img class="detail-photo" src="${p}" />`).join('');
+  wrap.innerHTML = '';
+  (c.projectPhotos || []).forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'photo-thumb-wrap';
+    el.innerHTML = '<img class="detail-photo" /><div class="photo-remove">&times;</div>';
+    el.querySelector('img').src = p;
+    el.querySelector('.photo-remove').addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      c.projectPhotos.splice(i, 1);
+      renderProjectPhotos(c);
+      await saveClients();
+      renderClients();
+    });
+    wrap.appendChild(el);
+  });
 }
 document.getElementById('project-photo-add').addEventListener('click', () => document.getElementById('project-photo-input').click());
-document.getElementById('project-photo-input').addEventListener('change', (e) => {
+document.getElementById('project-photo-input').addEventListener('change', async (e) => {
   const c = clients.find(x => x.id === detailClientId);
-  if (!c) return;
   const files = Array.from(e.target.files || []);
-  let pending = files.length;
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const compressed = await compressImage(reader.result);
-      c.projectPhotos = c.projectPhotos || [];
-      c.projectPhotos.push(compressed);
-      renderProjectPhotos(c);
-      pending--;
-      if (pending === 0) { await saveClients(); renderClients(); }
-    };
-    reader.readAsDataURL(file);
-  });
   e.target.value = '';
+  if (!c) return;
+  const addBtn = document.getElementById('project-photo-add');
+  const oldLabel = addBtn.textContent;
+  c.projectPhotos = c.projectPhotos || [];
+  for (let i = 0; i < files.length; i++) {
+    addBtn.textContent = files.length > 1 ? (i + 1) + '/' + files.length : '…';
+    try {
+      c.projectPhotos.push(await uploadPhoto(files[i], 'projecten'));
+      renderProjectPhotos(c);
+    } catch (err) { console.error('Projectfoto mislukt', err); }
+  }
+  addBtn.textContent = oldLabel;
+  await saveClients();
+  renderClients();
 });
 function closeDetail() { document.getElementById('detail-modal-backdrop').classList.remove('open'); detailClientId = null; }
 document.getElementById('detail-modal-close').addEventListener('click', closeDetail);
@@ -6304,6 +7726,10 @@ CALC_CATALOG.sort((a, b) => {
   const ia = CALC_SECTION_ORDER.indexOf(a.key), ib = CALC_SECTION_ORDER.indexOf(b.key);
   return (ia < 0 ? 998 : ia) - (ib < 0 ? 998 : ib);
 });
+function calcDisplayName(calc) {
+  if (!calc) return 'Naamloze berekening';
+  return (calc.title || '').trim() || calc.clientName || 'Naamloze berekening';
+}
 function fmtEUR(n) { return '\u20ac ' + (Math.round((n||0)*100)/100).toLocaleString('nl-NL', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function calcSectionTotal(calc, sectionKey) {
   const section = CALC_CATALOG.find(s => s.key === sectionKey);
@@ -6331,7 +7757,7 @@ function calcGrandTotal(calc) {
 }
 let calcOpenSections = new Set();
 function buildCalcSearchIndex() {
-  return CALC_CATALOG.flatMap(section => section.items.filter(it => it.key).map(it => ({ section: section.key, sectionLabel: section.label, key: it.key, label: it.label, price: it.price })));
+  return CALC_CATALOG.flatMap(section => section.items.filter(it => it.key).map(it => ({ section: section.key, sectionLabel: section.label, key: it.key, label: it.label, price: it.price, diam: it.diam || '' })));
 }
 let CALC_SEARCH_INDEX = buildCalcSearchIndex();
 
@@ -6468,9 +7894,37 @@ function renderCalcSearchResults(query) {
   if (box) box.classList.toggle('has-query', !!raw);
   if (!raw) { wrap.innerHTML = ''; return; }
   const q = raw.toLowerCase();
-  const matches = CALC_SEARCH_INDEX.filter(it => (it.label + ' ' + it.sectionLabel).toLowerCase().includes(q)).slice(0, 25);
-  if (!matches.length) { wrap.innerHTML = '<div class="calc-search-empty">Geen producten gevonden.</div>'; return; }
-  wrap.innerHTML = matches.map((it, i) => {
+  const all = CALC_SEARCH_INDEX.filter(it => (it.label + ' ' + it.sectionLabel).toLowerCase().includes(q));
+  const filtersOn = !!(calcChannelFilter || calcDiamFilter);
+  const sectionKeys = visibleCalcSections().map(s => s.key);
+  const inFilter = (it) => {
+    if (!sectionKeys.includes(it.section)) return false;
+    if (calcDiamFilter && it.diam && it.diam !== calcDiamFilter) return false;
+    return true;
+  };
+  const scoped = filtersOn && !calcSearchAll ? all.filter(inFilter) : all;
+  const hidden = all.length - scoped.length;
+  const matches = scoped.slice(0, 25);
+  const hintHtml = filtersOn
+    ? '<div class="calc-search-hint"><span>' +
+      (calcSearchAll
+        ? 'Ik zoek nu in de hele prijslijst.'
+        : 'Alleen binnen ' + [calcChannelFilter ? (CHANNEL_GROUPS.find(g => g.key === calcChannelFilter) || {}).label : '', calcDiamFilter].filter(Boolean).join(' \u00b7 ') + '.') +
+      '</span>' +
+      (calcSearchAll || hidden
+        ? '<button type="button" class="calc-search-scope">' + (calcSearchAll ? 'Alleen in mijn filters zoeken' : 'Toch in alles zoeken (' + hidden + ' meer)') + '</button>'
+        : '') + '</div>'
+    : '';
+  const bindHint = () => {
+    const b = wrap.querySelector('.calc-search-scope');
+    if (b) b.addEventListener('click', () => { calcSearchAll = !calcSearchAll; renderCalcSearchResults(raw); });
+  };
+  if (!matches.length) {
+    wrap.innerHTML = hintHtml + '<div class="calc-search-empty">Geen producten gevonden' + (filtersOn && !calcSearchAll ? ' binnen deze filters' : '') + '.</div>';
+    bindHint();
+    return;
+  }
+  wrap.innerHTML = hintHtml + matches.map((it, i) => {
     const qty = (calc.qty[it.section] && calc.qty[it.section][it.key]) || 0;
     return `
       <div class="calc-search-row${i === 0 ? ' active' : ''}" data-section="${it.section}" data-key="${it.key}">
@@ -6481,6 +7935,15 @@ function renderCalcSearchResults(query) {
         <button class="btn btn-sm btn-primary calc-search-add">+ Toevoegen</button>
       </div>`;
   }).join('');
+  bindHint();
+  wrap.querySelectorAll('.calc-search-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('.calc-search-add')) return;
+      wrap.innerHTML = '';
+      if (box) box.classList.remove('has-query');
+      focusCatalogItem(row.dataset.section, row.dataset.key);
+    });
+  });
   wrap.querySelectorAll('.calc-search-add').forEach(btn => {
     btn.addEventListener('click', () => {
       const row = btn.closest('.calc-search-row');
@@ -6493,6 +7956,7 @@ function renderCalcSearchResults(query) {
       renderCalcCatalogSections();
       updateCalcTotals();
       renderCalcSearchResults(document.getElementById('calc-search-input').value);
+      flashCatalogRow(sectionKey, key);
     });
   });
 }
@@ -6525,7 +7989,7 @@ document.addEventListener('pointerdown', (e) => {
   if (box && !box.contains(e.target)) document.getElementById('calc-search-results').innerHTML = '';
 });
 function newCalc() {
-  return { id: 'calc-' + Date.now(), clientId: '', clientName: '', date: new Date().toISOString().slice(0,10), products: [{ label: 'Haard / model', price: 0 }], qty: {}, status: 'concept', createdAt: Date.now(), versions: [] };
+  return { id: 'calc-' + Date.now(), title: '', clientId: '', clientName: '', date: new Date().toISOString().slice(0,10), products: [{ label: 'Haard / model', price: 0 }], qty: {}, status: 'concept', createdAt: Date.now(), versions: [] };
 }
 const CALC_PRESETS = [
   { label: 'Installatie — 1 man, 1 dag', items: [{ section:'installatie', key:'in3', qty:1 }, { section:'installatie', key:'in14', qty:1 }] },
@@ -6624,7 +8088,7 @@ function openCalcVersions() {
 document.getElementById('calc-versions-btn').addEventListener('click', openCalcVersions);
 document.getElementById('calc-versions-close').addEventListener('click', () => document.getElementById('calc-versions-backdrop').classList.remove('open'));
 function buildCalcSummaryText(calc) {
-  const lines = [`Calculatie${calc.clientName ? ' — ' + calc.clientName : ''}`, ''];
+  const lines = [`Calculatie${(calc.title || '').trim() ? ' — ' + calc.title.trim() : ''}${calc.clientName ? ' — ' + calc.clientName : ''}`, ''];
   calc.products.forEach(p => { if (p.label) lines.push(`${p.label}: ${fmtEUR(p.price)}`); });
   CALC_CATALOG.forEach(section => {
     const qty = calc.qty[section.key] || {};
@@ -6652,7 +8116,7 @@ document.querySelectorAll('.calc-share-option').forEach(opt => {
     shareBtn.textContent = 'PDF maken\u2026'; shareBtn.disabled = true;
     try {
       const blob = await generateCalcPdfBlob(calc);
-      const fileName = `Calculatie${calc.clientName ? ' - ' + calc.clientName : ''}.pdf`;
+      const fileName = `Calculatie${(calc.title || '').trim() ? ' ' + calc.title.trim() : ''}${calc.clientName ? ' - ' + calc.clientName : ''}.pdf`;
       const file = new File([blob], fileName, { type: 'application/pdf' });
       const text = buildCalcSummaryText(calc);
       if (channel === 'whatsapp') {
@@ -6679,7 +8143,10 @@ document.querySelectorAll('.calc-share-option').forEach(opt => {
     }
   });
 });
-function subjectFor(calc) { return `Calculatie Jos Harm${calc.clientName ? ' - ' + calc.clientName : ''}`; }
+function subjectFor(calc) {
+  const naam = (calc.title || '').trim();
+  return 'Calculatie Jos Harm' + (naam ? ' - ' + naam : '') + (calc.clientName ? ' - ' + calc.clientName : '');
+}
 function downloadBlob(blob, fileName) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); a.remove();
@@ -6697,8 +8164,8 @@ function renderCalcList() {
     card.className = 'calc-card';
     card.innerHTML = `
       <div class="calc-card-main">
-        <div class="calc-card-name">${calc.clientName || 'Naamloze berekening'}${calc.status === 'concept' ? '<span class="calc-status-badge">Concept</span>' : ''}</div>
-        <div class="calc-card-meta">${calc.date || ''}</div>
+        <div class="calc-card-name">${calcDisplayName(calc)}${calc.status === 'concept' ? '<span class="calc-status-badge">Concept</span>' : ''}</div>
+        <div class="calc-card-meta">${[(calc.title || '').trim() ? calc.clientName : '', calc.date || ''].filter(Boolean).join(' \u00b7 ')}</div>
       </div>
       <div class="calc-card-total">${fmtEUR(calcGrandTotal(calc))}</div>
       <div class="calc-card-dup" title="Dupliceren"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="1"/><path d="M6 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2"/></svg></div>
@@ -6712,7 +8179,7 @@ function renderCalcList() {
       e.stopPropagation();
       const copy = JSON.parse(JSON.stringify(calc));
       copy.id = 'calc-' + Date.now();
-      copy.clientName = (calc.clientName || 'Naamloze berekening') + ' (kopie)';
+      copy.title = calcDisplayName(calc) + ' (kopie)';
       copy.status = 'concept';
       copy.createdAt = Date.now();
       copy.updatedAt = Date.now();
@@ -6797,6 +8264,116 @@ function startProductDrag(e, row, wrap) {
 }
 let calcDiamFilter = '';
 let calcChannelFilter = '';
+let calcSearchAll = false;
+function calcReduceMotion() {
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+function calcScrollView() {
+  const scroller = document.querySelector('.main');
+  const useMain = scroller && getComputedStyle(scroller).overflowY === 'auto';
+  const bar = (document.querySelector('.calc-stickybar') || {}).offsetHeight || 0;
+  const box = useMain ? scroller.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+  return { scroller, useMain, vTop: box.top + bar + 18, vBottom: box.bottom - 12 };
+}
+function calcScrollBy(delta) {
+  if (Math.abs(delta) < 5) return;
+  const v = calcScrollView();
+  const behavior = calcReduceMotion() ? 'auto' : 'smooth';
+  if (v.useMain) v.scroller.scrollTo({ top: Math.max(0, v.scroller.scrollTop + delta), behavior });
+  else window.scrollTo({ top: Math.max(0, window.scrollY + delta), behavior });
+}
+// Zorgt dat een opengeklapt onderdeel zo veel mogelijk in één keer in beeld staat.
+function ensureCalcVisible(el, mode) {
+  if (!el) return;
+  const v = calcScrollView();
+  const r = el.getBoundingClientRect();
+  const room = v.vBottom - v.vTop;
+  let delta = 0;
+  if (mode === 'top' || r.height > room) {
+    delta = r.top - v.vTop;
+  } else {
+    if (r.bottom > v.vBottom) delta = r.bottom - v.vBottom;
+    if (r.top - delta < v.vTop) delta = r.top - v.vTop;
+  }
+  calcScrollBy(delta);
+}
+function openCalcSection(det, done) {
+  if (!det) return;
+  const rows = det.querySelector('.calc-rows');
+  const finish = () => { if (done) done(); ensureCalcVisible(det); };
+  calcOpenSections.add(det.id.replace('calc-sec-', ''));
+  if (det.open) { finish(); return; }
+  det.open = true;
+  if (!rows || calcReduceMotion()) { finish(); return; }
+  const target = rows.scrollHeight;
+  rows.classList.add('opening');
+  rows.style.height = '0px';
+  rows.style.opacity = '0';
+  requestAnimationFrame(() => {
+    rows.style.transition = 'height 0.34s cubic-bezier(0.22,0.61,0.36,1), opacity 0.26s ease';
+    rows.style.height = target + 'px';
+    rows.style.opacity = '1';
+  });
+  clearTimeout(rows.__animT);
+  rows.__animT = setTimeout(() => {
+    rows.style.transition = '';
+    rows.style.height = '';
+    rows.style.opacity = '';
+    rows.classList.remove('opening');
+    finish();
+  }, 370);
+}
+function closeCalcSection(det) {
+  const rows = det.querySelector('.calc-rows');
+  calcOpenSections.delete(det.id.replace('calc-sec-', ''));
+  if (!rows || calcReduceMotion()) { det.open = false; return; }
+  const from = rows.scrollHeight;
+  rows.classList.add('opening');
+  rows.style.height = from + 'px';
+  rows.style.opacity = '1';
+  requestAnimationFrame(() => {
+    rows.style.transition = 'height 0.26s ease, opacity 0.2s ease';
+    rows.style.height = '0px';
+    rows.style.opacity = '0';
+  });
+  clearTimeout(rows.__animT);
+  rows.__animT = setTimeout(() => {
+    rows.style.transition = '';
+    rows.style.height = '';
+    rows.style.opacity = '';
+    rows.classList.remove('opening');
+    det.open = false;
+  }, 280);
+}
+function flashCatalogRow(sectionKey, key) {
+  const row = document.querySelector('.calc-row[data-section="' + sectionKey + '"][data-key="' + key + '"]');
+  if (!row) return null;
+  row.classList.remove('hit');
+  void row.offsetWidth;
+  row.classList.add('hit');
+  setTimeout(() => row.classList.remove('hit'), 1400);
+  return row;
+}
+// Vanuit de zoekresultaten naar het product in de lijst springen.
+function focusCatalogItem(sectionKey, key) {
+  const item = CALC_SEARCH_INDEX.find(it => it.section === sectionKey && it.key === key);
+  const m = /^(ew|dw|cc)_/.exec(sectionKey);
+  if (m && calcChannelFilter && m[1] !== calcChannelFilter) calcChannelFilter = m[1];
+  if (calcDiamFilter && item && item.diam && item.diam !== calcDiamFilter) calcDiamFilter = item.diam;
+  if (calcDiamFilter && !availableDiameters().includes(calcDiamFilter)) calcDiamFilter = '';
+  renderCalcCatalogSections();
+  renderCalcFilters();
+  const det = document.getElementById('calc-sec-' + sectionKey);
+  if (!det) return;
+  openCalcSection(det, () => {
+    const row = flashCatalogRow(sectionKey, key);
+    if (row) {
+      const v = calcScrollView();
+      const r = row.getBoundingClientRect();
+      if (r.top < v.vTop || r.bottom > v.vBottom) ensureCalcVisible(row, 'top');
+    }
+  });
+}
 const CHANNEL_GROUPS = [
   { key: 'ew', label: 'Enkelwandig' },
   { key: 'dw', label: 'Dubbelwandig' },
@@ -6824,8 +8401,11 @@ function renderCalcFilters() {
     + CHANNEL_GROUPS.map(g => `<button type="button" class="calc-fchip${calcChannelFilter === g.key ? ' active' : ''}" data-chan="${g.key}">${g.label}</button>`).join('');
   chanRow.querySelectorAll('.calc-fchip').forEach(btn => btn.addEventListener('click', () => {
     calcChannelFilter = btn.dataset.chan;
+    calcSearchAll = false;
     if (calcDiamFilter && !availableDiameters().includes(calcDiamFilter)) calcDiamFilter = '';
     renderCalcCatalogSections();
+    const sq = document.getElementById('calc-search-input');
+    if (sq && sq.value.trim()) renderCalcSearchResults(sq.value);
     renderCalcFilters();
     updateCalcTotals();
   }));
@@ -6837,7 +8417,10 @@ function renderCalcFilters() {
     + diams.map(d => `<button type="button" class="calc-fchip${calcDiamFilter === d ? ' active' : ''}" data-diam="${d}">${d}</button>`).join('');
   diamRow.querySelectorAll('.calc-fchip').forEach(btn => btn.addEventListener('click', () => {
     calcDiamFilter = btn.dataset.diam;
+    calcSearchAll = false;
     renderCalcCatalogSections();
+    const sq2 = document.getElementById('calc-search-input');
+    if (sq2 && sq2.value.trim()) renderCalcSearchResults(sq2.value);
     renderCalcFilters();
     updateCalcTotals();
   }));
@@ -6852,11 +8435,10 @@ function renderCalcFilters() {
     const key = btn.dataset.jump;
     const det = document.getElementById('calc-sec-' + key);
     if (!det) return;
-    calcOpenSections.add(key);
-    det.open = true;
-    scrollToCalcSection(det);
-    det.classList.add('flash');
-    setTimeout(() => det.classList.remove('flash'), 900);
+    openCalcSection(det, () => {
+      det.classList.add('flash');
+      setTimeout(() => det.classList.remove('flash'), 900);
+    });
   }));
 }
 function calcSelectedLines() {
@@ -6907,11 +8489,7 @@ function renderCalcSelected() {
         renderCalcCatalogSections();
         renderCalcFilters();
       }
-      const det = document.getElementById('calc-sec-' + l.section);
-      if (!det) return;
-      calcOpenSections.add(l.section);
-      det.open = true;
-      scrollToCalcSection(det);
+      focusCatalogItem(l.section, l.key);
     });
     row.querySelectorAll('.calc-selected-qty button').forEach(b => b.addEventListener('click', () => {
       const step = parseFloat(b.dataset.step);
@@ -6940,6 +8518,13 @@ function renderCalcCatalogSections() {
     det.id = 'calc-sec-' + section.key;
     det.open = calcOpenSections.has(section.key);
     det.addEventListener('toggle', () => { if (det.open) calcOpenSections.add(section.key); else calcOpenSections.delete(section.key); });
+    setTimeout(() => {
+      const sum = det.querySelector('summary');
+      if (sum) sum.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (det.open) closeCalcSection(det); else openCalcSection(det);
+      });
+    }, 0);
     det.innerHTML = `<summary>${section.label} <span class="calc-section-sub" data-sub="${section.key}">\u20ac 0</span></summary><div class="calc-rows"></div>`;
     wrap.appendChild(det);
     const rowsWrap = det.querySelector('.calc-rows');
@@ -6955,21 +8540,33 @@ function renderCalcCatalogSections() {
       if (calcDiamFilter && it.diam && it.diam !== calcDiamFilter) return;
       shown++;
       const row = document.createElement('div');
-      row.className = 'calc-row';
       const q = calc.qty[section.key][it.key] || '';
+      row.className = 'calc-row' + (q ? ' has-qty' : '');
+      row.dataset.section = section.key;
+      row.dataset.key = it.key;
       row.innerHTML = `
         <div class="calc-row-label">${it.label}</div>
         <div class="calc-row-price">${fmtEUR(it.price)}</div>
-        <input class="calc-row-qty" type="number" min="0" step="1" inputmode="numeric" value="${q}" />
+        <div class="calc-qty">
+          <button type="button" data-step="-1" title="E\u00e9n minder" aria-label="E\u00e9n minder">\u2212</button>
+          <input class="calc-row-qty" type="number" min="0" step="1" inputmode="numeric" value="${q}" />
+          <button type="button" data-step="1" title="E\u00e9n meer" aria-label="E\u00e9n meer">+</button>
+        </div>
         <div class="calc-row-total">${fmtEUR((q||0) * it.price)}</div>
       `;
       const input = row.querySelector('.calc-row-qty');
-      input.addEventListener('input', () => {
-        const v = parseFloat(input.value) || 0;
+      const apply = (v) => {
         if (v) calc.qty[section.key][it.key] = v; else delete calc.qty[section.key][it.key];
+        input.value = v || '';
+        row.classList.toggle('has-qty', !!v);
         row.querySelector('.calc-row-total').textContent = fmtEUR(v * it.price);
         updateCalcTotals();
-      });
+      };
+      input.addEventListener('input', () => apply(parseFloat(input.value) || 0));
+      row.querySelectorAll('.calc-qty button').forEach(b => b.addEventListener('click', () => {
+        const step = parseFloat(b.dataset.step);
+        apply(Math.max(0, (parseFloat(input.value) || 0) + step));
+      }));
       rowsWrap.appendChild(row);
     });
     if (calcDiamFilter && !shown && /^(ew|dw|cc)_/.test(section.key)) {
@@ -7046,7 +8643,7 @@ function openCalcEditor(calc) {
   editingCalcId = calc.id;
   document.getElementById('calc-list-panel').style.display = 'none';
   document.getElementById('calc-editor-panel').style.display = 'block';
-  document.getElementById('calc-editor-title').textContent = calc.clientName ? 'Berekening \u2014 ' + calc.clientName : 'Nieuwe berekening';
+  document.getElementById('calc-editor-title').textContent = (calc.title || calc.clientName) ? calcDisplayName(calc) : 'Nieuwe berekening';
   window.__editingCalc = JSON.parse(JSON.stringify(calc));
   if (!window.__editingCalc.qty) window.__editingCalc.qty = {};
   migrateCalcQtySections(window.__editingCalc);
@@ -7057,6 +8654,8 @@ function openCalcEditor(calc) {
   document.querySelector('.calc-searchbox').classList.remove('has-query');
   calcDiamFilter = '';
   calcChannelFilter = '';
+  calcSearchAll = false;
+  document.getElementById('calc-title').value = calc.title || '';
   renderCalcPresets();
   renderRecentProducts();
   populateCalcClientSelect();
@@ -7148,6 +8747,12 @@ document.getElementById('calc-client-select').addEventListener('change', (e) => 
   if (c) calc.clientName = c.name;
 });
 document.getElementById('calc-date').addEventListener('change', (e) => { window.__editingCalc.date = e.target.value; });
+document.getElementById('calc-title').addEventListener('input', (e) => {
+  const calc = window.__editingCalc;
+  if (!calc) return;
+  calc.title = e.target.value;
+  document.getElementById('calc-editor-title').textContent = (calc.title || calc.clientName) ? calcDisplayName(calc) : 'Nieuwe berekening';
+});
 document.getElementById('calc-save-btn').addEventListener('click', async () => {
   const calc = window.__editingCalc;
   if (!calc.clientName) {
@@ -7170,18 +8775,36 @@ document.getElementById('calc-delete-btn').addEventListener('click', async () =>
   renderCalcList();
   closeCalcEditor();
 });
+function vatMode() {
+  try { return localStorage.getItem('werkplaats:vatMode') === 'excl' ? 'excl' : 'incl'; } catch (e) { return 'incl'; }
+}
 function fillPsheetPreview(calc, open) {
   const client = clients.find(x => x.id === calc.clientId);
   const addr = client ? [[client.street, client.houseNumber].filter(Boolean).join(' '), [client.postcode, client.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '';
   let rows = '';
-  (calc.products || []).forEach(p => { if (p.label && p.price) rows += `<tr><td>${p.label}</td><td>${fmtEUR(p.price)}</td></tr>`; });
+  let mat = '';
+  (calc.products || []).forEach(p => { if (p.label && p.price) mat += `<tr><td>${p.label}</td><td>${fmtEUR(p.price)}</td></tr>`; });
+  let werk = '';
   CALC_CATALOG.forEach(section => {
     let t = calcSectionTotal(calc, section.key);
     if (section.key === 'installatie') t += calcInstallatieAutoTotal(calc);
-    if (t > 0) rows += `<tr><td>${section.label}</td><td>${fmtEUR(t)}</td></tr>`;
+    if (t <= 0) return;
+    const line = `<tr><td>${section.label}</td><td>${fmtEUR(t)}</td></tr>`;
+    if (section.key === 'installatie' || section.key === 'beton') werk += line; else mat += line;
   });
+  if (mat) rows += '<tr class="psheet-group-row"><td colspan="2">Materialen en levering</td></tr>' + mat;
+  if (werk) rows += '<tr class="psheet-group-row"><td colspan="2">Werkzaamheden</td></tr>' + werk;
   document.getElementById('psheet-rows').innerHTML = rows;
-  document.getElementById('psheet-total').textContent = fmtEUR(calcGrandTotal(calc));
+  const totaal = calcGrandTotal(calc);
+  const inclusief = vatMode() === 'incl';
+  const totC = Math.round(totaal * 100);
+  const exclC = inclusief ? Math.round(totC / 1.21) : totC;
+  const btwC = (inclusief ? totC : Math.round(totC * 1.21)) - exclC;
+  document.getElementById('psheet-excl').textContent = fmtEUR(exclC / 100);
+  document.getElementById('psheet-btw').textContent = fmtEUR(btwC / 100);
+  document.getElementById('psheet-total').textContent = fmtEUR((exclC + btwC) / 100);
+  const vatSel = document.getElementById('psheet-vat-mode');
+  if (vatSel) vatSel.value = vatMode();
   document.getElementById('psheet-client-name').textContent = calc.clientName || (client ? client.name : '') || '\u2014';
   document.getElementById('psheet-client-addr').textContent = addr || '\u2014';
   document.getElementById('psheet-date').textContent = calc.date ? new Date(calc.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
@@ -7223,6 +8846,10 @@ async function generateCalcPdfBlob(calc) {
 }
 document.getElementById('psheet-close-btn').addEventListener('click', () => {
   document.getElementById('psheet-backdrop').classList.remove('open');
+});
+document.getElementById('psheet-vat-mode').addEventListener('change', (e) => {
+  try { localStorage.setItem('werkplaats:vatMode', e.target.value); } catch (err) {}
+  if (window.__editingCalc) fillPsheetPreview(window.__editingCalc, false);
 });
 document.getElementById('psheet-print-btn').addEventListener('click', () => { window.print(); });
 document.getElementById('calc-copy-btn').addEventListener('click', () => {
