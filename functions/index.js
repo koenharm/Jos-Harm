@@ -1,6 +1,79 @@
 const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onRequest } = require('firebase-functions/v2/https');
+const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
 admin.initializeApp();
+
+const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
+const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY');
+
+function withCors(res) {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+}
+
+// Zet een audiofragment om in tekst (spraak-naar-tekst).
+exports.transcribeAudio = onRequest(
+  { region: 'europe-west1', secrets: [OPENAI_API_KEY], timeoutSeconds: 540, memory: '1GiB', cors: true },
+  async (req, res) => {
+    withCors(res);
+    if (req.method === 'OPTIONS') { res.status(204).end(); return; }
+    if (req.method !== 'POST') { res.status(405).json({ error: 'Alleen POST' }); return; }
+    try {
+      const { audio, mimeType, language } = req.body || {};
+      if (!audio) { res.status(400).json({ error: 'Geen audio meegestuurd' }); return; }
+      const buf = Buffer.from(audio, 'base64');
+      const type = mimeType || 'audio/webm';
+      const ext = type.includes('mp4') || type.includes('m4a') ? 'm4a'
+        : type.includes('mpeg') || type.includes('mp3') ? 'mp3'
+        : type.includes('wav') ? 'wav'
+        : type.includes('ogg') ? 'ogg' : 'webm';
+      const form = new FormData();
+      form.append('file', new Blob([buf], { type }), 'opname.' + ext);
+      form.append('model', 'whisper-1');
+      form.append('language', language || 'nl');
+      form.append('response_format', 'text');
+      const out = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + OPENAI_API_KEY.value() },
+        body: form,
+      });
+      const text = await out.text();
+      if (!out.ok) { console.error('Transcriptie mislukt', out.status, text); res.status(502).json({ error: 'Transcriptie mislukt' }); return; }
+      res.json({ text: text.trim() });
+    } catch (e) {
+      console.error('transcribeAudio fout', e);
+      res.status(500).json({ error: 'Onverwachte fout bij transcriberen' });
+    }
+  }
+);
+
+// Doorgeefluik naar Claude, zodat de API-sleutel niet in de app staat.
+exports.aiMessage = onRequest(
+  { region: 'europe-west1', secrets: [ANTHROPIC_API_KEY], timeoutSeconds: 300, memory: '512MiB', cors: true },
+  async (req, res) => {
+    withCors(res);
+    if (req.method === 'OPTIONS') { res.status(204).end(); return; }
+    if (req.method !== 'POST') { res.status(405).json({ error: 'Alleen POST' }); return; }
+    try {
+      const out = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_API_KEY.value(),
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify(req.body || {}),
+      });
+      const data = await out.json();
+      res.status(out.ok ? 200 : 502).json(data);
+    } catch (e) {
+      console.error('aiMessage fout', e);
+      res.status(500).json({ error: 'Onverwachte fout bij AI-aanroep' });
+    }
+  }
+);
 
 // Rekent datum/tijd (ingevoerd als Nederlandse lokale tijd) correct om naar een UTC-tijdstip.
 function amsterdamToUtcMs(dueDate, dueTime) {

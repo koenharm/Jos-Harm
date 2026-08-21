@@ -3513,7 +3513,7 @@ function renderNoteDetail() {
       });
       host.append(toggle, raw);
     }
-    if (AI_ENABLED && (n.speakerTranscript || '').trim()) {
+    if ((n.speakerTranscript || '').trim()) {
       const toggle = document.createElement('div');
       toggle.className = 'note-raw-toggle';
       toggle.textContent = 'Gesprek per spreker bekijken';
@@ -3527,8 +3527,8 @@ function renderNoteDetail() {
       });
       host.append(toggle, box);
     }
-    if (AI_ENABLED && n.mindmap && Array.isArray(n.mindmap.takken)) renderMindmap(host, n);
-    if (AI_ENABLED && (n.text || '').trim()) {
+    if (n.mindmap && Array.isArray(n.mindmap.takken)) renderMindmap(host, n);
+    if ((n.text || '').trim()) {
       const rw = document.createElement('div');
       rw.className = 'rw';
       const lab = document.createElement('span');
@@ -3552,7 +3552,7 @@ function renderNoteDetail() {
       host.appendChild(rw);
     }
     renderNotePhotos(host, n);
-    if (AI_ENABLED) renderAssistBar(host, n);
+    renderAssistBar(host, n);
     const tools = document.createElement('div');
     tools.className = 'note-tools';
     const editBtn = document.createElement('button');
@@ -3753,12 +3753,6 @@ function renderNotes() {
   if (split) split.classList.toggle('note-open', !!openNoteId);
   renderNoteDetail();
 }
-// ---- AI-assistent aan/uit ----
-// Op false staan alle betaalde AI-functies uit (uittypen, verslag, sprekerslabels,
-// mindmap, herschrijven, assistent-chat). Zet op true zodra de Firebase-functies
-// zijn uitgerold en er tegoed staat bij OpenAI en Anthropic. Zie leesmij-ai-assistent.md.
-const AI_ENABLED = false;
-
 // ---- Echte audio: opslag, opname en transcriptie ----
 const FN_BASE = 'https://europe-west1-' + firebaseConfig.projectId + '.cloudfunctions.net';
 const AUDIO_SEGMENT_MS = 4 * 60 * 1000;
@@ -3989,7 +3983,6 @@ function audStop() {
   renderNoteDetail();
 }
 async function audTranscribe() {
-  if (!AI_ENABLED) return;
   const n = notes.find(x => x.id === dict.noteId);
   if (!n || !(n.audioClips || []).length) return;
   if (aud.recording) audStop();
@@ -4117,7 +4110,6 @@ const SPEAKER_SYSTEM = [
   'Verander de woorden niet, behalve duidelijke spraakfouten. Voeg niets toe, laat niets weg en verzin geen extra spreker.'
 ].join('\n');
 async function noteDiarize(n) {
-  if (!AI_ENABLED) return;
   const raw = (n.rawTranscript || '').trim();
   if (!raw) return;
   aud.error = '';
@@ -4171,7 +4163,6 @@ function parseJsonBlock(text) {
   try { return JSON.parse(text.slice(s, e + 1)); } catch (err) { return null; }
 }
 async function noteMindmap(n) {
-  if (!AI_ENABLED) return;
   noteBusy.mindmap = n.id;
   renderNoteDetail();
   try {
@@ -4232,7 +4223,7 @@ const RW_TONE_TEXT = {
 };
 const RW_LENGTH_TEXT = { korter: 'ongeveer de helft korter', gelijk: 'ongeveer dezelfde lengte', langer: 'uitgebreider, met de losse punten verder uitgewerkt' };
 async function noteRewrite(n, tone, length) {
-  if (!AI_ENABLED || !(n.text || '').trim()) return;
+  if (!(n.text || '').trim()) return;
   noteBusy.rewrite = n.id;
   renderNoteDetail();
   const vorige = n.text;
@@ -4521,7 +4512,6 @@ function noteClientContext(n) {
   return lines.length ? '\nBekend over de klant bij deze notitie:\n' + lines.join('\n') + '\n' : '';
 }
 async function dictProcess() {
-  if (!AI_ENABLED) return;
   const n = notes.find(x => x.id === dict.noteId);
   if (!n) return;
   const raw = (dict.finalText || '').trim();
@@ -4663,7 +4653,6 @@ function renderDictPanel(host, n) {
       const aiBtn = document.createElement('button');
       aiBtn.className = 'btn btn-sm';
       aiBtn.textContent = 'Uitwerken + meedenken';
-      aiBtn.style.display = AI_ENABLED ? '' : 'none';
       aiBtn.addEventListener('click', dictProcess);
       const rawBtn = document.createElement('button');
       rawBtn.className = 'btn btn-sm';
@@ -4765,9 +4754,7 @@ function renderAudioPanel(host, n) {
     const hint = document.createElement('div');
     hint.className = 'dict-hint';
     hint.innerHTML = '<div class="note-read-head" style="margin:0 0 7px"><span>Ik schrijf met je mee</span></div>' +
-      (AI_ENABLED
-        ? 'Neem het gesprek op met de microfoon van dit apparaat, of kies een bestaande opname. Op de computer kun je een bestand ook hierin slepen. Ik typ het uit, maak er een overzicht van met afspraken, maten en actiepunten, en zet er mijn eigen aanvullingen bij.'
-        : '<div class="note-read-head" style="margin:0 0 7px"><span>Opnemen zonder AI</span></div>Neem het gesprek op als geheugensteun \u2014 de opname blijft op dit apparaat bij de notitie staan. Automatisch uittypen en uitwerken staat uit (dat loopt via betaalde diensten). Wil je toch meeschrijven, gebruik dan het tabblad \u201cLive meeschrijven\u201d \u2014 dat werkt met de spraakherkenning van je telefoon en kost niets.');
+      'Neem het gesprek op met de microfoon van dit apparaat, of kies een bestaande opname. Op de computer kun je een bestand ook hierin slepen. Ik typ het uit, maak er een overzicht van met afspraken, maten en actiepunten, en zet er mijn eigen aanvullingen bij.';
     box.appendChild(hint);
     const help = document.createElement('div');
     help.className = 'note-raw-toggle';
@@ -4860,14 +4847,14 @@ function renderAudioPanel(host, n) {
     mkPicker('Uit Bestanden', 'audio/*,.m4a,.mp3,.wav,.aac,.caf,.opus,.amr,.flac,.ogg,.m4b,.mp4');
     mkPicker('Ander bestand', '');
 
-    if (AI_ENABLED && (n.audioClips || []).length && !aud.recording) {
+    if ((n.audioClips || []).length && !aud.recording) {
       const typeBtn = document.createElement('button');
       typeBtn.className = 'btn btn-sm';
       typeBtn.textContent = (n.rawTranscript || '').trim() ? 'Opnieuw uittypen' : 'Uittypen met AI';
       typeBtn.addEventListener('click', audTranscribe);
       tools.appendChild(typeBtn);
     }
-    if (AI_ENABLED && (n.rawTranscript || '').trim() && !aud.recording) {
+    if ((n.rawTranscript || '').trim() && !aud.recording) {
       const spkBtn = document.createElement('button');
       spkBtn.className = 'btn btn-sm';
       spkBtn.textContent = noteBusy.speakers === n.id ? 'Sprekers labelen\u2026' : ((n.speakerTranscript || '').trim() ? 'Sprekers opnieuw labelen' : 'Sprekers labelen');
@@ -4875,7 +4862,7 @@ function renderAudioPanel(host, n) {
       spkBtn.addEventListener('click', () => noteDiarize(n));
       tools.appendChild(spkBtn);
     }
-    if (AI_ENABLED && (n.rawTranscript || '').trim() && !aud.recording) {
+    if ((n.rawTranscript || '').trim() && !aud.recording) {
       const aiBtn = document.createElement('button');
       aiBtn.className = 'btn btn-sm';
       aiBtn.textContent = 'Verslag + aanvullingen';
@@ -4930,10 +4917,6 @@ document.getElementById('note-quick-btn').addEventListener('click', addQuickNote
 document.getElementById('note-quick-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addQuickNote(); } });
 document.getElementById('note-search-input').addEventListener('input', (e) => { noteQuery = e.target.value; renderNotes(); });
 document.getElementById('note-dictate-new').addEventListener('click', startDictationNote);
-if (!AI_ENABLED) {
-  const mic = document.getElementById('note-dictate-new');
-  if (mic) mic.title = 'Gesprek opnemen of live meeschrijven';
-}
 
 // ---- Vraag het aan je notities ----
 const ask = { busy: false, thread: [], error: '' };
@@ -4970,7 +4953,7 @@ function askContext(sources) {
   }).join('\n\n');
 }
 async function askSend(q) {
-  if (!AI_ENABLED || !q.trim() || ask.busy) return;
+  if (!q.trim() || ask.busy) return;
   ask.busy = true;
   ask.error = '';
   const sources = askRetrieve(q);
@@ -5108,11 +5091,7 @@ function openAsk() {
   renderAsk();
   document.getElementById('ask-backdrop').classList.add('open');
 }
-if (AI_ENABLED) {
-  document.getElementById('note-ask-btn').addEventListener('click', openAsk);
-} else {
-  document.getElementById('note-ask-btn').style.display = 'none';
-}
+document.getElementById('note-ask-btn').addEventListener('click', openAsk);
 
 // ---------- Navigation ----------
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -5151,7 +5130,6 @@ function assistContext(n) {
     (raw ? '\n\nRuwe transcriptie van het gesprek (achtergrond):\n' + raw.slice(0, 12000) : '');
 }
 async function assistAsk(n, instruction, label) {
-  if (!AI_ENABLED) return;
   assist.noteId = n.id;
   assist.busy = true;
   assist.answer = '';
