@@ -341,6 +341,59 @@
   }
   .board-group-head::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
   .board-card { transition: box-shadow 0.18s ease, transform 0.2s cubic-bezier(.3,.8,.3,1); }
+  /* nieuwe post-it maken (alleen pc) */
+  .board-card.postit-compose { display: flex; flex-direction: column; gap: 6px; cursor: default; box-shadow: 0 16px 34px rgba(43,43,43,0.26); }
+  .board-card.postit-compose:hover { transform: none !important; }
+  .postit-compose-input {
+    flex: 1; width: 100%; border: none; background: transparent; resize: none; outline: none;
+    font-family: inherit; font-size: 14px; font-weight: 500; line-height: 1.35; color: inherit;
+  }
+  .postit-compose-hint { font-family: 'Poppins', sans-serif; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--smoke); }
+  /* blanco post-it blok rechtsonder (alleen pc) */
+  .postit-pad { position: fixed; right: 22px; bottom: 22px; width: 258px; z-index: 400; }
+  .postit-pad-head {
+    font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--smoke); margin-bottom: 7px; text-align: right;
+  }
+  .postit-pad-note {
+    background: var(--panel); border: 3px solid var(--ember-dim); border-radius: 2px;
+    padding: 14px 14px 10px; box-shadow: 0 14px 30px rgba(43,43,43,0.22);
+    display: flex; flex-direction: column; gap: 4px; position: relative;
+  }
+  .postit-pad-note::before {
+    content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+    width: 9px; height: 9px; border-radius: 50%; background: var(--brass);
+    box-shadow: 0 2px 4px rgba(43,43,43,0.4);
+  }
+  .postit-pad-lab {
+    font-family: 'Poppins', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--smoke); margin-top: 4px;
+  }
+  .postit-pad-text, .postit-pad-input {
+    width: 100%; border: none; border-bottom: 1px solid var(--hairline); background: transparent;
+    font-family: inherit; font-size: 13px; color: inherit; padding: 3px 0; outline: none; resize: none;
+  }
+  .postit-pad-text:focus, .postit-pad-input:focus { border-bottom-color: var(--ember); }
+  .postit-pad-subs { display: flex; flex-direction: column; gap: 3px; }
+  .postit-pad-grip {
+    display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 8px;
+    border-top: 1px solid var(--hairline); cursor: grab;
+    font-family: 'Poppins', sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--smoke);
+  }
+  .postit-pad-grip:hover { color: var(--ember); }
+  .postit-pad-grip svg { width: 15px; height: 15px; }
+  .postit-pad.dragging .postit-pad-note { opacity: 0.4; }
+  .postit-ghost {
+    position: fixed; z-index: 3000; width: 200px; pointer-events: none;
+    background: var(--panel); border: 3px solid var(--ember-dim); border-radius: 2px;
+    padding: 13px 13px 10px; font-size: 13px; line-height: 1.35; font-weight: 500;
+    box-shadow: 0 18px 36px rgba(43,43,43,0.3); transform: rotate(-3deg);
+  }
+  .postit-ghost .ghost-meta { margin-top: 8px; font-family: 'Poppins', sans-serif; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--smoke); }
+  @media (max-width: 1100px) { .postit-pad { display: none !important; } }
+  .board-hint { font-family: 'Poppins', sans-serif; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--smoke); margin-top: 6px; }
+  @media (max-width: 780px) { .board-new-btn, .board-hint { display: none !important; } }
   .board-card.lifted {
     transform: rotate(-1.6deg) scale(1.035) !important;
     box-shadow: 0 16px 34px rgba(43,43,43,0.26), 0 3px 8px rgba(43,43,43,0.14);
@@ -1936,7 +1989,9 @@
           <div class="view-title">Prioriteitenbord</div>
           <div class="view-desc">Drie vlakken: Klanten linksboven, Tekenwerk rechtsboven en Algemeen onderaan. Sleep een post-it naar een vlak om hem in die categorie te zetten — je ziet het terug op je telefoon. Hoe hoger de prioriteit, hoe groter de post-it; klik de puntjes om die aan te passen.</div>
         </div>
+        <button class="btn btn-primary board-new-btn" id="board-new-btn" type="button">Nieuwe post-it</button>
       </div>
+      <div class="board-hint">Tip: dubbelklik op een leeg plekje in een vlak om daar meteen een post-it te plakken.</div>
       <div class="board" id="board"></div>
       <div class="home-notes" id="home-notes"></div>
     </div>
@@ -2234,6 +2289,25 @@
   </div>
 
   <aside class="rail" id="rail" aria-label="Dagoverzicht"></aside>
+</div>
+
+<!-- Blanco post-it blok (alleen pc) -->
+<div class="postit-pad" id="postit-pad" aria-label="Blanco post-it">
+  <div class="postit-pad-head">Blanco post-it</div>
+  <div class="postit-pad-note" id="postit-pad-note">
+    <label class="postit-pad-lab">Taakomschrijving</label>
+    <textarea class="postit-pad-text" id="pad-text" rows="3" placeholder="Wat moet er gebeuren?"></textarea>
+    <label class="postit-pad-lab">Referentie</label>
+    <input type="text" class="postit-pad-input" id="pad-ref" placeholder="bijv. 32262" autocomplete="off" />
+    <label class="postit-pad-lab">Subtaak</label>
+    <div class="postit-pad-subs" id="pad-subs">
+      <input type="text" class="postit-pad-input pad-sub" placeholder="Subtaak &mdash; Enter voor nog een" autocomplete="off" />
+    </div>
+    <div class="postit-pad-grip" id="pad-grip" title="Sleep deze post-it naar een vlak op het bord">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01"/></svg>
+      <span>Sleep naar het bord</span>
+    </div>
+  </div>
 </div>
 
 <!-- Client Add/Edit Modal -->
@@ -5618,6 +5692,182 @@ function taskZone(t) {
   if (typeof t.posX === 'number' && typeof t.posY === 'number') return zoneFromPos(t.posX, t.posY);
   return 'algemeen';
 }
+// Nieuwe post-it rechtstreeks op het bord plakken — alleen op de pc.
+function startNewPostit(xPct, yPct) {
+  const board = document.getElementById('board');
+  if (!board || window.innerWidth <= 780) return;
+  const old = board.querySelector('.postit-compose');
+  if (old) old.remove();
+  const emptyMsg = board.querySelector('.board-empty');
+  if (emptyMsg) emptyMsg.remove();
+  const zoneKey = zoneFromPos(xPct, yPct);
+  const b = zoneBounds(zoneKey);
+  const rect = board.getBoundingClientRect();
+  const wPct = (196 / (rect.width || 1)) * 100;
+  const hPct = (196 / (rect.height || 1)) * 100;
+  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+  const wrap = document.createElement('div');
+  wrap.className = 'board-card postit-compose';
+  wrap.style.width = '196px';
+  wrap.style.left = clamp(xPct - wPct / 2, b.x[0] + 1, Math.max(b.x[0] + 1, b.x[1] - wPct - 1)) + '%';
+  wrap.style.top = clamp(yPct - hPct / 2, b.y[0] + 2, Math.max(b.y[0] + 2, b.y[1] - hPct - 2)) + '%';
+  wrap.style.zIndex = '1200';
+  wrap.innerHTML = '<textarea class="postit-compose-input" placeholder="Waar gaat het over?"></textarea><div class="postit-compose-hint">Enter bewaart &middot; Esc annuleert</div>';
+  board.appendChild(wrap);
+  const ta = wrap.querySelector('textarea');
+  ta.focus();
+  let closed = false;
+  const cancel = () => { if (closed) return; closed = true; wrap.remove(); renderBoard(); };
+  const save = () => {
+    if (closed) return;
+    const text = ta.value.trim();
+    const left = parseFloat(wrap.style.left) || 0;
+    const top = parseFloat(wrap.style.top) || 0;
+    closed = true;
+    wrap.remove();
+    if (!text) { renderBoard(); return; }
+    tasks.unshift({
+      id: 'task-' + Date.now(), text, ref: null, clientId: null, done: false, createdAt: Date.now(),
+      priority: 3, subtasks: [], dueDate: null, dueTime: null, reminderFired: false,
+      zone: zoneKey, posX: left, posY: top
+    });
+    saveTasks();
+    renderTasks();
+    renderBoard();
+    showUndoToast('Post-it geplakt in ' + boardZone(zoneKey).name, async () => {
+      tasks.shift(); await saveTasks(); renderTasks(); renderBoard();
+    });
+  };
+  ta.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); save(); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+  });
+  ta.addEventListener('blur', save);
+}
+(function wireNewPostit() {
+  const board = document.getElementById('board');
+  const btn = document.getElementById('board-new-btn');
+  if (board) board.addEventListener('dblclick', (e) => {
+    if (window.innerWidth <= 780) return;
+    if (e.target.closest('.board-card')) return;
+    const r = board.getBoundingClientRect();
+    startNewPostit(((e.clientX - r.left) / r.width) * 100, ((e.clientY - r.top) / r.height) * 100);
+  });
+  if (btn) btn.addEventListener('click', () => startNewPostit(20, 68));
+})();
+// Blanco post-it invullen en naar een vlak op het bord slepen (alleen pc).
+function updatePostitPad() {
+  const pad = document.getElementById('postit-pad');
+  const home = document.getElementById('view-home');
+  if (!pad || !home) return;
+  pad.style.display = home.classList.contains('active') ? '' : 'none';
+}
+(function wirePostitPad() {
+  const pad = document.getElementById('postit-pad');
+  if (!pad) return;
+  const board = document.getElementById('board');
+  const textEl = document.getElementById('pad-text');
+  const refEl = document.getElementById('pad-ref');
+  const subsWrap = document.getElementById('pad-subs');
+  const grip = document.getElementById('pad-grip');
+  updatePostitPad();
+  document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => setTimeout(updatePostitPad, 0)));
+
+  function subValues() {
+    return [...subsWrap.querySelectorAll('.pad-sub')].map(i => i.value.trim()).filter(Boolean);
+  }
+  function addSubField(focus) {
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'postit-pad-input pad-sub';
+    inp.placeholder = 'Nog een subtaak…';
+    inp.autocomplete = 'off';
+    subsWrap.appendChild(inp);
+    if (focus) inp.focus();
+  }
+  subsWrap.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || !e.target.classList.contains('pad-sub')) return;
+    e.preventDefault();
+    if (!e.target.value.trim()) return;
+    if (e.target === subsWrap.lastElementChild) addSubField(true);
+    else e.target.nextElementSibling.focus();
+  });
+  function resetPad() {
+    textEl.value = '';
+    refEl.value = '';
+    subsWrap.innerHTML = '';
+    addSubField(false);
+    subsWrap.firstElementChild.placeholder = 'Subtaak — Enter voor nog een';
+  }
+
+  let drag = null;
+  grip.addEventListener('pointerdown', (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    const text = textEl.value.trim();
+    if (!text) { textEl.focus(); showUndoToast('Vul eerst een taakomschrijving in', null); return; }
+    e.preventDefault();
+    const ghost = document.createElement('div');
+    ghost.className = 'postit-ghost';
+    const subs = subValues();
+    ghost.innerHTML = '<div class="ghost-text"></div><div class="ghost-meta"></div>';
+    ghost.querySelector('.ghost-text').textContent = text;
+    ghost.querySelector('.ghost-meta').textContent =
+      [refEl.value.trim() ? 'Ref ' + refEl.value.trim() : '', subs.length ? subs.length + ' subtaak' + (subs.length > 1 ? 'en' : '') : ''].filter(Boolean).join(' · ');
+    document.body.appendChild(ghost);
+    drag = { ghost, text, subs };
+    pad.classList.add('dragging');
+    grip.setPointerCapture(e.pointerId);
+    moveGhost(e);
+  });
+  function moveGhost(e) {
+    if (!drag) return;
+    drag.ghost.style.left = (e.clientX - 100) + 'px';
+    drag.ghost.style.top = (e.clientY - 26) + 'px';
+    const r = board.getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    const hot = inside ? zoneFromPos(((e.clientX - r.left) / r.width) * 100, ((e.clientY - r.top) / r.height) * 100) : null;
+    board.querySelectorAll('.board-zone').forEach(z => z.classList.toggle('hot', z.dataset.zone === hot));
+  }
+  grip.addEventListener('pointermove', moveGhost);
+  grip.addEventListener('pointerup', (e) => {
+    if (!drag) return;
+    const { ghost, text, subs } = drag;
+    drag = null;
+    ghost.remove();
+    pad.classList.remove('dragging');
+    board.querySelectorAll('.board-zone').forEach(z => z.classList.remove('hot'));
+    const r = board.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+    const xPct = ((e.clientX - r.left) / r.width) * 100;
+    const yPct = ((e.clientY - r.top) / r.height) * 100;
+    const zoneKey = zoneFromPos(xPct, yPct);
+    const b = zoneBounds(zoneKey);
+    const wPct = (196 / r.width) * 100, hPct = (196 / r.height) * 100;
+    const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), Math.max(lo, hi));
+    tasks.unshift({
+      id: 'task-' + Date.now(), text, ref: refEl.value.trim() || null, clientId: null,
+      done: false, createdAt: Date.now(), priority: 3,
+      subtasks: subs.map((s, i) => ({ id: 'sub-' + Date.now() + '-' + i, text: s, done: false })),
+      dueDate: null, dueTime: null, reminderFired: false, zone: zoneKey,
+      posX: clamp(xPct - wPct / 2, b.x[0] + 1, b.x[1] - wPct - 1),
+      posY: clamp(yPct - hPct / 2, b.y[0] + 2, b.y[1] - hPct - 2)
+    });
+    resetPad();
+    saveTasks();
+    renderTasks();
+    renderBoard();
+    showUndoToast('Post-it geplakt in ' + boardZone(zoneKey).name, async () => {
+      tasks.shift(); await saveTasks(); renderTasks(); renderBoard();
+    });
+  });
+  grip.addEventListener('pointercancel', () => {
+    if (!drag) return;
+    drag.ghost.remove();
+    drag = null;
+    pad.classList.remove('dragging');
+    board.querySelectorAll('.board-zone').forEach(z => z.classList.remove('hot'));
+  });
+})();
 function renderBoard() {
   renderHomeStats();
   const board = document.getElementById('board');
