@@ -1053,6 +1053,27 @@
   .calc-chip { font-family: 'League Spartan', sans-serif; font-size: 11.5px; background: var(--soot); border: 1px solid var(--hairline); border-radius: 20px; padding: 5px 12px; cursor: pointer; color: var(--paper-dim); }
   .calc-chip:hover { border-color: var(--ember); color: var(--paper); }
   .calc-presets-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .calc-suggest-list { display: flex; flex-direction: column; gap: 8px; }
+  .calc-suggest-row {
+    display: flex; align-items: center; gap: 12px; padding: 11px 13px;
+    background: var(--panel); border: 1px solid var(--hairline); border-left: 2px solid var(--ember); border-radius: 8px;
+  }
+  .calc-suggest-main { flex: 1; min-width: 0; }
+  .calc-suggest-label { font-size: 13.5px; color: var(--paper); }
+  .calc-suggest-why { font-family: 'League Spartan', sans-serif; font-size: 11px; color: var(--smoke); margin-top: 2px; }
+  .calc-suggest-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .calc-suggest-add { min-height: 36px; padding: 0 14px; font-size: 12.5px; display: inline-flex; align-items: center; }
+  .calc-suggest-skip {
+    width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--hairline); background: var(--soot);
+    color: var(--smoke); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; line-height: 1;
+  }
+  .calc-suggest-skip:hover { color: var(--paper); border-color: var(--ember); }
+  @media (max-width: 780px) {
+    .calc-suggest-row { flex-wrap: wrap; }
+    .calc-suggest-actions { width: 100%; }
+    .calc-suggest-add { flex: 1; min-height: 44px; justify-content: center; }
+    .calc-suggest-skip { width: 44px; height: 44px; }
+  }
   .calc-preset-btn { font-family: 'League Spartan', sans-serif; font-size: 12px; font-weight: 500; background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; padding: 9px 13px; cursor: pointer; color: var(--paper); text-align: left; }
   .calc-preset-btn:hover { border-color: var(--ember); }
   .calc-stickybar {
@@ -2207,6 +2228,10 @@
           <div class="field">
             <label>Recent gebruikt</label>
             <div class="calc-recent-row" id="calc-recent-row"></div>
+          </div>
+          <div class="field" id="calc-suggest-field" style="display:none">
+            <label>Hier hoort meestal bij</label>
+            <div class="calc-suggest-list" id="calc-suggest-list"></div>
           </div>
           <div class="field">
             <label>Snel toevoegen — pakketten</label>
@@ -8399,8 +8424,8 @@ function newCalc() {
 const CALC_PRESETS = [
   { label: 'Installatie — 1 man, 1 dag', items: [{ section:'installatie', key:'in3', qty:1 }, { section:'installatie', key:'in14', qty:1 }] },
   { label: 'Installatie — team, 1 dag', items: [{ section:'installatie', key:'in4', qty:1 }, { section:'installatie', key:'in14', qty:1 }] },
-  { label: 'Gasaansluiting begane grond', items: [{ section:'installatie', key:'in5', qty:1 }, { section:'installatie', key:'in6', qty:3 }, { section:'installatie', key:'in7', qty:1 }] },
-  { label: 'Kleine afwerking (nis + omkokering)', items: [{ section:'afwerking', key:'a6', qty:1 }, { section:'afwerking', key:'a10', qty:1 }] },
+  { label: 'Schoorsteenboezem middel', items: [{ section:'afwerking', key:'a2', qty:1 }] },
+  { label: 'Omkokering kanaal etage standaard', items: [{ section:'afwerking', key:'a10', qty:1 }] },
 ];
 function renderCalcPresets() {
   const wrap = document.getElementById('calc-presets-row');
@@ -8859,6 +8884,121 @@ function calcSelectedLines() {
   });
   return lines;
 }
+// ---------- Slimme voorstellen: wat hoort er meestal bij ----------
+let calcSuggestDismissed = new Set();
+function calcLengthMeters(label) {
+  let m = /lengte\s+([\d]+(?:[.,]\d+)?)\s*meter/i.exec(label);
+  if (m) return parseFloat(m[1].replace(',', '.'));
+  m = /lengte\s+(\d{3,4})\b/i.exec(label);
+  if (m) return parseInt(m[1], 10) / 1000;
+  return 0;
+}
+function calcSuggestions() {
+  const calc = window.__editingCalc;
+  if (!calc) return [];
+  const lines = calcSelectedLines();
+  const has = (section, key) => parseQty((calc.qty[section] || {})[key]) > 0;
+  const out = [];
+  const add = (section, key, qty, why) => {
+    if (has(section, key)) return;
+    const item = CALC_SEARCH_INDEX.find(i => i.section === section && i.key === key);
+    if (!item) return;
+    if (out.some(o => o.section === section && o.key === key)) return;
+    out.push({ section, key, qty, why, label: item.label, sectionLabel: item.sectionLabel, price: item.price });
+  };
+
+  // Flex per meter → twee koppelstukken van dezelfde diameter
+  const flexPairs = { r1: ['r4', '100'], r2: ['r5', '125'], r3: ['r6', '150'] };
+  lines.forEach(l => {
+    const pair = l.section === 'renovatie' && flexPairs[l.key];
+    if (pair) add('renovatie', pair[0], 2, 'Bij RVS flex ' + pair[1] + ' horen meestal twee koppelstukken');
+  });
+
+  // Schoorsteenboezem → drie convectieroosters
+  if (['a1', 'a2', 'a3'].some(k => has('afwerking', k))) {
+    add('afwerking', 'a8', 3, 'Bij een schoorsteenboezem gaan er meestal drie convectieroosters in');
+  }
+
+  const idx = (section, key) => CALC_SEARCH_INDEX.find(i => i.section === section && i.key === key);
+  const inFamily = (section, re, diam) => {
+    const fam = (/^(ew|dw|cc)_/.exec(section) || [])[1];
+    if (!fam) return null;
+    return CALC_SEARCH_INDEX.find(i => i.section === section && re.test(i.label) && (!diam || i.diam === diam))
+      || CALC_SEARCH_INDEX.find(i => i.section.startsWith(fam + '_') && re.test(i.label) && (!diam || i.diam === diam));
+  };
+
+  // Kap → dakdoorvoer: dakplaat of loodslab, plus stormkraag
+  lines.forEach(l => {
+    if (!/^(ew|dw|cc)_/.test(l.section) || !/kap met/i.test(l.label)) return;
+    const diam = (idx(l.section, l.key) || {}).diam;
+    const why = 'Bij ' + l.label.toLowerCase() + ' hoort een dakdoorvoer';
+    [[/dakplaat/i, why], [/loodslab 20-45/i, why + ' — loodslab bij een schuin dak'], [/stormkraag|regenrand/i, 'Sluit de dakdoorvoer af']].forEach(([re, reason]) => {
+      const it = inFamily(l.section, re, diam);
+      if (it) add(it.section, it.key, 1, reason);
+    });
+  });
+
+  // Promatect doorvoer → verdiepingsondersteuning van het gebruikte kanaal
+  if (has('afwerking', 'a12')) {
+    const ch = lines.find(l => /^(ew|dw|cc)_/.test(l.section) && calcLengthMeters(l.label) > 0) || lines.find(l => /^(ew|dw|cc)_/.test(l.section));
+    if (ch) {
+      const diam = (idx(ch.section, ch.key) || {}).diam;
+      const it = inFamily(ch.section, /verdieping steun/i, diam);
+      if (it) add(it.section, it.key, 1, 'Bij een promatect doorvoer draagt het kanaal op de verdieping af');
+    }
+  }
+
+  // Meer dan 2 meter kanaal → aftimmeren: omkokering + promatect doorvoer
+  let meters = 0;
+  lines.forEach(l => {
+    if (!/^(ew|dw|cc)_/.test(l.section)) return;
+    meters += calcLengthMeters(l.label) * l.qty;
+  });
+  if (meters > 2) {
+    const mTxt = fmtQty(Math.round(meters * 100) / 100) + ' meter kanaal';
+    add('afwerking', 'a10', 1, mTxt + ' — wordt meestal afgetimmerd');
+    add('afwerking', 'a12', 1, mTxt + ' — doorvoer door een houten vloer');
+  }
+
+  return out.filter(s => !calcSuggestDismissed.has(s.section + '.' + s.key));
+}
+function renderCalcSuggestions() {
+  const field = document.getElementById('calc-suggest-field');
+  const wrap = document.getElementById('calc-suggest-list');
+  if (!field || !wrap) return;
+  const calc = window.__editingCalc;
+  const sugg = calcSuggestions();
+  field.style.display = sugg.length ? '' : 'none';
+  wrap.innerHTML = '';
+  sugg.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'calc-suggest-row';
+    row.innerHTML = `
+      <div class="calc-suggest-main">
+        <div class="calc-suggest-label"></div>
+        <div class="calc-suggest-why"></div>
+      </div>
+      <div class="calc-suggest-actions">
+        <button type="button" class="btn btn-ghost calc-suggest-add">+ ${fmtQty(s.qty)}× toevoegen</button>
+        <div class="calc-suggest-skip" title="Niet nodig">&times;</div>
+      </div>`;
+    row.querySelector('.calc-suggest-label').textContent = s.label + ' — ' + fmtEUR(s.price);
+    row.querySelector('.calc-suggest-why').textContent = s.why;
+    row.querySelector('.calc-suggest-add').addEventListener('click', () => {
+      if (!calc.qty[s.section]) calc.qty[s.section] = {};
+      calc.qty[s.section][s.key] = parseQty(calc.qty[s.section][s.key]) + s.qty;
+      pushRecentProduct(s.section, s.key);
+      calcOpenSections.add(s.section);
+      renderCalcCatalogSections();
+      updateCalcTotals();
+    });
+    row.querySelector('.calc-suggest-skip').addEventListener('click', () => {
+      calcSuggestDismissed.add(s.section + '.' + s.key);
+      renderCalcSuggestions();
+    });
+    wrap.appendChild(row);
+  });
+}
 function renderCalcSelected() {
   const wrap = document.getElementById('calc-selected-list');
   if (!wrap) return;
@@ -9026,6 +9166,7 @@ function updateCalcTotals() {
   const stickyEl = document.getElementById('calc-sticky-total-num');
   if (stickyEl) rollMoney(stickyEl, calcGrandTotal(calc));
   renderCalcSelected();
+  renderCalcSuggestions();
   renderCalcFilters();
 }
 function migrateCalcQtySections(calc) {
@@ -9061,6 +9202,7 @@ function openCalcEditor(calc) {
   calcChannelFilter = '';
   calcSearchAll = false;
   document.getElementById('calc-title').value = calc.title || '';
+  calcSuggestDismissed = new Set();
   renderCalcPresets();
   renderRecentProducts();
   populateCalcClientSelect();
