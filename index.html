@@ -5725,15 +5725,16 @@ function startNewPostit(xPct, yPct) {
     const top = parseFloat(wrap.style.top) || 0;
     closed = true;
     wrap.remove();
-    if (!text) { renderBoard(); return; }
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    if (!text) { (typeof _renderBoard === 'function' ? _renderBoard : renderBoard)(); return; }
     tasks.unshift({
       id: 'task-' + Date.now(), text, ref: null, clientId: null, done: false, createdAt: Date.now(),
       priority: 3, subtasks: [], dueDate: null, dueTime: null, reminderFired: false,
       zone: zoneKey, posX: left, posY: top
     });
     saveTasks();
-    renderTasks();
-    renderBoard();
+    (typeof _renderTasks === 'function' ? _renderTasks : renderTasks)();
+    (typeof _renderBoard === 'function' ? _renderBoard : renderBoard)();
     showUndoToast('Post-it geplakt in ' + boardZone(zoneKey).name, async () => {
       tasks.shift(); await saveTasks(); renderTasks(); renderBoard();
     });
@@ -5853,9 +5854,11 @@ function updatePostitPad() {
       posY: clamp(yPct - hPct / 2, b.y[0] + 2, b.y[1] - hPct - 2)
     });
     resetPad();
+    // focus wegnemen: anders houdt de "getypte tekst beschermen"-laag het opnieuw tekenen tegen
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     saveTasks();
-    renderTasks();
-    renderBoard();
+    (typeof _renderTasks === 'function' ? _renderTasks : renderTasks)();
+    (typeof _renderBoard === 'function' ? _renderBoard : renderBoard)();
     showUndoToast('Post-it geplakt in ' + boardZone(zoneKey).name, async () => {
       tasks.shift(); await saveTasks(); renderTasks(); renderBoard();
     });
