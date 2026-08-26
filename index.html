@@ -1510,6 +1510,115 @@
   .rw { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--hairline); }
   .rw-label { font-family: 'Poppins', sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--smoke); }
   .rw select { font-family: inherit; font-size: 12.5px; padding: 5px 7px; border: 1px solid var(--hairline); border-radius: 3px; background: var(--panel); color: inherit; }
+  /* ---- Formulieren ---- */
+  .forms-new { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .form-new-btn {
+    display: flex; align-items: center; gap: 9px; cursor: pointer; text-align: left;
+    font-family: 'League Spartan', sans-serif; font-size: 13px; font-weight: 500; color: var(--paper);
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 10px 14px;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  }
+  .form-new-btn:hover { border-color: var(--brass); background: var(--panel-raised); }
+  .form-new-btn:active { transform: scale(0.97); }
+  .form-new-btn .form-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .form-new-btn .form-plus { color: var(--smoke); font-size: 15px; line-height: 1; margin-left: 2px; }
+  .forms-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .forms-search { position: relative; flex: 0 1 260px; }
+  .forms-search input {
+    width: 100%; box-sizing: border-box; font-family: 'League Spartan', sans-serif; font-size: 13px; color: var(--paper);
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 20px; padding: 8px 14px;
+  }
+  .forms-search input:focus { outline: none; border-color: var(--ember); }
+  .forms-split { display: grid; grid-template-columns: minmax(240px, 320px) minmax(420px, 1fr); gap: 16px; align-items: start; }
+  .forms-list { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 300px); overflow-y: auto; padding-right: 2px; }
+  .form-card {
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; border-left: 3px solid var(--hairline);
+    padding: 11px 13px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  }
+  .form-card:hover { background: var(--panel-raised); }
+  .form-card.active { background: var(--panel-raised); border-color: var(--brass); }
+  .form-card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+  .form-card-type {
+    font-family: 'Poppins', sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .form-card-when { margin-left: auto; font-size: 11px; color: var(--smoke); }
+  .form-card-title { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500; line-height: 1.3; }
+  .form-card-sub { font-size: 12px; color: var(--smoke); margin-top: 4px; }
+  .form-card-flags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+  .form-flag {
+    font-family: 'League Spartan', sans-serif; font-size: 10.5px; letter-spacing: 0.04em;
+    color: var(--paper-dim); background: var(--soot); border: 1px solid var(--hairline); border-radius: 20px; padding: 2px 8px;
+  }
+  .form-flag.warn { color: var(--ember); border-color: var(--ember-dim); }
+  .form-detail {
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 20px 22px; min-height: 320px;
+  }
+  .form-detail-empty { color: var(--smoke); font-size: 13px; font-style: italic; }
+  .form-detail-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+  .form-detail-badge {
+    display: inline-flex; align-items: center; gap: 6px; font-family: 'Poppins', sans-serif;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    border: 1px solid var(--hairline); border-radius: 20px; padding: 3px 10px;
+  }
+  .form-title-input {
+    width: 100%; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 19px; font-weight: 500;
+    color: var(--paper); background: none; border: none; border-bottom: 1px solid var(--hairline);
+    padding: 4px 0 8px; margin-bottom: 18px;
+  }
+  .form-title-input:focus { outline: none; border-color: var(--ember); }
+  .form-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0 12px; }
+  .form-grid .field { grid-column: span 6; }
+  .form-grid .field.s2 { grid-column: span 2; }
+  .form-grid .field.s3 { grid-column: span 3; }
+  .form-grid .field.s4 { grid-column: span 4; }
+  .form-section-head {
+    font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--smoke); margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid var(--hairline);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .form-section-head .btn { margin-left: auto; }
+  .form-item-row { display: grid; grid-template-columns: 62px 78px 1fr 26px; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .form-item-row input, .form-item-row select {
+    width: 100%; box-sizing: border-box; background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 9px 10px; color: var(--paper); font-family: inherit; font-size: 13.5px;
+  }
+  .form-item-row input:focus, .form-item-row select:focus { outline: none; border-color: var(--ember); }
+  .form-row-del { color: var(--smoke); cursor: pointer; text-align: center; font-size: 17px; line-height: 1; }
+  .form-row-del:hover { color: var(--danger); }
+  .form-lib { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 12px; }
+  .form-lib-chip {
+    font-family: 'League Spartan', sans-serif; font-size: 12px; color: var(--paper-dim); cursor: pointer;
+    background: var(--soot); border: 1px solid var(--hairline); border-radius: 20px; padding: 4px 11px;
+  }
+  .form-lib-chip:hover { border-color: var(--brass); color: var(--paper); }
+  .form-act-row { display: grid; grid-template-columns: 1fr 130px 130px auto 26px; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .form-act-row input {
+    width: 100%; box-sizing: border-box; background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 9px 10px; color: var(--paper); font-family: inherit; font-size: 13.5px;
+  }
+  .form-act-row input:focus { outline: none; border-color: var(--ember); }
+  .form-act-done { font-family: 'League Spartan', sans-serif; font-size: 11.5px; color: var(--brass); white-space: nowrap; }
+  .form-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--hairline); }
+  .forms-empty { font-size: 13px; color: var(--smoke); font-style: italic; padding: 6px 2px; }
+  @media (max-width: 1150px) {
+    .forms-split { grid-template-columns: 1fr; }
+    .forms-list { max-height: none; }
+    .forms-split.form-open .forms-list { display: none; }
+    .forms-split:not(.form-open) .form-detail { display: none; }
+  }
+  @media (max-width: 760px) {
+    .form-new-btn { flex: 1 1 46%; min-height: 46px; }
+    .form-detail { padding: 16px 14px; }
+    .form-grid .field.s2, .form-grid .field.s3, .form-grid .field.s4 { grid-column: span 6; }
+    .form-item-row { grid-template-columns: 56px 1fr 26px; }
+    .form-item-row .form-item-unit { grid-column: span 1; }
+    .form-item-row input, .form-item-row select { font-size: 16px; }
+    .form-act-row { grid-template-columns: 1fr 26px; }
+    .form-act-row input { font-size: 16px; }
+    .form-title-input { font-size: 17px; }
+    .forms-search { flex: 1 1 100%; }
+  }
+
   /* ---- Vraag het aan je notities ---- */
   .ask-thread { display: flex; flex-direction: column; gap: 12px; max-height: 52vh; overflow-y: auto; padding-right: 4px; }
   .ask-q { align-self: flex-end; max-width: 85%; background: var(--ember); color: #fff; padding: 8px 12px; border-radius: 3px; font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; }
@@ -1945,10 +2054,10 @@
         <span class="nav-label">Taken</span>
         <span class="nav-count" id="count-taken">0</span>
       </div>
-      <div class="nav-item" data-view="notities">
-        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14v17H5z"/><path d="M8.5 8h7"/><path d="M8.5 12h7"/><path d="M8.5 16h4"/></svg></span>
-        <span class="nav-label">Notities</span>
-        <span class="nav-count" id="count-notities">0</span>
+      <div class="nav-item" data-view="formulieren">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12v17H6z"/><path d="M9 8h6"/><path d="M9 11.5h6"/><path d="M9 15h3"/></svg></span>
+        <span class="nav-label">Formulieren</span>
+        <span class="nav-count" id="count-formulieren">0</span>
       </div>
       <div class="nav-group-label">Werk</div>
       <div class="nav-item" data-view="klanten">
@@ -2044,6 +2153,25 @@
       <div class="notes-split" id="notes-split">
         <div class="notes-list" id="notes-list"></div>
         <div class="note-detail" id="note-detail"></div>
+      </div>
+    </div>
+
+    <!-- FORMULIEREN -->
+    <div class="view" id="view-formulieren">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Formulieren</div>
+          <div class="view-desc">Vaste formulieren voor wat er op een dag gebeurt: een vergadering, een showroomgesprek, tekenwerk, inmeten of een bestellijst. Alles wordt tijdens het invullen bewaard.</div>
+        </div>
+      </div>
+      <div class="forms-new" id="forms-new"></div>
+      <div class="forms-bar">
+        <div class="forms-search"><input type="text" id="form-search-input" placeholder="Zoek in alle formulieren…" autocomplete="off" /></div>
+        <div id="form-filters" style="display:flex; gap:6px; flex-wrap:wrap"></div>
+      </div>
+      <div class="forms-split" id="forms-split">
+        <div class="forms-list" id="forms-list"></div>
+        <div class="form-detail" id="form-detail"></div>
       </div>
     </div>
 
@@ -3057,9 +3185,18 @@ async function loadData() {
     const nt = await storageGet('notes-data');
     notes = nt ? JSON.parse(nt.value) : [];
   } catch (e) { console.error('Laden notities mislukt', e); notes = []; }
+  try {
+    const fd = await storageGet('forms-data');
+    forms = fd ? JSON.parse(fd.value) : [];
+  } catch (e) { console.error('Laden formulieren mislukt', e); forms = []; }
+  try {
+    const fl = await storageGet('forms-library');
+    formLibrary = fl ? JSON.parse(fl.value) : [];
+  } catch (e) { console.error('Laden bestelbibliotheek mislukt', e); formLibrary = []; }
   applyPriceOverrides();
   applyReminderSettingToUI();
   renderNotes();
+  renderForms();
   renderTasks();
   renderClients();
   renderBoard();
@@ -3093,6 +3230,14 @@ function setupRealtimeSync() {
     try { notes = JSON.parse(val) || []; } catch (e) { return; }
     normalizeNotes();
     if (!noteEditing) renderNotes();
+  });
+  listenRemote('forms-data', (val) => {
+    try { forms = JSON.parse(val) || []; } catch (e) { return; }
+    normalizeForms();
+    if (!document.activeElement || !document.getElementById('view-formulieren').contains(document.activeElement)) renderForms();
+  });
+  listenRemote('forms-library', (val) => {
+    try { formLibrary = JSON.parse(val) || []; } catch (e) { return; }
   });
   listenRemote('calculations-data', (val) => {
     try { calculations = JSON.parse(val); } catch (e) { return; }
@@ -5212,6 +5357,750 @@ if (AI_ENABLED) {
 } else {
   document.getElementById('note-ask-btn').style.display = 'none';
 }
+
+// ---------- Formulieren ----------
+const F_DIAM = ['80', '100', '130', '150', '180', '200', '230', '250'];
+const F_KANAAL = ['Enkelwandig', 'Dubbelwandig', 'Concentrisch', 'Flex in bestaand kanaal', 'Nog onbekend'];
+const F_HAARD = ['Vrijstaande houtkachel', 'Inbouwhaard hout', 'Gashaard', 'Elektrische haard', 'Pelletkachel', 'Open haard', 'Nog onbekend'];
+const FORM_TYPES = [
+  {
+    key: 'vergadering', name: 'Vergadering', color: '#7C8B6B', titleFrom: ['onderwerp'], actions: true,
+    fields: [
+      { k: 'datum', label: 'Datum', t: 'date', s: 2 },
+      { k: 'tijd', label: 'Tijd', t: 'time', s: 2 },
+      { k: 'locatie', label: 'Locatie', t: 'text', s: 2, ph: 'Kantoor, showroom, online…' },
+      { k: 'deelnemers', label: 'Wie waren erbij', t: 'text', s: 6, ph: 'Namen, komma gescheiden' },
+      { k: 'onderwerp', label: 'Onderwerp / agenda', t: 'text', s: 6, ph: 'Waar ging het over' },
+      { k: 'besproken', label: 'Wat is besproken', t: 'textarea', s: 6, rows: 5 },
+      { k: 'besluiten', label: 'Besluiten', t: 'textarea', s: 6, rows: 3 },
+      { k: 'volgende', label: 'Volgende vergadering', t: 'date', s: 2 }
+    ]
+  },
+  {
+    key: 'showroom', name: 'Showroomgesprek', color: '#C08B4B', titleFrom: ['naam'], actions: true,
+    fields: [
+      { k: 'datum', label: 'Datum', t: 'date', s: 2 },
+      { k: 'tijd', label: 'Tijd', t: 'time', s: 2 },
+      { k: 'medewerker', label: 'Gesprek door', t: 'text', s: 2 },
+      { k: 'naam', label: 'Naam klant', t: 'text', s: 3 },
+      { k: 'telefoon', label: 'Telefoon', t: 'tel', s: 3 },
+      { k: 'email', label: 'E-mail', t: 'text', s: 3 },
+      { k: 'adres', label: 'Adres', t: 'text', s: 3 },
+      { k: 'wens', label: 'Wat wil de klant', t: 'textarea', s: 6, rows: 4 },
+      { k: 'haardtype', label: 'Type haard', t: 'select', s: 3, opts: F_HAARD },
+      { k: 'model', label: 'Merk / model', t: 'text', s: 3 },
+      { k: 'kanaalsoort', label: 'Kanaalsoort', t: 'select', s: 3, opts: F_KANAAL },
+      { k: 'diameter', label: 'Diameter (mm)', t: 'select', s: 3, opts: F_DIAM },
+      { k: 'situatie', label: 'Bestaande situatie / bijzonderheden', t: 'textarea', s: 6, rows: 3 },
+      { k: 'budget', label: 'Budget indicatie', t: 'text', s: 3, ph: 'Bijv. € 6.000 – € 8.000' },
+      { k: 'termijn', label: 'Wanneer beslist de klant', t: 'select', s: 3, opts: ['Deze week', 'Deze maand', 'Dit kwartaal', 'Oriënterend', 'Onbekend'] },
+      { k: 'documentatie', label: 'Documentatie meegegeven', t: 'check', s: 3 },
+      { k: 'showroom_bezocht', label: 'Haard live gezien in showroom', t: 'check', s: 3 },
+      { k: 'vervolg', label: 'Vervolgstap', t: 'select', s: 3, opts: ['Inmeten inplannen', 'Calculatie maken', 'Offerte maken', 'Tekening maken', 'Klant denkt na', 'Geen vervolg'] }
+    ]
+  },
+  {
+    key: 'tekenwerk', name: 'Tekenwerk', color: '#6B7F8B', titleFrom: ['project', 'tekening'], actions: true,
+    fields: [
+      { k: 'datum', label: 'Datum', t: 'date', s: 2 },
+      { k: 'aanvrager', label: 'Aangevraagd door', t: 'text', s: 2 },
+      { k: 'soort', label: 'Soort', t: 'select', s: 2, opts: ['Nieuwe tekening', 'Wijziging bestaande tekening', 'Controle / nakijken', 'Detail uitwerken'] },
+      { k: 'project', label: 'Project / referentie', t: 'text', s: 3 },
+      { k: 'tekening', label: 'Tekeningnummer', t: 'text', s: 3 },
+      { k: 'versie', label: 'Versie', t: 'text', s: 2, ph: 'Bijv. v3' },
+      { k: 'deadline', label: 'Deadline', t: 'date', s: 2 },
+      { k: 'status', label: 'Status', t: 'select', s: 2, opts: ['Te doen', 'Bezig', 'Ter controle bij klant', 'Definitief'] },
+      { k: 'wijziging', label: 'Wat moet er gewijzigd of getekend worden', t: 'textarea', s: 6, rows: 5 },
+      { k: 'maten', label: 'Maatvoering / afmetingen', t: 'textarea', s: 6, rows: 3 },
+      { k: 'maat_gewijzigd', label: 'Maatvoering is gewijzigd', t: 'check', s: 3 },
+      { k: 'akkoord', label: 'Klant heeft akkoord gegeven', t: 'check', s: 3 },
+      { k: 'doorgegeven', label: 'Doorgegeven aan', t: 'text', s: 3 }
+    ]
+  },
+  {
+    key: 'bestellijst', name: 'Bestellijst', color: '#B4553C', titleFrom: ['voor', 'leverancier'], actions: false, items: true,
+    fields: [
+      { k: 'datum', label: 'Datum', t: 'date', s: 2 },
+      { k: 'voor', label: 'Voor wie / welke bus', t: 'text', s: 2 },
+      { k: 'leverancier', label: 'Leverancier', t: 'text', s: 2 },
+      { k: 'nodig_op', label: 'Nodig op', t: 'date', s: 2 },
+      { k: 'project', label: 'Project / werk', t: 'text', s: 4 },
+      { k: 'spoed', label: 'Spoed', t: 'check', s: 3 },
+      { k: 'besteld', label: 'Besteld', t: 'check', s: 3 },
+      { k: 'opmerking', label: 'Opmerking voor de bestelling', t: 'textarea', s: 6, rows: 3 }
+    ]
+  },
+  {
+    key: 'inmeten', name: 'Inmeten', color: '#8B6BA0', titleFrom: ['adres', 'klantnaam'], actions: true,
+    fields: [
+      { k: 'datum', label: 'Datum', t: 'date', s: 2 },
+      { k: 'tijd', label: 'Tijd', t: 'time', s: 2 },
+      { k: 'monteur', label: 'Ingemeten door', t: 'text', s: 2 },
+      { k: 'klantnaam', label: 'Naam klant', t: 'text', s: 3 },
+      { k: 'adres', label: 'Adres', t: 'text', s: 3 },
+      { k: 'contact', label: 'Contact ter plaatse', t: 'text', s: 3 },
+      { k: 'haardtype', label: 'Type haard', t: 'select', s: 3, opts: F_HAARD },
+      { k: 'kanaalsoort', label: 'Kanaalsoort', t: 'select', s: 3, opts: F_KANAAL },
+      { k: 'diameter', label: 'Diameter (mm)', t: 'select', s: 3, opts: F_DIAM },
+      { k: 'hoogte', label: 'Hoogte kanaal (m)', t: 'text', s: 2 },
+      { k: 'bochten', label: 'Aantal bochten', t: 'text', s: 2 },
+      { k: 'verdiepingen', label: 'Verdiepingen door', t: 'text', s: 2 },
+      { k: 'dakdoorvoer', label: 'Dakdoorvoer', t: 'select', s: 3, opts: ['Pannendak', 'Plat dak', 'Rietdak', 'Bestaande schoorsteen', 'Door de wand'] },
+      { k: 'vloeropbouw', label: 'Vloer- en dakopbouw', t: 'textarea', s: 6, rows: 3 },
+      { k: 'maten', label: 'Maten', t: 'textarea', s: 6, rows: 5 },
+      { k: 'obstakels', label: 'Obstakels / bijzonderheden', t: 'textarea', s: 6, rows: 3 },
+      { k: 'steiger', label: 'Steiger of hoogwerker nodig', t: 'check', s: 3 },
+      { k: 'stroom', label: 'Stroom aanwezig', t: 'check', s: 3 }
+    ]
+  }
+];
+let forms = [];
+let openFormId = null;
+let formQuery = '';
+let formFilter = 'alles';
+let formSaveTimer = null;
+let formLibrary = [];
+function formTypeDef(key) { return FORM_TYPES.find(t => t.key === key) || FORM_TYPES[0]; }
+function normalizeForms() {
+  forms.forEach(f => {
+    f.data = f.data || {};
+    f.items = f.items || [];
+    f.actions = f.actions || [];
+    f.photos = f.photos || [];
+    f.title = f.title || '';
+    if (f.clientId === undefined) f.clientId = null;
+    if (!f.createdAt) f.createdAt = Date.now();
+    if (!f.updatedAt) f.updatedAt = f.createdAt;
+    f.done = !!f.done;
+  });
+}
+async function saveForms() {
+  setSaveStatus('saving', 'Opslaan…');
+  pendingSaveCount++;
+  try {
+    await storageSet('forms-data', JSON.stringify(forms));
+    setSaveStatus('saved', 'Opgeslagen');
+  } catch (e) {
+    console.error('Opslaan formulieren mislukt', e);
+    setSaveStatus('error', 'Opslaan mislukt — probeer opnieuw');
+  } finally { pendingSaveCount--; }
+}
+function saveFormsSoon() { clearTimeout(formSaveTimer); formSaveTimer = setTimeout(saveForms, 700); }
+async function saveFormLibrary() {
+  try { await storageSet('forms-library', JSON.stringify(formLibrary)); }
+  catch (e) { console.error('Opslaan bestelbibliotheek mislukt', e); }
+}
+function libAdd(name, unit) {
+  const n = (name || '').trim();
+  if (!n) return;
+  const found = formLibrary.find(x => (x.name || '').toLowerCase() === n.toLowerCase());
+  if (found) { found.n = (found.n || 1) + 1; if (unit) found.unit = unit; }
+  else formLibrary.push({ name: n, unit: unit || '', n: 1 });
+  formLibrary.sort((a, b) => (b.n || 0) - (a.n || 0) || (a.name || '').localeCompare(b.name || ''));
+  saveFormLibrary();
+}
+function formHeading(f) {
+  if ((f.title || '').trim()) return f.title.trim();
+  const def = formTypeDef(f.type);
+  for (const k of (def.titleFrom || [])) {
+    const v = (f.data[k] || '').trim();
+    if (v) return v.slice(0, 70);
+  }
+  return def.name;
+}
+function formWhen(f) {
+  const raw = f.data.datum;
+  if (raw) {
+    const d = new Date(raw + 'T00:00');
+    if (!isNaN(d)) return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+  }
+  return noteWhen(f.updatedAt);
+}
+function newForm(typeKey) {
+  const today = new Date();
+  const iso = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  const f = {
+    id: 'form-' + Date.now(), type: typeKey, title: '', clientId: null,
+    data: { datum: iso }, items: [], actions: [], photos: [], done: false,
+    createdAt: Date.now(), updatedAt: Date.now()
+  };
+  if (formTypeDef(typeKey).items) f.items = [{ qty: '1', unit: 'stuk', name: '' }];
+  if (formTypeDef(typeKey).actions) f.actions = [{ text: '', who: '', due: '', taskId: null }];
+  forms.unshift(f);
+  openFormId = f.id;
+  formFilter = 'alles';
+  formQuery = '';
+  const search = document.getElementById('form-search-input');
+  if (search) search.value = '';
+  saveForms();
+  renderForms();
+}
+function renderFormNewButtons() {
+  const wrap = document.getElementById('forms-new');
+  if (!wrap || wrap.dataset.built) return;
+  wrap.dataset.built = '1';
+  FORM_TYPES.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'form-new-btn';
+    btn.innerHTML = '<span class="form-dot"></span><span class="form-new-label"></span><span class="form-plus">+</span>';
+    btn.querySelector('.form-dot').style.background = t.color;
+    btn.querySelector('.form-new-label').textContent = t.name;
+    btn.addEventListener('click', () => newForm(t.key));
+    wrap.appendChild(btn);
+  });
+}
+function renderFormFilters() {
+  const wrap = document.getElementById('form-filters');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const opts = [{ key: 'alles', name: 'Alles', color: null }]
+    .concat(FORM_TYPES.map(t => ({ key: t.key, name: t.name, color: t.color })))
+    .concat([{ key: 'afgerond', name: 'Afgerond', color: null }]);
+  opts.forEach(o => {
+    const chip = document.createElement('div');
+    chip.className = 'note-chip' + (formFilter === o.key ? ' active' : '');
+    const count = o.key === 'alles' ? forms.filter(f => !f.done).length
+      : o.key === 'afgerond' ? forms.filter(f => f.done).length
+      : forms.filter(f => !f.done && f.type === o.key).length;
+    chip.innerHTML = (o.color ? '<span class="note-chip-dot" style="background:' + o.color + '"></span>' : '') +
+      '<span class="chip-name"></span><span style="color:var(--smoke)">' + count + '</span>';
+    chip.querySelector('.chip-name').textContent = o.name;
+    chip.addEventListener('click', () => { formFilter = o.key; renderForms(); });
+    wrap.appendChild(chip);
+  });
+}
+function visibleForms() {
+  const q = formQuery.trim().toLowerCase();
+  return forms
+    .filter(f => (formFilter === 'afgerond' ? f.done : !f.done))
+    .filter(f => (formFilter === 'alles' || formFilter === 'afgerond' ? true : f.type === formFilter))
+    .filter(f => {
+      if (!q) return true;
+      const hay = [f.title, formTypeDef(f.type).name]
+        .concat(Object.values(f.data || {}).map(v => typeof v === 'string' ? v : ''))
+        .concat((f.items || []).map(i => i.name))
+        .concat((f.actions || []).map(a => a.text))
+        .join(' ').toLowerCase();
+      return hay.includes(q);
+    })
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+}
+function renderFormsList() {
+  const host = document.getElementById('forms-list');
+  if (!host) return;
+  host.innerHTML = '';
+  const list = visibleForms();
+  if (!list.length) {
+    const e = document.createElement('div');
+    e.className = 'forms-empty';
+    e.textContent = formQuery ? 'Niets gevonden.' : 'Nog geen formulieren — kies hierboven welk formulier je wilt invullen.';
+    host.appendChild(e);
+    return;
+  }
+  list.forEach(f => {
+    const def = formTypeDef(f.type);
+    const card = document.createElement('div');
+    card.className = 'form-card' + (f.id === openFormId ? ' active' : '');
+    card.style.borderLeftColor = def.color;
+    const top = document.createElement('div');
+    top.className = 'form-card-top';
+    const type = document.createElement('span');
+    type.className = 'form-card-type';
+    type.style.color = def.color;
+    type.textContent = def.name;
+    const when = document.createElement('span');
+    when.className = 'form-card-when';
+    when.textContent = formWhen(f);
+    top.appendChild(type);
+    top.appendChild(when);
+    card.appendChild(top);
+    const title = document.createElement('div');
+    title.className = 'form-card-title';
+    title.textContent = formHeading(f);
+    card.appendChild(title);
+    const client = clientById(f.clientId);
+    if (client) {
+      const sub = document.createElement('div');
+      sub.className = 'form-card-sub';
+      sub.textContent = client.name || 'Naamloos';
+      card.appendChild(sub);
+    }
+    const flags = [];
+    const openActs = (f.actions || []).filter(a => (a.text || '').trim() && !a.taskId).length;
+    if (openActs) flags.push({ t: openActs + ' actiepunt' + (openActs === 1 ? '' : 'en'), warn: true });
+    if ((f.items || []).filter(i => (i.name || '').trim()).length) flags.push({ t: (f.items || []).filter(i => (i.name || '').trim()).length + ' producten' });
+    if ((f.photos || []).length) flags.push({ t: f.photos.length + ' foto' + (f.photos.length === 1 ? '' : '\'s') });
+    if (f.data.spoed) flags.push({ t: 'Spoed', warn: true });
+    if (flags.length) {
+      const row = document.createElement('div');
+      row.className = 'form-card-flags';
+      flags.forEach(fl => {
+        const s = document.createElement('span');
+        s.className = 'form-flag' + (fl.warn ? ' warn' : '');
+        s.textContent = fl.t;
+        row.appendChild(s);
+      });
+      card.appendChild(row);
+    }
+    card.addEventListener('click', () => { openFormId = f.id; renderForms(); });
+    host.appendChild(card);
+  });
+}
+function formFieldEl(f, spec) {
+  const wrap = document.createElement('div');
+  wrap.className = 'field' + (spec.s && spec.s < 6 ? ' s' + spec.s : '');
+  if (spec.t === 'check') {
+    const label = document.createElement('label');
+    label.className = 'checkbox-field';
+    const box = document.createElement('span');
+    box.className = 'checkbox-box' + (f.data[spec.k] ? ' checked' : '');
+    const txt = document.createElement('span');
+    txt.textContent = spec.label;
+    label.appendChild(box);
+    label.appendChild(txt);
+    label.style.padding = '10px 0 14px';
+    label.addEventListener('click', () => {
+      f.data[spec.k] = !f.data[spec.k];
+      box.classList.toggle('checked', !!f.data[spec.k]);
+      f.updatedAt = Date.now();
+      saveForms();
+      renderFormsList();
+      renderFormFilters();
+    });
+    wrap.appendChild(label);
+    return wrap;
+  }
+  const lab = document.createElement('label');
+  lab.textContent = spec.label;
+  wrap.appendChild(lab);
+  let el;
+  if (spec.t === 'textarea') {
+    el = document.createElement('textarea');
+    el.rows = spec.rows || 3;
+  } else if (spec.t === 'select') {
+    el = document.createElement('select');
+    const none = document.createElement('option');
+    none.value = '';
+    none.textContent = '—';
+    el.appendChild(none);
+    (spec.opts || []).forEach(o => {
+      const op = document.createElement('option');
+      op.value = o;
+      op.textContent = o;
+      el.appendChild(op);
+    });
+  } else {
+    el = document.createElement('input');
+    el.type = spec.t === 'tel' ? 'tel' : spec.t;
+  }
+  if (spec.ph) el.placeholder = spec.ph;
+  el.value = f.data[spec.k] || '';
+  const commit = () => {
+    f.data[spec.k] = el.value;
+    f.updatedAt = Date.now();
+    saveFormsSoon();
+  };
+  el.addEventListener('input', commit);
+  el.addEventListener('change', () => { commit(); renderFormsList(); });
+  wrap.appendChild(el);
+  return wrap;
+}
+function renderFormItems(host, f) {
+  const head = document.createElement('div');
+  head.className = 'form-section-head';
+  const h = document.createElement('span');
+  h.textContent = 'Producten';
+  head.appendChild(h);
+  const add = document.createElement('button');
+  add.className = 'btn btn-sm';
+  add.textContent = 'Regel toevoegen';
+  add.addEventListener('click', () => {
+    f.items.push({ qty: '1', unit: 'stuk', name: '' });
+    f.updatedAt = Date.now();
+    saveForms();
+    renderFormDetail();
+  });
+  head.appendChild(add);
+  host.appendChild(head);
+
+  const dl = document.createElement('datalist');
+  dl.id = 'form-lib-list';
+  formLibrary.forEach(l => {
+    const o = document.createElement('option');
+    o.value = l.name;
+    dl.appendChild(o);
+  });
+  host.appendChild(dl);
+
+  f.items.forEach((it, i) => {
+    const row = document.createElement('div');
+    row.className = 'form-item-row';
+    const qty = document.createElement('input');
+    qty.type = 'text';
+    qty.inputMode = 'decimal';
+    qty.value = it.qty || '';
+    qty.placeholder = 'Aantal';
+    const unit = document.createElement('select');
+    unit.className = 'form-item-unit';
+    ['stuk', 'meter', 'doos', 'rol', 'zak', 'set', 'koker'].forEach(u => {
+      const o = document.createElement('option');
+      o.value = u;
+      o.textContent = u;
+      if ((it.unit || 'stuk') === u) o.selected = true;
+      unit.appendChild(o);
+    });
+    const name = document.createElement('input');
+    name.type = 'text';
+    name.value = it.name || '';
+    name.placeholder = 'Product — typ en kies uit je bibliotheek';
+    name.setAttribute('list', 'form-lib-list');
+    const del = document.createElement('div');
+    del.className = 'form-row-del';
+    del.textContent = '×';
+    del.title = 'Regel verwijderen';
+    const touch = () => { f.updatedAt = Date.now(); saveFormsSoon(); };
+    qty.addEventListener('input', () => { it.qty = qty.value; touch(); });
+    unit.addEventListener('change', () => { it.unit = unit.value; touch(); });
+    name.addEventListener('input', () => { it.name = name.value; touch(); });
+    name.addEventListener('change', () => { it.name = name.value; libAdd(it.name, it.unit); saveForms(); renderFormsList(); });
+    del.addEventListener('click', () => {
+      f.items.splice(i, 1);
+      f.updatedAt = Date.now();
+      saveForms();
+      renderFormDetail();
+      renderFormsList();
+    });
+    row.appendChild(qty);
+    row.appendChild(unit);
+    row.appendChild(name);
+    row.appendChild(del);
+    host.appendChild(row);
+  });
+
+  if (formLibrary.length) {
+    const lib = document.createElement('div');
+    lib.className = 'form-lib';
+    const hint = document.createElement('span');
+    hint.style.cssText = 'font-size:11.5px;color:var(--smoke);align-self:center;margin-right:2px';
+    hint.textContent = 'Vaak besteld:';
+    lib.appendChild(hint);
+    formLibrary.slice(0, 12).forEach(l => {
+      const chip = document.createElement('div');
+      chip.className = 'form-lib-chip';
+      chip.textContent = l.name;
+      chip.addEventListener('click', () => {
+        const empty = f.items.find(i => !(i.name || '').trim());
+        if (empty) { empty.name = l.name; if (l.unit) empty.unit = l.unit; }
+        else f.items.push({ qty: '1', unit: l.unit || 'stuk', name: l.name });
+        l.n = (l.n || 1) + 1;
+        f.updatedAt = Date.now();
+        saveFormLibrary();
+        saveForms();
+        renderFormDetail();
+        renderFormsList();
+      });
+      lib.appendChild(chip);
+    });
+    host.appendChild(lib);
+  }
+}
+function renderFormActions(host, f) {
+  const head = document.createElement('div');
+  head.className = 'form-section-head';
+  const h = document.createElement('span');
+  h.textContent = 'Actiepunten';
+  head.appendChild(h);
+  const add = document.createElement('button');
+  add.className = 'btn btn-sm';
+  add.textContent = 'Actiepunt toevoegen';
+  add.addEventListener('click', () => {
+    f.actions.push({ text: '', who: '', due: '', taskId: null });
+    f.updatedAt = Date.now();
+    saveForms();
+    renderFormDetail();
+  });
+  head.appendChild(add);
+  host.appendChild(head);
+  f.actions.forEach((a, i) => {
+    const row = document.createElement('div');
+    row.className = 'form-act-row';
+    const text = document.createElement('input');
+    text.type = 'text';
+    text.value = a.text || '';
+    text.placeholder = 'Wat moet er gebeuren';
+    const who = document.createElement('input');
+    who.type = 'text';
+    who.value = a.who || '';
+    who.placeholder = 'Wie';
+    const due = document.createElement('input');
+    due.type = 'date';
+    due.value = a.due || '';
+    const touch = () => { f.updatedAt = Date.now(); saveFormsSoon(); };
+    text.addEventListener('input', () => { a.text = text.value; touch(); });
+    text.addEventListener('change', () => { renderFormsList(); });
+    who.addEventListener('input', () => { a.who = who.value; touch(); });
+    due.addEventListener('change', () => { a.due = due.value; f.updatedAt = Date.now(); saveForms(); });
+    row.appendChild(text);
+    row.appendChild(who);
+    row.appendChild(due);
+    if (a.taskId) {
+      const done = document.createElement('span');
+      done.className = 'form-act-done';
+      done.textContent = 'Staat in taken';
+      row.appendChild(done);
+    } else {
+      const mk = document.createElement('button');
+      mk.className = 'btn btn-sm';
+      mk.textContent = 'Naar taken';
+      mk.addEventListener('click', () => {
+        const txt = (a.text || '').trim();
+        if (!txt) { text.focus(); return; }
+        const client = clientById(f.clientId);
+        const label = (a.who || '').trim();
+        const id = 'task-' + Date.now();
+        tasks.unshift({
+          id, text: label ? txt + ' (' + label + ')' : txt,
+          ref: (client && client.ref) || formTypeDef(f.type).name, clientId: f.clientId || null,
+          done: false, createdAt: Date.now(), priority: 3, subtasks: [],
+          dueDate: a.due || null, dueTime: null, reminderFired: false
+        });
+        a.taskId = id;
+        f.updatedAt = Date.now();
+        saveTasks();
+        saveForms();
+        renderTasks();
+        renderBoard();
+        renderClients();
+        checkTaskReminders();
+        renderFormDetail();
+        renderFormsList();
+      });
+      row.appendChild(mk);
+    }
+    const del = document.createElement('div');
+    del.className = 'form-row-del';
+    del.textContent = '×';
+    del.title = 'Actiepunt verwijderen';
+    del.addEventListener('click', () => {
+      f.actions.splice(i, 1);
+      f.updatedAt = Date.now();
+      saveForms();
+      renderFormDetail();
+      renderFormsList();
+    });
+    row.appendChild(del);
+    host.appendChild(row);
+  });
+}
+function renderFormPhotos(host, f) {
+  const head = document.createElement('div');
+  head.className = 'form-section-head';
+  const h = document.createElement('span');
+  h.textContent = 'Foto\u2019s';
+  head.appendChild(h);
+  host.appendChild(head);
+  const row = document.createElement('div');
+  row.className = 'photo-upload-row detail-photos';
+  (f.photos || []).forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'photo-thumb-wrap';
+    el.innerHTML = '<img class="detail-photo" /><div class="photo-remove">&times;</div>';
+    el.querySelector('img').src = p;
+    el.querySelector('.photo-remove').addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      f.photos.splice(i, 1);
+      f.updatedAt = Date.now();
+      await saveForms();
+      renderFormDetail();
+      renderFormsList();
+    });
+    row.appendChild(el);
+  });
+  const add = document.createElement('div');
+  add.className = 'photo-add-btn';
+  add.textContent = '+';
+  add.title = 'Foto toevoegen';
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.setAttribute('capture', 'environment');
+  input.multiple = true;
+  input.style.display = 'none';
+  add.addEventListener('click', () => input.click());
+  input.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    f.photos = f.photos || [];
+    for (let i = 0; i < files.length; i++) {
+      add.textContent = files.length > 1 ? (i + 1) + '/' + files.length : '…';
+      try { f.photos.push(await uploadPhoto(files[i], 'formulieren')); } catch (err) { console.error('Formulierfoto mislukt', err); }
+    }
+    add.textContent = '+';
+    f.updatedAt = Date.now();
+    await saveForms();
+    renderFormDetail();
+    renderFormsList();
+  });
+  row.appendChild(add);
+  host.appendChild(row);
+  host.appendChild(input);
+}
+function formAsText(f) {
+  const def = formTypeDef(f.type);
+  const lines = [def.name.toUpperCase() + ' — ' + formHeading(f)];
+  const client = clientById(f.clientId);
+  if (client) lines.push('Klant: ' + (client.name || ''));
+  def.fields.forEach(spec => {
+    const v = f.data[spec.k];
+    if (spec.t === 'check') { if (v) lines.push(spec.label + ': ja'); return; }
+    if (v) lines.push(spec.label + ': ' + v);
+  });
+  if ((f.items || []).some(i => (i.name || '').trim())) {
+    lines.push('', 'Producten:');
+    f.items.filter(i => (i.name || '').trim()).forEach(i => lines.push('- ' + (i.qty || '') + ' ' + (i.unit || '') + ' ' + i.name));
+  }
+  if ((f.actions || []).some(a => (a.text || '').trim())) {
+    lines.push('', 'Actiepunten:');
+    f.actions.filter(a => (a.text || '').trim()).forEach(a => lines.push('- ' + a.text + [a.who ? ' — ' + a.who : '', a.due ? ' — ' + a.due : ''].join('')));
+  }
+  return lines.join('\n');
+}
+function renderFormDetail() {
+  const host = document.getElementById('form-detail');
+  if (!host) return;
+  host.innerHTML = '';
+  const f = forms.find(x => x.id === openFormId);
+  if (!f) {
+    host.innerHTML = '<div class="form-detail-empty">Kies links een formulier, of maak hierboven een nieuw formulier aan.</div>';
+    return;
+  }
+  const def = formTypeDef(f.type);
+  const head = document.createElement('div');
+  head.className = 'form-detail-head';
+  const badge = document.createElement('span');
+  badge.className = 'form-detail-badge';
+  badge.style.color = def.color;
+  badge.style.borderColor = def.color;
+  badge.textContent = def.name;
+  head.appendChild(badge);
+  const back = document.createElement('span');
+  back.className = 'note-client-link';
+  back.textContent = '← Terug naar de lijst';
+  back.style.marginLeft = 'auto';
+  back.addEventListener('click', () => { openFormId = null; renderForms(); });
+  head.appendChild(back);
+  host.appendChild(head);
+
+  const title = document.createElement('input');
+  title.type = 'text';
+  title.className = 'form-title-input';
+  title.placeholder = 'Titel van dit formulier';
+  title.value = f.title || '';
+  title.addEventListener('input', () => { f.title = title.value; f.updatedAt = Date.now(); saveFormsSoon(); });
+  title.addEventListener('change', renderFormsList);
+  host.appendChild(title);
+
+  const grid = document.createElement('div');
+  grid.className = 'form-grid';
+  const clientField = document.createElement('div');
+  clientField.className = 'field s3';
+  const cl = document.createElement('label');
+  cl.textContent = 'Klant koppelen (mag leeg)';
+  clientField.appendChild(cl);
+  const clientSel = document.createElement('select');
+  const none = document.createElement('option');
+  none.value = '';
+  none.textContent = 'Geen klant';
+  clientSel.appendChild(none);
+  [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = (c.name || 'Naamloos') + (c.ref ? ' · ' + c.ref : '');
+    if (f.clientId === c.id) o.selected = true;
+    clientSel.appendChild(o);
+  });
+  clientSel.addEventListener('change', () => {
+    f.clientId = clientSel.value || null;
+    f.updatedAt = Date.now();
+    saveForms();
+    renderFormsList();
+  });
+  clientField.appendChild(clientSel);
+  grid.appendChild(clientField);
+  def.fields.forEach(spec => grid.appendChild(formFieldEl(f, spec)));
+  host.appendChild(grid);
+
+  if (def.items) renderFormItems(host, f);
+  if (def.actions) renderFormActions(host, f);
+  renderFormPhotos(host, f);
+
+  const tools = document.createElement('div');
+  tools.className = 'form-tools';
+  const doneBtn = document.createElement('button');
+  doneBtn.className = 'btn';
+  doneBtn.textContent = f.done ? 'Weer openzetten' : 'Formulier afronden';
+  doneBtn.addEventListener('click', () => {
+    f.done = !f.done;
+    f.updatedAt = Date.now();
+    if (f.done) openFormId = null;
+    saveForms();
+    renderForms();
+  });
+  tools.appendChild(doneBtn);
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'btn';
+  copyBtn.textContent = 'Kopieer als tekst';
+  copyBtn.addEventListener('click', () => {
+    copyNoteText(formAsText(f));
+    copyBtn.textContent = 'Gekopieerd';
+    setTimeout(() => { copyBtn.textContent = 'Kopieer als tekst'; }, 1400);
+  });
+  tools.appendChild(copyBtn);
+  const dupBtn = document.createElement('button');
+  dupBtn.className = 'btn';
+  dupBtn.textContent = 'Opnieuw gebruiken';
+  dupBtn.addEventListener('click', () => {
+    const copy = JSON.parse(JSON.stringify(f));
+    copy.id = 'form-' + Date.now();
+    copy.done = false;
+    copy.photos = [];
+    copy.actions = (copy.actions || []).map(a => ({ ...a, taskId: null }));
+    copy.createdAt = Date.now();
+    copy.updatedAt = Date.now();
+    forms.unshift(copy);
+    openFormId = copy.id;
+    saveForms();
+    renderForms();
+  });
+  tools.appendChild(dupBtn);
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-danger';
+  delBtn.textContent = 'Verwijderen';
+  delBtn.addEventListener('click', () => {
+    if (!confirm('Dit formulier verwijderen?')) return;
+    forms = forms.filter(x => x.id !== f.id);
+    openFormId = null;
+    saveForms();
+    renderForms();
+  });
+  tools.appendChild(delBtn);
+  host.appendChild(tools);
+}
+function renderForms() {
+  normalizeForms();
+  renderFormNewButtons();
+  renderFormFilters();
+  renderFormsList();
+  renderFormDetail();
+  const split = document.getElementById('forms-split');
+  if (split) split.classList.toggle('form-open', !!openFormId);
+  const count = document.getElementById('count-formulieren');
+  if (count) count.textContent = forms.filter(f => !f.done).length;
+}
+document.getElementById('form-search-input').addEventListener('input', (e) => {
+  formQuery = e.target.value;
+  renderFormsList();
+});
 
 // ---------- Navigation ----------
 document.querySelectorAll('.nav-item').forEach(item => {
