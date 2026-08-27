@@ -1561,18 +1561,51 @@
   .rw-label { font-family: 'Poppins', sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--smoke); }
   .rw select { font-family: inherit; font-size: 12.5px; padding: 5px 7px; border: 1px solid var(--hairline); border-radius: 3px; background: var(--panel); color: inherit; }
   /* ---- Formulieren ---- */
-  .forms-new { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-  .form-new-btn {
-    display: flex; align-items: center; gap: 9px; cursor: pointer; text-align: left;
-    font-family: 'League Spartan', sans-serif; font-size: 13px; font-weight: 500; color: var(--paper);
-    background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 10px 14px;
+  .form-ico { display: inline-flex; flex-shrink: 0; }
+  .form-ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .form-new-tile .form-ico {
+    width: 30px; height: 30px; padding: 6px; box-sizing: border-box; border-radius: 3px;
+    background: var(--soot); border: 1px solid var(--hairline); margin-bottom: 2px;
+  }
+  .form-card-top .form-ico { width: 13px; height: 13px; }
+  .form-detail-badge .form-ico { width: 12px; height: 12px; }
+  .forms-label {
+    font-family: 'Poppins', sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--smoke); display: flex; align-items: center; gap: 12px; margin: 0 0 10px;
+  }
+  .forms-label::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+  .forms-new { display: grid; grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)); gap: 10px; margin-bottom: 24px; }
+  .form-new-tile {
+    position: relative; overflow: hidden; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 5px;
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 4px; padding: 12px 14px 13px 16px;
     transition: border-color 0.15s, background 0.15s, transform 0.1s;
   }
-  .form-new-btn:hover { border-color: var(--brass); background: var(--panel-raised); }
-  .form-new-btn:active { transform: scale(0.97); }
-  .form-new-btn .form-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-  .form-new-btn .form-plus { color: var(--smoke); font-size: 15px; line-height: 1; margin-left: 2px; }
-  .forms-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .form-new-tile::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--edge, var(--hairline)); }
+  .form-new-tile:hover { border-color: var(--brass); background: var(--panel-raised); }
+  .form-new-tile:active { transform: scale(0.985); }
+  .form-new-name {
+    display: flex; align-items: center; gap: 8px; font-family: 'Poppins', sans-serif;
+    font-size: 12.5px; font-weight: 600; color: var(--paper);
+  }
+  .form-new-name .form-plus { margin-left: auto; color: var(--smoke); font-size: 16px; line-height: 1; }
+  .form-new-desc { font-size: 11.5px; line-height: 1.4; color: var(--smoke); }
+  .forms-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .forms-group-head {
+    font-family: 'League Spartan', sans-serif; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--smoke); margin: 14px 2px 2px; display: flex; align-items: center; gap: 8px;
+  }
+  .forms-group-head:first-child { margin-top: 0; }
+  .forms-group-head::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+  .form-block { border: 1px solid var(--hairline); border-radius: 4px; background: var(--panel-raised); margin-top: 14px; }
+  .form-block-head {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--hairline);
+    font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--smoke);
+  }
+  .form-block-head .btn { margin-left: auto; }
+  .form-block-body { padding: 14px 14px 4px; }
+  .form-detail-accent { height: 3px; background: var(--hairline); }
+  .form-detail-inner { padding: 18px 22px 22px; }
   .forms-search { position: relative; flex: 0 1 260px; }
   .forms-search input {
     width: 100%; box-sizing: border-box; font-family: 'League Spartan', sans-serif; font-size: 13px; color: var(--paper);
@@ -1601,9 +1634,9 @@
   }
   .form-flag.warn { color: var(--ember); border-color: var(--ember-dim); }
   .form-detail {
-    background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 20px 22px; min-height: 320px;
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 0; overflow: hidden; min-height: 320px;
   }
-  .form-detail-empty { color: var(--smoke); font-size: 13px; font-style: italic; }
+  .form-detail-empty { color: var(--smoke); font-size: 13px; font-style: italic; padding: 24px 22px; }
   .form-detail-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
   .form-detail-badge {
     display: inline-flex; align-items: center; gap: 6px; font-family: 'Poppins', sans-serif;
@@ -1684,7 +1717,8 @@
   }
   @media (max-width: 760px) {
     .form-new-btn { flex: 1 1 46%; min-height: 46px; }
-    .form-detail { padding: 16px 14px; }
+    .form-detail-inner { padding: 14px 13px 18px; }
+    .form-block-body { padding: 12px 12px 2px; }
     .form-grid .field.s2, .form-grid .field.s3, .form-grid .field.s4 { grid-column: span 6; }
     .form-item-row { grid-template-columns: 56px 1fr 26px; }
     .form-item-row .form-item-unit { grid-column: span 1; }
@@ -2247,10 +2281,12 @@
       <div class="view-header">
         <div>
           <div class="view-title">Formulieren</div>
-          <div class="view-desc">Vaste formulieren voor wat er op een dag gebeurt: een vergadering, een showroomgesprek, tekenwerk, inmeten of een bestellijst. Alles wordt tijdens het invullen bewaard.</div>
+          <div class="view-desc">Kies een formulier voor wat er vandaag gebeurt. Alles wordt tijdens het invullen bewaard.</div>
         </div>
       </div>
+      <div class="forms-label">Nieuw formulier starten</div>
       <div class="forms-new" id="forms-new"></div>
+      <div class="forms-label">Ingevulde formulieren</div>
       <div class="forms-bar">
         <div class="forms-search"><input type="text" id="form-search-input" placeholder="Zoek in alle formulieren…" autocomplete="off" /></div>
         <div id="form-filters" style="display:flex; gap:6px; flex-wrap:wrap"></div>
@@ -5458,14 +5494,31 @@ if (AI_ENABLED) {
 const F_DIAM = ['80', '100', '130', '150', '180', '200', '230', '250'];
 const F_KANAAL = ['Enkelwandig', 'Dubbelwandig', 'Concentrisch', 'Flex in bestaand kanaal', 'Nog onbekend'];
 const F_HAARD = ['Vrijstaande houtkachel', 'Inbouwhaard hout', 'Gashaard', 'Elektrische haard', 'Pelletkachel', 'Open haard', 'Nog onbekend'];
+const FORM_ICONS = {
+  vergadering: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  showroom: '<path d="M3 9.5 5 4h14l2 5.5"/><path d="M4 9.5V20h16V9.5"/><path d="M9 20v-6h6v6"/>',
+  tekenwerk: '<path d="M12 2.6 20.5 7v10L12 21.4 3.5 17V7z"/><path d="M3.5 7 12 11.5 20.5 7"/><path d="M12 11.5v9.9"/>',
+  bestellijst: '<rect x="8" y="2.5" width="8" height="4" rx="1"/><path d="M16 4.5h2.5a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1H8"/><path d="M8.5 11h7M8.5 15h4.5"/>',
+  inmeten: '<path d="M3.5 13.2 13.2 3.5a1.5 1.5 0 0 1 2.1 0l5.2 5.2a1.5 1.5 0 0 1 0 2.1l-9.7 9.7a1.5 1.5 0 0 1-2.1 0l-5.2-5.2a1.5 1.5 0 0 1 0-2.1z"/><path d="M8 8.7l1.8 1.8M11 5.7l1.8 1.8M5 11.7l1.8 1.8"/>'
+};
+function formIconEl(typeKey, color) {
+  const el = document.createElement('span');
+  el.className = 'form-ico';
+  el.innerHTML = '<svg viewBox="0 0 24 24">' + (FORM_ICONS[typeKey] || '') + '</svg>';
+  if (color) el.style.color = color;
+  return el;
+}
 const FORM_TYPES = [
   {
     key: 'vergadering', name: 'Vergadering', color: '#7C8B6B', titleFrom: ['onderwerp'], actions: true,
+    desc: 'Wat is besproken, wat is besloten en wie doet wat.',
     fields: [
+      { t: 'head', label: 'Wanneer en wie' },
       { k: 'datum', label: 'Datum', t: 'date', s: 2 },
       { k: 'tijd', label: 'Tijd', t: 'time', s: 2 },
       { k: 'locatie', label: 'Locatie', t: 'text', s: 2, ph: 'Kantoor, showroom, online…' },
       { k: 'deelnemers', label: 'Wie waren erbij', t: 'text', s: 6, ph: 'Namen, komma gescheiden' },
+      { t: 'head', label: 'Inhoud' },
       { k: 'onderwerp', label: 'Onderwerp / agenda', t: 'text', s: 6, ph: 'Waar ging het over' },
       { k: 'besproken', label: 'Wat is besproken', t: 'textarea', s: 6, rows: 5 },
       { k: 'besluiten', label: 'Besluiten', t: 'textarea', s: 6, rows: 3 },
@@ -5474,7 +5527,9 @@ const FORM_TYPES = [
   },
   {
     key: 'showroom', name: 'Showroomgesprek', color: '#C08B4B', titleFrom: ['naam'], actions: true,
+    desc: 'Klantgegevens, wens en de vervolgstap na het gesprek.',
     fields: [
+      { t: 'head', label: 'Gesprek en klant' },
       { k: 'datum', label: 'Datum', t: 'date', s: 2 },
       { k: 'tijd', label: 'Tijd', t: 'time', s: 2 },
       { k: 'medewerker', label: 'Gesprek door', t: 'text', s: 2 },
@@ -5482,12 +5537,14 @@ const FORM_TYPES = [
       { k: 'telefoon', label: 'Telefoon', t: 'tel', s: 3 },
       { k: 'email', label: 'E-mail', t: 'text', s: 3 },
       { k: 'adres', label: 'Adres', t: 'text', s: 3 },
+      { t: 'head', label: 'Wens en advies' },
       { k: 'wens', label: 'Wat wil de klant', t: 'textarea', s: 6, rows: 4 },
       { k: 'haardtype', label: 'Type haard', t: 'select', s: 3, opts: F_HAARD },
       { k: 'model', label: 'Merk / model', t: 'text', s: 3 },
       { k: 'kanaalsoort', label: 'Kanaalsoort', t: 'select', s: 3, opts: F_KANAAL },
       { k: 'diameter', label: 'Diameter (mm)', t: 'select', s: 3, opts: F_DIAM },
       { k: 'situatie', label: 'Bestaande situatie / bijzonderheden', t: 'textarea', s: 6, rows: 3 },
+      { t: 'head', label: 'Vervolg' },
       { k: 'budget', label: 'Budget indicatie', t: 'text', s: 3, ph: 'Bijv. € 6.000 – € 8.000' },
       { k: 'termijn', label: 'Wanneer beslist de klant', t: 'select', s: 3, opts: ['Deze week', 'Deze maand', 'Dit kwartaal', 'Oriënterend', 'Onbekend'] },
       { k: 'documentatie', label: 'Documentatie meegegeven', t: 'check', s: 3 },
@@ -5497,7 +5554,9 @@ const FORM_TYPES = [
   },
   {
     key: 'tekenwerk', name: 'SketchUp-tekenwerk', color: '#6B7F8B', titleFrom: ['project', 'skp_bestand'], actions: true, models: true,
+    desc: 'Nieuw model of wijziging, met de haardmodellen erbij.',
     fields: [
+      { t: 'head', label: 'Opdracht en bestand' },
       { k: 'datum', label: 'Datum', t: 'date', s: 2 },
       { k: 'aanvrager', label: 'Aangevraagd door', t: 'text', s: 2 },
       { k: 'soort', label: 'Soort opdracht', t: 'select', s: 2, opts: ['Nieuwe tekening', 'Haard intekenen in bestaand model', 'Wijziging bestaande tekening', 'Detail uitwerken', 'Aanzichten / renders maken', 'Controle / nakijken'] },
@@ -5535,12 +5594,15 @@ const FORM_TYPES = [
   },
   {
     key: 'bestellijst', name: 'Bestellijst', color: '#B4553C', titleFrom: ['voor', 'leverancier'], actions: false, items: true,
+    desc: 'Materiaal voor de bus of een werk, met eigen bibliotheek.',
     fields: [
+      { t: 'head', label: 'Bestelling' },
       { k: 'datum', label: 'Datum', t: 'date', s: 2 },
       { k: 'voor', label: 'Voor wie / welke bus', t: 'text', s: 2 },
       { k: 'leverancier', label: 'Leverancier', t: 'text', s: 2 },
       { k: 'nodig_op', label: 'Nodig op', t: 'date', s: 2 },
       { k: 'project', label: 'Project / werk', t: 'text', s: 4 },
+      { t: 'head', label: 'Status' },
       { k: 'spoed', label: 'Spoed', t: 'check', s: 3 },
       { k: 'besteld', label: 'Besteld', t: 'check', s: 3 },
       { k: 'opmerking', label: 'Opmerking voor de bestelling', t: 'textarea', s: 6, rows: 3 }
@@ -5548,13 +5610,16 @@ const FORM_TYPES = [
   },
   {
     key: 'inmeten', name: 'Inmeten', color: '#8B6BA0', titleFrom: ['adres', 'klantnaam'], actions: true,
+    desc: 'Maten, kanaal en bijzonderheden op locatie.',
     fields: [
+      { t: 'head', label: 'Bezoek' },
       { k: 'datum', label: 'Datum', t: 'date', s: 2 },
       { k: 'tijd', label: 'Tijd', t: 'time', s: 2 },
       { k: 'monteur', label: 'Ingemeten door', t: 'text', s: 2 },
       { k: 'klantnaam', label: 'Naam klant', t: 'text', s: 3 },
       { k: 'adres', label: 'Adres', t: 'text', s: 3 },
       { k: 'contact', label: 'Contact ter plaatse', t: 'text', s: 3 },
+      { t: 'head', label: 'Haard en kanaal' },
       { k: 'haardtype', label: 'Type haard', t: 'select', s: 3, opts: F_HAARD },
       { k: 'kanaalsoort', label: 'Kanaalsoort', t: 'select', s: 3, opts: F_KANAAL },
       { k: 'diameter', label: 'Diameter (mm)', t: 'select', s: 3, opts: F_DIAM },
@@ -5562,6 +5627,7 @@ const FORM_TYPES = [
       { k: 'bochten', label: 'Aantal bochten', t: 'text', s: 2 },
       { k: 'verdiepingen', label: 'Verdiepingen door', t: 'text', s: 2 },
       { k: 'dakdoorvoer', label: 'Dakdoorvoer', t: 'select', s: 3, opts: ['Pannendak', 'Plat dak', 'Rietdak', 'Bestaande schoorsteen', 'Door de wand'] },
+      { t: 'head', label: 'Situatie ter plaatse' },
       { k: 'vloeropbouw', label: 'Vloer- en dakopbouw', t: 'textarea', s: 6, rows: 3 },
       { k: 'maten', label: 'Maten', t: 'textarea', s: 6, rows: 5 },
       { k: 'obstakels', label: 'Obstakels / bijzonderheden', t: 'textarea', s: 6, rows: 3 },
@@ -5658,6 +5724,42 @@ function formHeading(f) {
   }
   return def.name;
 }
+function formEffTime(f) {
+  const raw = f.data && f.data.datum;
+  if (raw) {
+    const d = new Date(raw + 'T12:00');
+    if (!isNaN(d)) return d.getTime();
+  }
+  return f.updatedAt || f.createdAt || 0;
+}
+function formGroupLabel(f) {
+  const now = new Date();
+  const t = formEffTime(f);
+  const d = new Date(t);
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return 'Vandaag';
+  const y = new Date(now.getTime() - 86400000);
+  if (d.toDateString() === y.toDateString()) return 'Gisteren';
+  const days = (now - d) / 86400000;
+  if (t > now.getTime()) return 'Nog te doen';
+  if (days < 7) return 'Deze week';
+  if (days < 31) return 'Deze maand';
+  return 'Eerder';
+}
+function formBlock(host, label) {
+  const block = document.createElement('section');
+  block.className = 'form-block';
+  const head = document.createElement('div');
+  head.className = 'form-block-head';
+  const t = document.createElement('span');
+  t.textContent = label;
+  head.appendChild(t);
+  const body = document.createElement('div');
+  body.className = 'form-block-body';
+  block.append(head, body);
+  host.appendChild(block);
+  return { block, head, body };
+}
 function formWhen(f) {
   const raw = f.data.datum;
   if (raw) {
@@ -5692,10 +5794,13 @@ function renderFormNewButtons() {
   wrap.dataset.built = '1';
   FORM_TYPES.forEach(t => {
     const btn = document.createElement('button');
-    btn.className = 'form-new-btn';
-    btn.innerHTML = '<span class="form-dot"></span><span class="form-new-label"></span><span class="form-plus">+</span>';
-    btn.querySelector('.form-dot').style.background = t.color;
+    btn.className = 'form-new-tile';
+    btn.type = 'button';
+    btn.style.setProperty('--edge', t.color);
+    btn.innerHTML = '<span class="form-new-name"><span class="form-new-label"></span><span class="form-plus">+</span></span><span class="form-new-desc"></span>';
+    btn.insertBefore(formIconEl(t.key, t.color), btn.firstChild);
     btn.querySelector('.form-new-label').textContent = t.name;
+    btn.querySelector('.form-new-desc').textContent = t.desc || '';
     btn.addEventListener('click', () => newForm(t.key));
     wrap.appendChild(btn);
   });
@@ -5735,7 +5840,7 @@ function visibleForms() {
         .join(' ').toLowerCase();
       return hay.includes(q);
     })
-    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    .sort((a, b) => formEffTime(b) - formEffTime(a));
 }
 function renderFormsList() {
   const host = document.getElementById('forms-list');
@@ -5749,13 +5854,25 @@ function renderFormsList() {
     host.appendChild(e);
     return;
   }
+  let group = null;
   list.forEach(f => {
+    const g = formGroupLabel(f);
+    if (g !== group) {
+      group = g;
+      const gh = document.createElement('div');
+      gh.className = 'forms-group-head';
+      const gs = document.createElement('span');
+      gs.textContent = g;
+      gh.appendChild(gs);
+      host.appendChild(gh);
+    }
     const def = formTypeDef(f.type);
     const card = document.createElement('div');
     card.className = 'form-card' + (f.id === openFormId ? ' active' : '');
     card.style.borderLeftColor = def.color;
     const top = document.createElement('div');
     top.className = 'form-card-top';
+    top.appendChild(formIconEl(f.type, def.color));
     const type = document.createElement('span');
     type.className = 'form-card-type';
     type.style.color = def.color;
@@ -5865,11 +5982,9 @@ function formFieldEl(f, spec) {
   return wrap;
 }
 function renderFormItems(host, f) {
-  const head = document.createElement('div');
-  head.className = 'form-section-head';
-  const h = document.createElement('span');
-  h.textContent = 'Producten';
-  head.appendChild(h);
+  const blk = formBlock(host, 'Producten');
+  host = blk.body;
+  const head = blk.head;
   const add = document.createElement('button');
   add.className = 'btn btn-sm';
   add.textContent = 'Regel toevoegen';
@@ -5880,7 +5995,6 @@ function renderFormItems(host, f) {
     renderFormDetail();
   });
   head.appendChild(add);
-  host.appendChild(head);
 
   const dl = document.createElement('datalist');
   dl.id = 'form-lib-list';
@@ -5964,11 +6078,9 @@ function renderFormItems(host, f) {
   }
 }
 function renderFormModels(host, f) {
-  const head = document.createElement('div');
-  head.className = 'form-section-head';
-  const h = document.createElement('span');
-  h.textContent = 'Haarden in dit model';
-  head.appendChild(h);
+  const blk = formBlock(host, 'Haarden in dit model');
+  host = blk.body;
+  const head = blk.head;
   const add = document.createElement('button');
   add.className = 'btn btn-sm';
   add.textContent = 'Haard toevoegen';
@@ -5979,7 +6091,6 @@ function renderFormModels(host, f) {
     renderFormDetail();
   });
   head.appendChild(add);
-  host.appendChild(head);
 
   const hint = document.createElement('div');
   hint.className = 'form-model-hint';
@@ -6140,11 +6251,9 @@ function renderFormModels(host, f) {
   }
 }
 function renderFormActions(host, f) {
-  const head = document.createElement('div');
-  head.className = 'form-section-head';
-  const h = document.createElement('span');
-  h.textContent = 'Actiepunten';
-  head.appendChild(h);
+  const blk = formBlock(host, 'Actiepunten');
+  host = blk.body;
+  const head = blk.head;
   const add = document.createElement('button');
   add.className = 'btn btn-sm';
   add.textContent = 'Actiepunt toevoegen';
@@ -6155,7 +6264,6 @@ function renderFormActions(host, f) {
     renderFormDetail();
   });
   head.appendChild(add);
-  host.appendChild(head);
   f.actions.forEach((a, i) => {
     const row = document.createElement('div');
     row.className = 'form-act-row';
@@ -6228,12 +6336,8 @@ function renderFormActions(host, f) {
   });
 }
 function renderFormPhotos(host, f) {
-  const head = document.createElement('div');
-  head.className = 'form-section-head';
-  const h = document.createElement('span');
-  h.textContent = 'Foto\u2019s';
-  head.appendChild(h);
-  host.appendChild(head);
+  const blk = formBlock(host, 'Foto\u2019s');
+  host = blk.body;
   const row = document.createElement('div');
   row.className = 'photo-upload-row detail-photos';
   (f.photos || []).forEach((p, i) => {
@@ -6306,26 +6410,47 @@ function formAsText(f) {
   return lines.join('\n');
 }
 function renderFormDetail() {
-  const host = document.getElementById('form-detail');
-  if (!host) return;
-  host.innerHTML = '';
+  const outer = document.getElementById('form-detail');
+  if (!outer) return;
+  outer.innerHTML = '';
   const f = forms.find(x => x.id === openFormId);
   if (!f) {
-    host.innerHTML = '<div class="form-detail-empty">Kies links een formulier, of maak hierboven een nieuw formulier aan.</div>';
+    outer.innerHTML = '<div class="form-detail-empty">Kies links een formulier, of start er hierboven een nieuw.</div>';
     return;
   }
   const def = formTypeDef(f.type);
+  const accent = document.createElement('div');
+  accent.className = 'form-detail-accent';
+  accent.style.background = def.color;
+  outer.appendChild(accent);
+  const host = document.createElement('div');
+  host.className = 'form-detail-inner';
+  outer.appendChild(host);
+
   const head = document.createElement('div');
   head.className = 'form-detail-head';
   const badge = document.createElement('span');
   badge.className = 'form-detail-badge';
   badge.style.color = def.color;
   badge.style.borderColor = def.color;
-  badge.textContent = def.name;
+  badge.appendChild(formIconEl(f.type, def.color));
+  const badgeTxt = document.createElement('span');
+  badgeTxt.textContent = def.name;
+  badge.appendChild(badgeTxt);
   head.appendChild(badge);
+  const when = document.createElement('span');
+  when.style.cssText = 'font-size:11.5px;color:var(--smoke)';
+  when.textContent = formWhen(f);
+  head.appendChild(when);
+  if (f.done) {
+    const dn = document.createElement('span');
+    dn.className = 'form-flag';
+    dn.textContent = 'Afgerond';
+    head.appendChild(dn);
+  }
   const back = document.createElement('span');
   back.className = 'note-client-link';
-  back.textContent = '← Terug naar de lijst';
+  back.textContent = '\u2190 Terug naar de lijst';
   back.style.marginLeft = 'auto';
   back.addEventListener('click', () => { openFormId = null; renderForms(); });
   head.appendChild(back);
@@ -6340,8 +6465,6 @@ function renderFormDetail() {
   title.addEventListener('change', renderFormsList);
   host.appendChild(title);
 
-  const grid = document.createElement('div');
-  grid.className = 'form-grid';
   const clientField = document.createElement('div');
   clientField.className = 'field s3';
   const cl = document.createElement('label');
@@ -6349,7 +6472,7 @@ function renderFormDetail() {
   clientField.appendChild(cl);
   const clientPick = buildClientPicker({
     clientId: f.clientId,
-    placeholder: 'Klant zoeken — naam of ref.',
+    placeholder: 'Klant zoeken \u2014 naam of ref.',
     clearTitle: 'Geen klant koppelen',
     onPick: (c) => {
       f.clientId = c ? c.id : null;
@@ -6360,9 +6483,24 @@ function renderFormDetail() {
   });
   clientPick.el.style.width = '100%';
   clientField.appendChild(clientPick.el);
-  grid.appendChild(clientField);
-  def.fields.forEach(spec => grid.appendChild(formFieldEl(f, spec)));
-  host.appendChild(grid);
+
+  const blocks = [];
+  let cur = { label: 'Gegevens', fields: [] };
+  def.fields.forEach(spec => {
+    if (spec.t === 'head') {
+      if (cur.fields.length) blocks.push(cur);
+      cur = { label: spec.label, fields: [] };
+    } else cur.fields.push(spec);
+  });
+  if (cur.fields.length) blocks.push(cur);
+  blocks.forEach((bl, bi) => {
+    const body = formBlock(host, bl.label).body;
+    const grid = document.createElement('div');
+    grid.className = 'form-grid';
+    if (bi === 0) grid.appendChild(clientField);
+    bl.fields.forEach(spec => grid.appendChild(formFieldEl(f, spec)));
+    body.appendChild(grid);
+  });
 
   if (def.models) renderFormModels(host, f);
   if (def.items) renderFormItems(host, f);
@@ -6372,7 +6510,7 @@ function renderFormDetail() {
   const tools = document.createElement('div');
   tools.className = 'form-tools';
   const doneBtn = document.createElement('button');
-  doneBtn.className = 'btn';
+  doneBtn.className = 'btn' + (f.done ? '' : ' btn-primary');
   doneBtn.textContent = f.done ? 'Weer openzetten' : 'Formulier afronden';
   doneBtn.addEventListener('click', () => {
     f.done = !f.done;
