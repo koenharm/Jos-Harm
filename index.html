@@ -575,6 +575,36 @@
     padding: 11px 12px; color: var(--paper); font-family: inherit; font-size: 13px;
   }
   .task-add select.task-add-client:focus { outline: none; border-color: var(--ember); }
+  .cpick { position: relative; flex: 0 0 240px; display: flex; align-self: stretch; }
+  .cpick .cpick-input {
+    width: 100%; box-sizing: border-box; background: var(--soot); border: 1px solid var(--hairline);
+    border-radius: 6px; padding: 11px 26px 11px 12px; color: var(--paper); font-family: inherit; font-size: 13px;
+    flex: 1 1 auto;
+  }
+  .cpick .cpick-input:focus { outline: none; border-color: var(--ember); }
+  .cpick.has-client .cpick-input { border-color: var(--brass); color: var(--brass); }
+  .cpick-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--smoke);
+    cursor: pointer; font-size: 15px; line-height: 1; display: none;
+  }
+  .cpick.has-client .cpick-clear { display: block; }
+  .cpick-clear:hover { color: var(--danger); }
+  .cpick-menu {
+    display: none; position: absolute; z-index: 90; top: calc(100% + 4px); left: 0; min-width: 100%;
+    max-height: 280px; overflow-y: auto; background: var(--panel-raised); border: 1px solid var(--hairline);
+    border-radius: 8px; box-shadow: 0 14px 34px rgba(0,0,0,0.5);
+  }
+  .cpick.open .cpick-menu { display: block; }
+  .cpick-opt { display: flex; align-items: baseline; gap: 8px; padding: 9px 11px; cursor: pointer; font-size: 13px; color: var(--paper); }
+  .cpick-opt + .cpick-opt { border-top: 1px solid var(--hairline); }
+  .cpick-opt:hover, .cpick-opt.sel { background: var(--soot); }
+  .cpick-opt-sub { font-size: 11px; color: var(--smoke); }
+  .cpick-opt-ref { margin-left: auto; font-family: 'League Spartan', sans-serif; font-size: 10.5px; letter-spacing: 0.05em; color: var(--brass); white-space: nowrap; }
+  .cpick-empty { padding: 9px 11px; font-size: 12px; color: var(--smoke); font-style: italic; }
+  .cpick-sm { flex: 0 0 auto; min-width: 210px; align-self: auto; }
+  .cpick-sm .cpick-input { font-size: 11.5px; padding: 5px 22px 5px 8px; border-color: var(--ember); border-radius: 5px; }
+  .task-link-hint { font-family: 'League Spartan', sans-serif; font-size: 11px; letter-spacing: 0.03em; color: var(--smoke); margin: -10px 0 16px; min-height: 14px; }
+  .task-link-hint.ok { color: var(--brass); }
   .task-ref-chip {
     display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
     background: var(--panel-raised); border: 1px solid var(--hairline); border-radius: 5px;
@@ -1020,7 +1050,16 @@
   .calc-row-qty:focus { outline: none; border-color: var(--ember); }
   .calc-row-total { font-family: 'League Spartan', sans-serif; font-size: 12.5px; font-weight: 600; text-align: right; }
   .calc-products { display: flex; flex-direction: column; gap: 8px; }
-  .calc-product-row { display: grid; grid-template-columns: 44px 1fr 120px 32px; gap: 8px; align-items: center; background: transparent; }
+  .calc-product-row { display: grid; grid-template-columns: 44px 1fr 104px 66px 104px 32px; gap: 8px; align-items: center; background: transparent; }
+  .calc-product-head {
+    display: grid; grid-template-columns: 44px 1fr 104px 66px 104px 32px; gap: 8px;
+    font-family: 'League Spartan', sans-serif; font-size: 9.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--smoke); margin-bottom: 4px;
+  }
+  .calc-product-row .cp-incl { color: var(--brass); font-weight: 600; }
+  .calc-product-row .cp-vat { text-align: center; }
+  .calc-products-vat { font-family: 'League Spartan', sans-serif; font-size: 11.5px; letter-spacing: 0.03em; color: var(--smoke); margin-top: 12px; }
+  .calc-products-vat b { color: var(--brass); font-weight: 600; }
   .calc-drag-handle {
     display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: -4px; color: var(--smoke);
     cursor: grab; touch-action: none; border-radius: 6px; border: 1px solid transparent;
@@ -1196,7 +1235,18 @@
   @media (max-width: 980px) {
     .calc-top-row { grid-template-columns: 1fr; }
     .calc-row { grid-template-columns: 1fr 60px 144px 76px; font-size: 12px; }
-    .calc-product-row { grid-template-columns: 46px 1fr 88px 28px; gap: 6px; }
+    .calc-product-head { display: none; }
+    .calc-product-row {
+      grid-template-columns: 46px 1fr 1fr 28px; gap: 6px;
+      grid-template-areas: "handle label label del" "handle excl vat vat" "handle incl incl incl";
+      padding-bottom: 10px; border-bottom: 1px solid var(--hairline);
+    }
+    .calc-product-row .calc-drag-handle { grid-area: handle; align-self: start; }
+    .calc-product-row .cp-label { grid-area: label; }
+    .calc-product-row .cp-excl { grid-area: excl; }
+    .calc-product-row .cp-vat { grid-area: vat; }
+    .calc-product-row .cp-incl { grid-area: incl; }
+    .calc-product-row .calc-card-del { grid-area: del; }
     .calc-drag-handle { width: 46px; height: 48px; border-color: var(--hairline); background: var(--soot); }
   }
 
@@ -1826,6 +1876,10 @@
     .task-add { flex-direction: column; }
     .task-add input[type="text"] { width: 100%; }
     .task-add input.task-add-ref { flex: 1 1 auto; width: 100%; }
+    .cpick { flex: 0 0 auto; width: 100%; }
+    .cpick .cpick-input { font-size: 16px; min-height: 44px; }
+    .cpick-sm { width: 100%; min-width: 0; }
+    .cpick-sm .cpick-input { font-size: 15px; min-height: 38px; }
     .task-add select.task-add-client {
       flex: 0 0 auto; width: 100%; font-size: 13.5px; padding: 9px 11px; min-height: 40px;
       -webkit-appearance: none; appearance: none;
@@ -2234,9 +2288,7 @@
       <div class="task-add">
         <input type="text" id="new-task-input" placeholder="Nieuwe taak, bijv. 'Offerte Kalfire nasturen naar dhr. Jansen'…" />
         <input type="text" id="new-task-ref" class="task-add-ref" placeholder="Referentienr. (optioneel)" inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
-        <select id="new-task-client" class="task-add-client" title="Koppel aan klant (optioneel)">
-          <option value="">Losse taak</option>
-        </select>
+        <div class="cpick" id="new-task-client-pick"></div>
         <div class="task-add-datetime">
           <span class="datetime-field">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -2249,6 +2301,7 @@
         </div>
         <button class="btn btn-primary" id="add-task-btn">Toevoegen</button>
       </div>
+      <div class="task-link-hint" id="new-task-link-hint"></div>
       <div class="task-cols">
         <div>
           <div class="task-col-head">Te doen</div>
@@ -2400,8 +2453,12 @@
           <details class="calc-section" open>
             <summary>Haard / model <span class="calc-section-sub" id="calc-sub-products">€ 0</span></summary>
             <div class="calc-rows">
+              <div class="calc-product-head">
+                <span></span><span>Omschrijving</span><span>Prijs excl. btw</span><span>Btw</span><span>Incl. btw</span><span></span>
+              </div>
               <div class="calc-products" id="calc-products"></div>
               <button class="btn btn-ghost btn-sm" id="calc-add-product-btn" style="align-self:flex-start; margin-top:8px">+ Regel toevoegen</button>
+              <div class="calc-products-vat" id="calc-products-vat"></div>
             </div>
           </details>
           <div id="calc-catalog-sections"></div>
@@ -6290,25 +6347,19 @@ function renderFormDetail() {
   const cl = document.createElement('label');
   cl.textContent = 'Klant koppelen (mag leeg)';
   clientField.appendChild(cl);
-  const clientSel = document.createElement('select');
-  const none = document.createElement('option');
-  none.value = '';
-  none.textContent = 'Geen klant';
-  clientSel.appendChild(none);
-  [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach(c => {
-    const o = document.createElement('option');
-    o.value = c.id;
-    o.textContent = (c.name || 'Naamloos') + (c.ref ? ' · ' + c.ref : '');
-    if (f.clientId === c.id) o.selected = true;
-    clientSel.appendChild(o);
+  const clientPick = buildClientPicker({
+    clientId: f.clientId,
+    placeholder: 'Klant zoeken — naam of ref.',
+    clearTitle: 'Geen klant koppelen',
+    onPick: (c) => {
+      f.clientId = c ? c.id : null;
+      f.updatedAt = Date.now();
+      saveForms();
+      renderFormsList();
+    }
   });
-  clientSel.addEventListener('change', () => {
-    f.clientId = clientSel.value || null;
-    f.updatedAt = Date.now();
-    saveForms();
-    renderFormsList();
-  });
-  clientField.appendChild(clientSel);
+  clientPick.el.style.width = '100%';
+  clientField.appendChild(clientPick.el);
   grid.appendChild(clientField);
   def.fields.forEach(spec => grid.appendChild(formFieldEl(f, spec)));
   host.appendChild(grid);
@@ -7725,6 +7776,108 @@ function scrollToCalcSection(det) {
     window.scrollTo({ top: det.getBoundingClientRect().top + window.scrollY - bar, behavior: 'smooth' });
   }
 }
+function clientLabel(c) { return (c.name || 'Naamloos') + (c.ref ? ' \u00b7 ' + c.ref : ''); }
+function clientByRef(ref) {
+  const r = (ref || '').trim().toLowerCase();
+  if (!r) return null;
+  const hits = clients.filter(c => (c.ref || '').trim().toLowerCase() === r);
+  return hits.length === 1 ? hits[0] : null;
+}
+function clientMatches(q, limit) {
+  const t = (q || '').trim().toLowerCase();
+  const all = [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  if (!t) return all.slice(0, limit);
+  const out = [];
+  all.forEach(c => {
+    const name = (c.name || '').toLowerCase();
+    const ref = (c.ref || '').toLowerCase();
+    const hay = [name, ref, c.city, c.street, c.postcode, c.phone, c.email].filter(Boolean).join(' ').toLowerCase();
+    if (!hay.includes(t)) return;
+    let score = 3;
+    if (ref === t) score = 0;
+    else if (ref.indexOf(t) === 0) score = 1;
+    else if (name.indexOf(t) === 0) score = 1.5;
+    else if (name.includes(t)) score = 2;
+    out.push({ c, score });
+  });
+  out.sort((a, b) => a.score - b.score || (a.c.name || '').localeCompare(b.c.name || ''));
+  return out.slice(0, limit).map(x => x.c);
+}
+function buildClientPicker(opts) {
+  const o = opts || {};
+  const wrap = document.createElement('div');
+  wrap.className = 'cpick' + (o.small ? ' cpick-sm' : '');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'cpick-input';
+  input.autocomplete = 'off';
+  input.placeholder = o.placeholder || 'Klant zoeken \u2014 naam of ref.';
+  const clear = document.createElement('span');
+  clear.className = 'cpick-clear';
+  clear.textContent = '\u00d7';
+  clear.title = o.clearTitle || 'Losse taak (geen klant)';
+  const menu = document.createElement('div');
+  menu.className = 'cpick-menu';
+  wrap.append(input, clear, menu);
+  let picked = clientById(o.clientId) || null;
+  let rows = [];
+  let idx = -1;
+  const paint = () => {
+    input.value = picked ? clientLabel(picked) : '';
+    wrap.classList.toggle('has-client', !!picked);
+  };
+  const close = () => { wrap.classList.remove('open'); menu.innerHTML = ''; rows = []; idx = -1; };
+  const choose = (c) => { picked = c || null; paint(); close(); if (o.onPick) o.onPick(picked); };
+  const open = (q) => {
+    rows = clientMatches(q, 9);
+    menu.innerHTML = '';
+    if (!clients.length) menu.innerHTML = '<div class="cpick-empty">Nog geen klanten in je bestand.</div>';
+    else if (!rows.length) menu.innerHTML = '<div class="cpick-empty">Geen klant gevonden \u2014 blijft los.</div>';
+    rows.forEach(c => {
+      const el = document.createElement('div');
+      el.className = 'cpick-opt';
+      const nm = document.createElement('span');
+      nm.textContent = c.name || 'Naamloos';
+      const sub = document.createElement('span');
+      sub.className = 'cpick-opt-sub';
+      sub.textContent = [c.city, (typeof phaseInfo === 'function' && c.phase ? phaseInfo(c.phase).name : '')].filter(Boolean).join(' \u00b7 ');
+      const rf = document.createElement('span');
+      rf.className = 'cpick-opt-ref';
+      rf.textContent = c.ref || '';
+      el.append(nm, sub, rf);
+      el.addEventListener('mousedown', ev => { ev.preventDefault(); choose(c); });
+      menu.appendChild(el);
+    });
+    wrap.classList.add('open');
+  };
+  input.addEventListener('focus', () => open(picked ? '' : input.value));
+  input.addEventListener('input', () => {
+    if (picked) { picked = null; wrap.classList.remove('has-client'); if (o.onPick) o.onPick(null); }
+    open(input.value);
+  });
+  input.addEventListener('keydown', e => {
+    const els = [...menu.querySelectorAll('.cpick-opt')];
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (!wrap.classList.contains('open')) { open(input.value); return; }
+      if (!els.length) return;
+      e.preventDefault();
+      idx = e.key === 'ArrowDown' ? Math.min(idx + 1, els.length - 1) : Math.max(idx - 1, 0);
+      els.forEach((el, i) => el.classList.toggle('sel', i === idx));
+    } else if (e.key === 'Enter') {
+      if (wrap.classList.contains('open') && rows.length) { e.preventDefault(); choose(rows[Math.max(idx, 0)]); }
+      else if (o.onEnter) { e.preventDefault(); o.onEnter(); }
+    } else if (e.key === 'Escape') { close(); input.blur(); }
+  });
+  input.addEventListener('blur', () => setTimeout(close, 140));
+  clear.addEventListener('mousedown', e => { e.preventDefault(); choose(null); });
+  paint();
+  return {
+    el: wrap, input,
+    get client() { return picked; },
+    set(c) { picked = c || null; paint(); },
+    focus() { input.focus(); }
+  };
+}
 function renderTaskClient(slot, t) {
   slot.innerHTML = '';
   const c = clientById(t.clientId);
@@ -7734,31 +7887,21 @@ function renderTaskClient(slot, t) {
   chip.querySelector('span').textContent = c ? (c.name || 'Naamloos') : '+ klant koppelen';
   chip.title = c ? 'Klantinformatie openen' : 'Koppel deze taak aan een klant';
   const openSelect = () => {
-    const sel = document.createElement('select');
-    sel.className = 'task-client-select';
-    sel.innerHTML = '<option value="">Losse taak</option>';
-    [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach(cl => {
-      const opt = document.createElement('option');
-      opt.value = cl.id;
-      opt.textContent = (cl.name || 'Naamloos') + (cl.ref ? ' \u00b7 ' + cl.ref : '');
-      sel.appendChild(opt);
+    const pick = buildClientPicker({
+      clientId: t.clientId, small: true,
+      placeholder: 'Zoek klant op naam of ref.',
+      onPick: (cl) => {
+        t.clientId = cl ? cl.id : null;
+        if (cl && !t.ref) t.ref = cl.ref || null;
+        saveTasks();
+        renderTasks();
+        renderBoard();
+        renderClients();
+      }
     });
-    sel.value = t.clientId || '';
     slot.innerHTML = '';
-    slot.appendChild(sel);
-    sel.focus();
-    let settled = false;
-    const commit = () => {
-      if (settled) return;
-      settled = true;
-      t.clientId = sel.value || null;
-      saveTasks();
-      renderTasks();
-      renderBoard();
-      renderClients();
-    };
-    sel.addEventListener('change', commit);
-    sel.addEventListener('blur', commit);
+    slot.appendChild(pick.el);
+    pick.focus();
   };
   chip.addEventListener('click', () => {
     if (c) openDetail(c.id);
@@ -7774,21 +7917,63 @@ function renderTaskClient(slot, t) {
     slot.appendChild(edit);
   }
 }
+let newTaskPicker = null;
+function newTaskHint(msg, ok) {
+  const el = document.getElementById('new-task-link-hint');
+  if (!el) return;
+  el.className = 'task-link-hint' + (ok ? ' ok' : '');
+  el.textContent = msg || '';
+}
+function setupNewTaskPicker() {
+  const host = document.getElementById('new-task-client-pick');
+  const refInput = document.getElementById('new-task-ref');
+  if (!host || newTaskPicker) return;
+  newTaskPicker = buildClientPicker({
+    placeholder: 'Klant zoeken \u2014 naam of ref.',
+    onEnter: addTask,
+    onPick: (c) => {
+      if (c) {
+        if (!refInput.value.trim() && c.ref) refInput.value = c.ref;
+        newTaskHint('Gekoppeld aan ' + (c.name || 'Naamloos') + (c.ref ? ' \u00b7 ref. ' + c.ref : ''), true);
+      } else newTaskHint('');
+    }
+  });
+  host.replaceWith(newTaskPicker.el);
+  newTaskPicker.el.id = 'new-task-client-pick';
+  let refTimer = null;
+  refInput.addEventListener('input', () => {
+    clearTimeout(refTimer);
+    refTimer = setTimeout(() => {
+      const v = refInput.value.trim();
+      if (!v) { if (!newTaskPicker.client) newTaskHint(''); return; }
+      const c = clientByRef(v);
+      if (c) {
+        if (!newTaskPicker.client) {
+          newTaskPicker.set(c);
+          newTaskHint('Ref. ' + v + ' hoort bij ' + (c.name || 'Naamloos') + ' \u2014 automatisch gekoppeld.', true);
+        }
+      } else if (!newTaskPicker.client) {
+        newTaskHint('Geen klant met ref. ' + v + ' \u2014 taak blijft los.');
+      }
+    }, 260);
+  });
+}
 function addTask() {
   const input = document.getElementById('new-task-input');
   const refInput = document.getElementById('new-task-ref');
   const dateInput = document.getElementById('new-task-date');
   const timeInput = document.getElementById('new-task-time');
-  const clientSelect = document.getElementById('new-task-client');
   const text = input.value.trim();
   if (!text) return;
-  const clientId = clientSelect && clientSelect.value ? clientSelect.value : null;
-  const linked = clientId ? clients.find(c => c.id === clientId) : null;
+  const linked = newTaskPicker ? newTaskPicker.client : null;
+  const clientId = linked ? linked.id : null;
   tasks.unshift({ id: 'task-' + Date.now(), text, ref: (refInput.value || '').trim() || (linked && linked.ref) || null, clientId, done: false, createdAt: Date.now(), priority: 3, subtasks: [], dueDate: dateInput.value || null, dueTime: timeInput.value || null, reminderFired: false });
   input.value = '';
   refInput.value = '';
   dateInput.value = '';
   timeInput.value = '';
+  if (newTaskPicker) newTaskPicker.set(null);
+  newTaskHint('');
   saveTasks();
   renderTasks();
   renderBoard();
@@ -7798,17 +7983,8 @@ function addTask() {
 function clientById(id) { return id ? clients.find(c => c.id === id) : null; }
 function clientTasks(id) { return tasks.filter(t => t.clientId === id); }
 function populateTaskClientSelect() {
-  const sel = document.getElementById('new-task-client');
-  if (!sel) return;
-  const keep = sel.value;
-  sel.innerHTML = '<option value="">Losse taak</option>' +
-    [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-      .map(c => `<option value="${c.id}"></option>`).join('');
-  [...clients].sort((a, b) => (a.name || '').localeCompare(b.name || '')).forEach((c, i) => {
-    const opt = sel.options[i + 1];
-    if (opt) opt.textContent = (c.name || 'Naamloos') + (c.ref ? ' · ' + c.ref : '');
-  });
-  if ([...sel.options].some(o => o.value === keep)) sel.value = keep;
+  setupNewTaskPicker();
+  if (newTaskPicker && newTaskPicker.client) newTaskPicker.set(clientById(newTaskPicker.client.id));
 }
 document.getElementById('new-task-ref').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
 document.getElementById('add-task-btn').addEventListener('click', addTask);
@@ -9805,27 +9981,88 @@ function populateCalcClientSelect() {
   sel.innerHTML = '<option value="">\u2014 Geen klant gekoppeld \u2014</option>' + clients.map(c => `<option value="${c.id}">${c.name}${c.ref ? ' (' + c.ref + ')' : ''}</option>`).join('');
   if (current) sel.value = current;
 }
+const CALC_VAT_RATES = [21, 9, 0];
+function round2(n) { return Math.round((parseFloat(n) || 0) * 100) / 100; }
+function normalizeCalcProduct(p) {
+  if (CALC_VAT_RATES.indexOf(p.vat) < 0) p.vat = 21;
+  p.price = round2(p.price);
+  if (typeof p.priceExcl !== 'number') p.priceExcl = round2(p.price / (1 + p.vat / 100));
+}
+function calcProductsVatSplit(calc) {
+  let excl = 0, incl = 0;
+  (calc.products || []).forEach(p => {
+    normalizeCalcProduct(p);
+    excl += p.priceExcl;
+    incl += p.price;
+  });
+  return { excl: round2(excl), btw: round2(incl - excl), incl: round2(incl) };
+}
+function renderCalcProductsVat() {
+  const el = document.getElementById('calc-products-vat');
+  const calc = window.__editingCalc;
+  if (!el || !calc) return;
+  const s = calcProductsVatSplit(calc);
+  if (!s.incl && !s.excl) { el.textContent = ''; return; }
+  el.innerHTML = 'Excl. btw ' + fmtEUR(s.excl) + '  \u00b7  btw ' + fmtEUR(s.btw) + '  \u00b7  incl. btw <b>' + fmtEUR(s.incl) + '</b>';
+}
 function renderCalcProducts() {
   const wrap = document.getElementById('calc-products');
   const calc = window.__editingCalc;
   wrap.innerHTML = '';
   calc.products.forEach((p, i) => {
+    normalizeCalcProduct(p);
     const row = document.createElement('div');
     row.className = 'calc-product-row';
     row.dataset.idx = String(i);
     row.innerHTML = `
       <div class="calc-drag-handle" title="Sleep om de plaats te veranderen" aria-label="Regel verplaatsen"><svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg></div>
-      <input type="text" value="${(p.label||'').replace(/"/g,'&quot;')}" placeholder="Omschrijving" />
-      <input type="number" value="${p.price||0}" step="0.01" inputmode="decimal" placeholder="Prijs" />
+      <input class="cp-label" type="text" placeholder="Omschrijving" />
+      <input class="cp-excl" type="number" step="0.01" inputmode="decimal" placeholder="Excl. btw" />
+      <select class="cp-vat" title="Btw-tarief"></select>
+      <input class="cp-incl" type="number" step="0.01" inputmode="decimal" placeholder="Incl. btw" />
       <div class="calc-card-del">&times;</div>
     `;
-    const handle = row.children[0], labelInput = row.children[1], priceInput = row.children[2], delBtn = row.children[3];
+    const handle = row.querySelector('.calc-drag-handle');
+    const labelInput = row.querySelector('.cp-label');
+    const exclInput = row.querySelector('.cp-excl');
+    const vatSel = row.querySelector('.cp-vat');
+    const inclInput = row.querySelector('.cp-incl');
+    const delBtn = row.querySelector('.calc-card-del');
+    labelInput.value = p.label || '';
+    exclInput.value = p.priceExcl || '';
+    inclInput.value = p.price || '';
+    CALC_VAT_RATES.forEach(r => {
+      const o = document.createElement('option');
+      o.value = String(r);
+      o.textContent = r + '%';
+      if (p.vat === r) o.selected = true;
+      vatSel.appendChild(o);
+    });
+    const after = () => { renderCalcProductsVat(); updateCalcTotals(); };
     labelInput.addEventListener('input', () => { p.label = labelInput.value; });
-    priceInput.addEventListener('input', () => { p.price = parseFloat(priceInput.value) || 0; updateCalcTotals(); });
-    delBtn.addEventListener('click', () => { calc.products.splice(i, 1); renderCalcProducts(); updateCalcTotals(); });
+    exclInput.addEventListener('input', () => {
+      p.priceExcl = round2(exclInput.value);
+      p.price = round2(p.priceExcl * (1 + p.vat / 100));
+      inclInput.value = p.price ? p.price.toFixed(2) : '';
+      after();
+    });
+    inclInput.addEventListener('input', () => {
+      p.price = round2(inclInput.value);
+      p.priceExcl = round2(p.price / (1 + p.vat / 100));
+      exclInput.value = p.priceExcl ? p.priceExcl.toFixed(2) : '';
+      after();
+    });
+    vatSel.addEventListener('change', () => {
+      p.vat = parseInt(vatSel.value, 10) || 0;
+      p.price = round2(p.priceExcl * (1 + p.vat / 100));
+      inclInput.value = p.price ? p.price.toFixed(2) : '';
+      after();
+    });
+    delBtn.addEventListener('click', () => { calc.products.splice(i, 1); renderCalcProducts(); after(); });
     handle.addEventListener('pointerdown', (e) => startProductDrag(e, row, wrap));
     wrap.appendChild(row);
   });
+  renderCalcProductsVat();
 }
 function startProductDrag(e, row, wrap) {
   if (e.button !== undefined && e.button !== 0) return;
@@ -10323,6 +10560,7 @@ function updateCalcTotals() {
   const calc = window.__editingCalc;
   if (!calc) return;
   const subP = document.getElementById('calc-sub-products'); if (subP) rollMoney(subP, calcProductsTotal(calc));
+  renderCalcProductsVat();
   CALC_CATALOG.forEach(section => {
     let total = calcSectionTotal(calc, section.key);
     if (section.key === 'installatie') {
