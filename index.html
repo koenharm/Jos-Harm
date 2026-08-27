@@ -1589,6 +1589,7 @@
   .form-lib-chip {
     font-family: 'League Spartan', sans-serif; font-size: 12px; color: var(--paper-dim); cursor: pointer;
     background: var(--soot); border: 1px solid var(--hairline); border-radius: 20px; padding: 4px 11px;
+    display: inline-flex; align-items: center; gap: 6px;
   }
   .form-lib-chip:hover { border-color: var(--brass); color: var(--paper); }
   .form-act-row { display: grid; grid-template-columns: 1fr 130px 130px auto 26px; gap: 8px; margin-bottom: 8px; align-items: center; }
@@ -1598,6 +1599,31 @@
   }
   .form-act-row input:focus { outline: none; border-color: var(--ember); }
   .form-act-done { font-family: 'League Spartan', sans-serif; font-size: 11.5px; color: var(--brass); white-space: nowrap; }
+  .form-model-row {
+    display: grid; gap: 8px; align-items: center;
+    grid-template-columns: 14px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto 26px;
+    grid-template-areas: "dot name name name ask del" "sp status bron link link link";
+    margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--hairline);
+  }
+  .form-model-row .form-model-dot { grid-area: dot; }
+  .form-model-row .skp-name { grid-area: name; }
+  .form-model-row .skp-status { grid-area: status; }
+  .form-model-row .skp-bron { grid-area: bron; }
+  .form-model-row .skp-link { grid-area: link; }
+  .form-model-row .skp-ask { grid-area: ask; justify-self: start; white-space: nowrap; }
+  .form-model-row .form-row-del { grid-area: del; }
+  .form-model-row input, .form-model-row select {
+    width: 100%; box-sizing: border-box; background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 9px 10px; color: var(--paper); font-family: inherit; font-size: 13.5px;
+  }
+  .form-model-row input:focus, .form-model-row select:focus { outline: none; border-color: var(--ember); }
+  .form-model-dot { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto; }
+  .form-model-hint { font-size: 11.5px; color: var(--smoke); margin: -2px 0 10px; }
+  .form-sub-head {
+    grid-column: span 6; font-family: 'League Spartan', sans-serif; font-size: 11px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--smoke); border-bottom: 1px solid var(--hairline);
+    padding-bottom: 6px; margin: 14px 0 2px;
+  }
   .form-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--hairline); }
   .forms-empty { font-size: 13px; color: var(--smoke); font-style: italic; padding: 6px 2px; }
   @media (max-width: 1150px) {
@@ -1614,6 +1640,12 @@
     .form-item-row .form-item-unit { grid-column: span 1; }
     .form-item-row input, .form-item-row select { font-size: 16px; }
     .form-act-row { grid-template-columns: 1fr 26px; }
+    .form-model-row {
+      grid-template-columns: 14px minmax(0, 1fr) 26px;
+      grid-template-areas: "dot name del" "sp status status" "sp bron bron" "sp link link" "sp ask ask";
+    }
+    .form-model-row .form-model-dot { align-self: center; }
+    .form-model-row input, .form-model-row select { font-size: 16px; }
     .form-act-row input { font-size: 16px; }
     .form-title-input { font-size: 17px; }
     .forms-search { flex: 1 1 100%; }
@@ -3193,6 +3225,10 @@ async function loadData() {
     const fl = await storageGet('forms-library');
     formLibrary = fl ? JSON.parse(fl.value) : [];
   } catch (e) { console.error('Laden bestelbibliotheek mislukt', e); formLibrary = []; }
+  try {
+    const ml = await storageGet('skp-models');
+    modelLibrary = ml ? JSON.parse(ml.value) : [];
+  } catch (e) { console.error('Laden modelbibliotheek mislukt', e); modelLibrary = []; }
   applyPriceOverrides();
   applyReminderSettingToUI();
   renderNotes();
@@ -3238,6 +3274,9 @@ function setupRealtimeSync() {
   });
   listenRemote('forms-library', (val) => {
     try { formLibrary = JSON.parse(val) || []; } catch (e) { return; }
+  });
+  listenRemote('skp-models', (val) => {
+    try { modelLibrary = JSON.parse(val) || []; } catch (e) { return; }
   });
   listenRemote('calculations-data', (val) => {
     try { calculations = JSON.parse(val); } catch (e) { return; }
@@ -5400,19 +5439,39 @@ const FORM_TYPES = [
     ]
   },
   {
-    key: 'tekenwerk', name: 'Tekenwerk', color: '#6B7F8B', titleFrom: ['project', 'tekening'], actions: true,
+    key: 'tekenwerk', name: 'SketchUp-tekenwerk', color: '#6B7F8B', titleFrom: ['project', 'skp_bestand'], actions: true, models: true,
     fields: [
       { k: 'datum', label: 'Datum', t: 'date', s: 2 },
       { k: 'aanvrager', label: 'Aangevraagd door', t: 'text', s: 2 },
-      { k: 'soort', label: 'Soort', t: 'select', s: 2, opts: ['Nieuwe tekening', 'Wijziging bestaande tekening', 'Controle / nakijken', 'Detail uitwerken'] },
+      { k: 'soort', label: 'Soort opdracht', t: 'select', s: 2, opts: ['Nieuwe tekening', 'Haard intekenen in bestaand model', 'Wijziging bestaande tekening', 'Detail uitwerken', 'Aanzichten / renders maken', 'Controle / nakijken'] },
       { k: 'project', label: 'Project / referentie', t: 'text', s: 3 },
-      { k: 'tekening', label: 'Tekeningnummer', t: 'text', s: 3 },
+      { k: 'skp_bestand', label: 'SketchUp-bestand', t: 'text', s: 3, ph: 'Bijv. Jansen-woonkamer.skp' },
       { k: 'versie', label: 'Versie', t: 'text', s: 2, ph: 'Bijv. v3' },
+      { k: 'opslag', label: 'Waar staat het bestand', t: 'select', s: 2, opts: ['Trimble Connect', 'OneDrive / Drive', 'Netwerkschijf', 'Lokaal op de pc', 'Anders'] },
       { k: 'deadline', label: 'Deadline', t: 'date', s: 2 },
-      { k: 'status', label: 'Status', t: 'select', s: 2, opts: ['Te doen', 'Bezig', 'Ter controle bij klant', 'Definitief'] },
-      { k: 'wijziging', label: 'Wat moet er gewijzigd of getekend worden', t: 'textarea', s: 6, rows: 5 },
-      { k: 'maten', label: 'Maatvoering / afmetingen', t: 'textarea', s: 6, rows: 3 },
-      { k: 'maat_gewijzigd', label: 'Maatvoering is gewijzigd', t: 'check', s: 3 },
+      { k: 'status', label: 'Status', t: 'select', s: 3, opts: ['Te doen', 'Model uitzoeken', 'Bezig in SketchUp', 'Ter controle bij klant', 'Wijziging doorvoeren', 'Definitief'] },
+      { k: 'tekening', label: 'Tekeningnummer', t: 'text', s: 3 },
+      { t: 'head', label: 'De opdracht' },
+      { k: 'wijziging', label: 'Wat moet er getekend of gewijzigd worden', t: 'textarea', s: 6, rows: 5 },
+      { k: 'ruimte', label: 'Ruimte en bouwkundige situatie', t: 'textarea', s: 6, rows: 3, ph: 'Wanden, vloeropbouw, plafondhoogte, nis, bestaand kanaal\u2026' },
+      { k: 'maten', label: 'Maatvoering (mm)', t: 'textarea', s: 6, rows: 3 },
+      { k: 'bron_maten', label: 'Maten komen van', t: 'select', s: 3, opts: ['Inmeetformulier', 'Klant / architect', 'Zelf ter plaatse gemeten', 'Bouwtekening', 'Nog niet compleet'] },
+      { k: 'maat_gewijzigd', label: 'Maatvoering gewijzigd t.o.v. vorige versie', t: 'check', s: 3 },
+      { t: 'head', label: 'Het model' },
+      { k: 'kanaalsoort', label: 'Kanaalsoort', t: 'select', s: 3, opts: F_KANAAL },
+      { k: 'diameter', label: 'Diameter (mm)', t: 'select', s: 3, opts: F_DIAM },
+      { k: 'tags', label: 'Tags / lagen bijgewerkt', t: 'check', s: 2 },
+      { k: 'scenes', label: 'Scenes bijgewerkt', t: 'check', s: 2 },
+      { k: 'components', label: 'Componenten netjes benoemd', t: 'check', s: 2 },
+      { t: 'head', label: 'Aanzichten en uitvoer' },
+      { k: 'v_plattegrond', label: 'Plattegrond', t: 'check', s: 2 },
+      { k: 'v_voor', label: 'Vooraanzicht', t: 'check', s: 2 },
+      { k: 'v_zij', label: 'Zijaanzicht', t: 'check', s: 2 },
+      { k: 'v_doorsnede', label: 'Doorsnede', t: 'check', s: 2 },
+      { k: 'v_3d', label: '3D-weergave', t: 'check', s: 2 },
+      { k: 'v_detail', label: 'Detail dakdoorvoer', t: 'check', s: 2 },
+      { k: 'export', label: 'Export voor klant', t: 'select', s: 3, opts: ['PDF', 'Afbeelding (JPG/PNG)', 'DWG', 'LayOut-set', '3D-model (.skp)', 'Nog niet'] },
+      { k: 'layout', label: 'LayOut-set bijgewerkt', t: 'check', s: 3 },
       { k: 'akkoord', label: 'Klant heeft akkoord gegeven', t: 'check', s: 3 },
       { k: 'doorgegeven', label: 'Doorgegeven aan', t: 'text', s: 3 }
     ]
@@ -5460,12 +5519,46 @@ let formQuery = '';
 let formFilter = 'alles';
 let formSaveTimer = null;
 let formLibrary = [];
+let modelLibrary = [];
+const SKP_STATUS = [
+  { v: 'Model aanwezig', c: '#7C9A6B' },
+  { v: 'Nog uitzoeken', c: '#C79A3E' },
+  { v: 'Aangevraagd bij leverancier', c: '#6E8AA8' },
+  { v: 'Niet beschikbaar \u2014 zelf tekenen', c: '#B4553C' },
+  { v: 'Zelf getekend', c: '#8B6BA0' }
+];
+const SKP_BRON = ['Fabrikant / leverancier', '3D Warehouse', 'Eigen bibliotheek', 'Zelf getekend', 'Onbekend'];
+function skpColor(status) { const s = SKP_STATUS.find(x => x.v === status); return s ? s.c : '#4A4744'; }
+function skpFind(name) {
+  const n = (name || '').trim().toLowerCase();
+  if (!n) return null;
+  return modelLibrary.find(m => (m.name || '').trim().toLowerCase() === n) || null;
+}
+async function saveModelLibrary() {
+  try { await storageSet('skp-models', JSON.stringify(modelLibrary)); }
+  catch (e) { console.error('Opslaan modelbibliotheek mislukt', e); }
+}
+function skpUpsert(row) {
+  const n = (row.name || '').trim();
+  if (!n) return null;
+  let e = skpFind(n);
+  if (!e) { e = { name: n, status: '', bron: '', link: '', note: '', n: 0, updatedAt: Date.now() }; modelLibrary.push(e); }
+  e.name = n;
+  if (row.status) e.status = row.status;
+  if (row.bron) e.bron = row.bron;
+  if (row.link) e.link = row.link;
+  e.updatedAt = Date.now();
+  modelLibrary.sort((a, b) => (a.status === 'Nog uitzoeken' ? -1 : 0) - (b.status === 'Nog uitzoeken' ? -1 : 0) || (b.n || 0) - (a.n || 0) || (a.name || '').localeCompare(b.name || ''));
+  saveModelLibrary();
+  return e;
+}
 function formTypeDef(key) { return FORM_TYPES.find(t => t.key === key) || FORM_TYPES[0]; }
 function normalizeForms() {
   forms.forEach(f => {
     f.data = f.data || {};
     f.items = f.items || [];
     f.actions = f.actions || [];
+    f.models = f.models || [];
     f.photos = f.photos || [];
     f.title = f.title || '';
     if (f.clientId === undefined) f.clientId = null;
@@ -5521,11 +5614,12 @@ function newForm(typeKey) {
   const iso = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
   const f = {
     id: 'form-' + Date.now(), type: typeKey, title: '', clientId: null,
-    data: { datum: iso }, items: [], actions: [], photos: [], done: false,
+    data: { datum: iso }, items: [], actions: [], models: [], photos: [], done: false,
     createdAt: Date.now(), updatedAt: Date.now()
   };
   if (formTypeDef(typeKey).items) f.items = [{ qty: '1', unit: 'stuk', name: '' }];
   if (formTypeDef(typeKey).actions) f.actions = [{ text: '', who: '', due: '', taskId: null }];
+  if (formTypeDef(typeKey).models) f.models = [{ name: '', status: '', bron: '', link: '', taskId: null }];
   forms.unshift(f);
   openFormId = f.id;
   formFilter = 'alles';
@@ -5580,6 +5674,7 @@ function visibleForms() {
         .concat(Object.values(f.data || {}).map(v => typeof v === 'string' ? v : ''))
         .concat((f.items || []).map(i => i.name))
         .concat((f.actions || []).map(a => a.text))
+        .concat((f.models || []).map(m => m.name))
         .join(' ').toLowerCase();
       return hay.includes(q);
     })
@@ -5630,6 +5725,8 @@ function renderFormsList() {
     if (openActs) flags.push({ t: openActs + ' actiepunt' + (openActs === 1 ? '' : 'en'), warn: true });
     if ((f.items || []).filter(i => (i.name || '').trim()).length) flags.push({ t: (f.items || []).filter(i => (i.name || '').trim()).length + ' producten' });
     if ((f.photos || []).length) flags.push({ t: f.photos.length + ' foto' + (f.photos.length === 1 ? '' : '\'s') });
+    const openModels = (f.models || []).filter(m => (m.name || '').trim() && m.status !== 'Model aanwezig' && m.status !== 'Zelf getekend').length;
+    if (openModels) flags.push({ t: openModels + ' model' + (openModels === 1 ? '' : 'len') + ' uitzoeken', warn: true });
     if (f.data.spoed) flags.push({ t: 'Spoed', warn: true });
     if (flags.length) {
       const row = document.createElement('div');
@@ -5649,6 +5746,11 @@ function renderFormsList() {
 function formFieldEl(f, spec) {
   const wrap = document.createElement('div');
   wrap.className = 'field' + (spec.s && spec.s < 6 ? ' s' + spec.s : '');
+  if (spec.t === 'head') {
+    wrap.className = 'form-sub-head';
+    wrap.textContent = spec.label;
+    return wrap;
+  }
   if (spec.t === 'check') {
     const label = document.createElement('label');
     label.className = 'checkbox-field';
@@ -5795,6 +5897,182 @@ function renderFormItems(host, f) {
         l.n = (l.n || 1) + 1;
         f.updatedAt = Date.now();
         saveFormLibrary();
+        saveForms();
+        renderFormDetail();
+        renderFormsList();
+      });
+      lib.appendChild(chip);
+    });
+    host.appendChild(lib);
+  }
+}
+function renderFormModels(host, f) {
+  const head = document.createElement('div');
+  head.className = 'form-section-head';
+  const h = document.createElement('span');
+  h.textContent = 'Haarden in dit model';
+  head.appendChild(h);
+  const add = document.createElement('button');
+  add.className = 'btn btn-sm';
+  add.textContent = 'Haard toevoegen';
+  add.addEventListener('click', () => {
+    f.models.push({ name: '', status: '', bron: '', link: '', taskId: null });
+    f.updatedAt = Date.now();
+    saveForms();
+    renderFormDetail();
+  });
+  head.appendChild(add);
+  host.appendChild(head);
+
+  const hint = document.createElement('div');
+  hint.className = 'form-model-hint';
+  hint.textContent = 'Per haard: is er al een SketchUp-model of moet dat nog uitgezocht worden? Wat je hier invult onthoudt de app, dus de volgende keer weet je het meteen.';
+  host.appendChild(hint);
+
+  const dl = document.createElement('datalist');
+  dl.id = 'skp-model-list';
+  modelLibrary.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.name;
+    o.label = m.status || '';
+    dl.appendChild(o);
+  });
+  host.appendChild(dl);
+
+  f.models.forEach((m, i) => {
+    const row = document.createElement('div');
+    row.className = 'form-model-row';
+    const dot = document.createElement('span');
+    dot.className = 'form-model-dot';
+    dot.style.background = skpColor(m.status);
+    const name = document.createElement('input');
+    name.type = 'text';
+    name.value = m.name || '';
+    name.placeholder = 'Merk en model haard';
+    name.setAttribute('list', 'skp-model-list');
+    name.className = 'skp-name';
+    const status = document.createElement('select');
+    status.className = 'skp-status';
+    [''].concat(SKP_STATUS.map(s => s.v)).forEach(v => {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = v || 'Status onbekend';
+      if ((m.status || '') === v) o.selected = true;
+      status.appendChild(o);
+    });
+    const bron = document.createElement('select');
+    bron.className = 'skp-bron';
+    [''].concat(SKP_BRON).forEach(v => {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = v || 'Bron \u2014';
+      if ((m.bron || '') === v) o.selected = true;
+      bron.appendChild(o);
+    });
+    const link = document.createElement('input');
+    link.type = 'text';
+    link.value = m.link || '';
+    link.placeholder = 'Link of waar het bestand staat';
+    link.className = 'skp-link';
+    const del = document.createElement('div');
+    del.className = 'form-row-del';
+    del.textContent = '\u00d7';
+    del.title = 'Regel verwijderen';
+    const touch = () => { f.updatedAt = Date.now(); saveFormsSoon(); };
+    name.addEventListener('input', () => { m.name = name.value; touch(); });
+    name.addEventListener('change', () => {
+      m.name = name.value;
+      const known = skpFind(m.name);
+      if (known) {
+        if (!m.status) m.status = known.status || '';
+        if (!m.bron) m.bron = known.bron || '';
+        if (!m.link) m.link = known.link || '';
+        known.n = (known.n || 0) + 1;
+      }
+      skpUpsert(m);
+      saveForms();
+      renderFormDetail();
+      renderFormsList();
+    });
+    status.addEventListener('change', () => {
+      m.status = status.value;
+      dot.style.background = skpColor(m.status);
+      skpUpsert(m);
+      f.updatedAt = Date.now();
+      saveForms();
+      renderFormsList();
+    });
+    bron.addEventListener('change', () => { m.bron = bron.value; skpUpsert(m); f.updatedAt = Date.now(); saveForms(); });
+    link.addEventListener('input', () => { m.link = link.value; touch(); });
+    link.addEventListener('change', () => { m.link = link.value; skpUpsert(m); saveForms(); });
+    del.addEventListener('click', () => {
+      f.models.splice(i, 1);
+      f.updatedAt = Date.now();
+      saveForms();
+      renderFormDetail();
+      renderFormsList();
+    });
+    row.append(dot, name, status, bron, link);
+    if (m.taskId) {
+      const done = document.createElement('span');
+      done.className = 'form-act-done skp-ask';
+      done.textContent = 'Wordt uitgezocht';
+      row.appendChild(done);
+    } else {
+      const ask = document.createElement('button');
+      ask.className = 'btn btn-sm skp-ask';
+      ask.textContent = 'Laten uitzoeken';
+      ask.title = 'Zet een taak klaar om uit te zoeken of er een SketchUp-model bestaat';
+      ask.addEventListener('click', () => {
+        const nm = (m.name || '').trim();
+        if (!nm) { name.focus(); return; }
+        const id = 'task-' + Date.now();
+        const client = clientById(f.clientId);
+        tasks.unshift({
+          id, text: 'Uitzoeken of er een SketchUp-model is van ' + nm,
+          ref: (client && client.ref) || 'Tekenwerk', clientId: f.clientId || null,
+          done: false, createdAt: Date.now(), priority: 2, subtasks: [],
+          dueDate: f.data.deadline || null, dueTime: null, reminderFired: false
+        });
+        m.taskId = id;
+        if (!m.status) m.status = 'Nog uitzoeken';
+        skpUpsert(m);
+        f.updatedAt = Date.now();
+        saveTasks();
+        saveForms();
+        renderTasks();
+        renderBoard();
+        renderClients();
+        checkTaskReminders();
+        renderFormDetail();
+        renderFormsList();
+      });
+      row.appendChild(ask);
+    }
+    row.appendChild(del);
+    host.appendChild(row);
+  });
+
+  if (modelLibrary.length) {
+    const lib = document.createElement('div');
+    lib.className = 'form-lib';
+    const lh = document.createElement('span');
+    lh.style.cssText = 'font-size:11.5px;color:var(--smoke);align-self:center;margin-right:2px';
+    lh.textContent = 'Uit je modelbibliotheek:';
+    lib.appendChild(lh);
+    modelLibrary.slice(0, 14).forEach(l => {
+      const chip = document.createElement('div');
+      chip.className = 'form-lib-chip';
+      chip.title = [l.status, l.bron, l.link].filter(Boolean).join(' \u00b7 ') || 'Nog niets bekend';
+      chip.innerHTML = '<span class="note-chip-dot" style="background:' + skpColor(l.status) + '"></span><span class="chip-name"></span>';
+      chip.querySelector('.chip-name').textContent = l.name;
+      chip.addEventListener('click', () => {
+        const empty = f.models.find(x => !(x.name || '').trim());
+        const row = { name: l.name, status: l.status || '', bron: l.bron || '', link: l.link || '', taskId: null };
+        if (empty) Object.assign(empty, row); else f.models.push(row);
+        l.n = (l.n || 0) + 1;
+        f.updatedAt = Date.now();
+        saveModelLibrary();
         saveForms();
         renderFormDetail();
         renderFormsList();
@@ -5951,10 +6229,15 @@ function formAsText(f) {
   const client = clientById(f.clientId);
   if (client) lines.push('Klant: ' + (client.name || ''));
   def.fields.forEach(spec => {
+    if (spec.t === 'head') { lines.push('', spec.label.toUpperCase()); return; }
     const v = f.data[spec.k];
     if (spec.t === 'check') { if (v) lines.push(spec.label + ': ja'); return; }
     if (v) lines.push(spec.label + ': ' + v);
   });
+  if ((f.models || []).some(m => (m.name || '').trim())) {
+    lines.push('', 'Haarden / SketchUp-modellen:');
+    f.models.filter(m => (m.name || '').trim()).forEach(m => lines.push('- ' + m.name + ' \u2014 ' + (m.status || 'status onbekend') + (m.bron ? ' (' + m.bron + ')' : '') + (m.link ? ' \u2014 ' + m.link : '')));
+  }
   if ((f.items || []).some(i => (i.name || '').trim())) {
     lines.push('', 'Producten:');
     f.items.filter(i => (i.name || '').trim()).forEach(i => lines.push('- ' + (i.qty || '') + ' ' + (i.unit || '') + ' ' + i.name));
@@ -6030,6 +6313,7 @@ function renderFormDetail() {
   def.fields.forEach(spec => grid.appendChild(formFieldEl(f, spec)));
   host.appendChild(grid);
 
+  if (def.models) renderFormModels(host, f);
   if (def.items) renderFormItems(host, f);
   if (def.actions) renderFormActions(host, f);
   renderFormPhotos(host, f);
