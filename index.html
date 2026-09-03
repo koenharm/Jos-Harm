@@ -1288,10 +1288,26 @@
     @page { margin: 12mm; }
     body { background: #fff; }
     .app, .mobile-topbar, .tabbar, .clock-widget, .toast { display: none !important; }
-    #psheet-backdrop { position: static !important; display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; }
+    #psheet-backdrop.open, #plist-backdrop.open { position: static !important; display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; }
+    #psheet-backdrop:not(.open), #plist-backdrop:not(.open) { display: none !important; }
     .psheet-preview-wrap { box-shadow: none !important; border-radius: 0 !important; max-width: none !important; margin: 0 !important; }
     .psheet-toolbar { display: none !important; }
     .psheet-page { padding: 0 !important; max-width: none !important; }
+  }
+  /* ---- Productenlijst voor collega ---- */
+  .plist-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  .plist-table th { text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--smoke); font-weight: 700; padding: 0 0 7px; border-bottom: 1px solid #2B2B2B; }
+  .plist-table th.num, .plist-table td.num { text-align: right; white-space: nowrap; padding-left: 14px; }
+  .plist-table td { padding: 8px 0; border-bottom: 1px solid var(--hairline); font-size: 12.5px; vertical-align: top; }
+  .plist-table td.num { font-weight: 600; }
+  .plist-group td { border-bottom: none; padding: 18px 0 3px; font-family: 'Poppins', sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ember); }
+  .plist-group:first-child td { padding-top: 0; }
+  .plist-sub td { border-bottom: none; padding: 4px 0; font-size: 12px; color: var(--smoke); }
+  .plist-sub:first-of-type td { padding-top: 12px; border-top: 1px solid var(--hairline); }
+  .plist-total td { border-top: 2px solid #2B2B2B; border-bottom: none; padding-top: 16px; font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.01em; text-transform: uppercase; }
+  .plist-count { font-size: 11px; color: var(--smoke); margin-top: 14px; }
+  @media print {
+    .plist-table th { color: #6b6b6b; }
   }
   .room-size-toggles { display: flex; gap: 8px; }
   .toggle-chip {
@@ -2513,6 +2529,7 @@
               </div>
             </div>
             <button class="btn btn-ghost" id="calc-send-btn">Digitaal verzenden</button>
+            <button class="btn btn-ghost" id="calc-plist-btn">Productenlijst</button>
             <button class="btn btn-ghost" id="calc-draft-btn">Concept opslaan</button>
             <button class="btn btn-primary" id="calc-save-btn">Opslaan</button>
           </div>
@@ -2953,6 +2970,72 @@
       <div class="modal-close" id="calc-versions-close">&times;</div>
     </div>
     <div id="calc-versions-list"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="plist-backdrop">
+  <div class="psheet-preview-wrap">
+    <div class="psheet-toolbar">
+      <div class="psheet-toolbar-title">Productenlijst — voor offerte</div>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="plist-close-btn">Sluiten</button>
+      <button class="btn btn-ghost" id="plist-copy-btn">Kopiêren</button>
+      <button class="btn btn-ghost" id="plist-print-btn">Printen / PDF</button>
+      <button class="btn btn-primary" id="plist-share-btn">Delen</button>
+    </div>
+    <div class="print-sheet" id="plist-print-sheet">
+      <div class="psheet-page">
+        <div class="psheet-head">
+          <img class="psheet-logo" id="plist-logo" alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
+          <div>
+            <div class="psheet-brand">Jos Harm</div>
+            <div class="psheet-brand-sub">Exclusieve haarden</div>
+          </div>
+          <div class="psheet-meta">
+            <div id="plist-date"></div>
+            <div>Opgesteld door: Koen Harm</div>
+          </div>
+        </div>
+        <div class="psheet-title">Productenlijst</div>
+        <div class="psheet-sub">Intern overzicht van de aangeboden producten — basis voor de offerte. Niet voor de klant.</div>
+        <div class="psheet-client">
+          <div>
+            <div class="psheet-client-label">Klant</div>
+            <div id="plist-client-name"></div>
+          </div>
+          <div>
+            <div class="psheet-client-label">Adres</div>
+            <div id="plist-client-addr"></div>
+          </div>
+          <div>
+            <div class="psheet-client-label">Calculatie</div>
+            <div id="plist-title"></div>
+          </div>
+          <div>
+            <div class="psheet-client-label">Status</div>
+            <div id="plist-status"></div>
+          </div>
+        </div>
+        <table class="plist-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th class="num">Aantal</th>
+              <th class="num">Stukprijs</th>
+              <th class="num">Totaal</th>
+            </tr>
+          </thead>
+          <tbody id="plist-rows"></tbody>
+          <tr class="plist-sub"><td colspan="3">Subtotaal excl. btw</td><td class="num" id="plist-excl"></td></tr>
+          <tr class="plist-sub"><td colspan="3">Btw 21%</td><td class="num" id="plist-btw"></td></tr>
+          <tr class="plist-total"><td colspan="3">Totaal incl. btw</td><td class="num" id="plist-total"></td></tr>
+        </table>
+        <div class="plist-count" id="plist-count"></div>
+        <div class="psheet-note">
+          <p style="margin:0">Prijzen komen uit de actuele prijslijst in de app. Stelposten en toeslagen staan als losse regel vermeld. Controleer aantallen voordat de offerte definitief wordt gemaakt.</p>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -5494,6 +5577,17 @@ if (AI_ENABLED) {
 const F_DIAM = ['80', '100', '130', '150', '180', '200', '230', '250'];
 const F_KANAAL = ['Enkelwandig', 'Dubbelwandig', 'Concentrisch', 'Flex in bestaand kanaal', 'Nog onbekend'];
 const F_HAARD = ['Vrijstaande houtkachel', 'Inbouwhaard hout', 'Gashaard', 'Elektrische haard', 'Pelletkachel', 'Open haard', 'Nog onbekend'];
+const F_SOORT = ['Vrijstaande houtkachel', 'Vrijstaande gaskachel', 'Pelletkachel', 'Inbouwhaard hout', 'Inbouwhaard gas', 'Elektrische inbouwhaard'];
+const F_KACHEL = ['Vrijstaande houtkachel', 'Vrijstaande gaskachel', 'Pelletkachel'];
+const F_INBOUW = ['Inbouwhaard hout', 'Inbouwhaard gas', 'Elektrische inbouwhaard'];
+function fieldVisible(f, spec) {
+  const w = spec.when;
+  if (!w) return true;
+  const v = f.data[w.k];
+  if (w.in) return w.in.indexOf(v) !== -1;
+  if (w.truthy) return !!v;
+  return true;
+}
 const FORM_ICONS = {
   vergadering: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   showroom: '<path d="M3 9.5 5 4h14l2 5.5"/><path d="M4 9.5V20h16V9.5"/><path d="M9 20v-6h6v6"/>',
@@ -5553,43 +5647,59 @@ const FORM_TYPES = [
     ]
   },
   {
-    key: 'tekenwerk', name: 'SketchUp-tekenwerk', color: '#6B7F8B', titleFrom: ['project', 'skp_bestand'], actions: true, models: true,
-    desc: 'Nieuw model of wijziging, met de haardmodellen erbij.',
+    key: 'tekenwerk', name: 'Tekenopdracht', color: '#6B7F8B', titleFrom: ['project', 'model'], actions: true, models: true,
+    desc: 'Welke haard, waar in de ruimte en met welke maten.',
     fields: [
-      { t: 'head', label: 'Opdracht en bestand' },
+      { t: 'head', label: 'Opdracht' },
       { k: 'datum', label: 'Datum', t: 'date', s: 2 },
       { k: 'aanvrager', label: 'Aangevraagd door', t: 'text', s: 2 },
-      { k: 'soort', label: 'Soort opdracht', t: 'select', s: 2, opts: ['Nieuwe tekening', 'Haard intekenen in bestaand model', 'Wijziging bestaande tekening', 'Detail uitwerken', 'Aanzichten / renders maken', 'Controle / nakijken'] },
-      { k: 'project', label: 'Project / referentie', t: 'text', s: 3 },
-      { k: 'skp_bestand', label: 'SketchUp-bestand', t: 'text', s: 3, ph: 'Bijv. Jansen-woonkamer.skp' },
-      { k: 'versie', label: 'Versie', t: 'text', s: 2, ph: 'Bijv. v3' },
-      { k: 'opslag', label: 'Waar staat het bestand', t: 'select', s: 2, opts: ['Trimble Connect', 'OneDrive / Drive', 'Netwerkschijf', 'Lokaal op de pc', 'Anders'] },
       { k: 'deadline', label: 'Deadline', t: 'date', s: 2 },
-      { k: 'status', label: 'Status', t: 'select', s: 3, opts: ['Te doen', 'Model uitzoeken', 'Bezig in SketchUp', 'Ter controle bij klant', 'Wijziging doorvoeren', 'Definitief'] },
-      { k: 'tekening', label: 'Tekeningnummer', t: 'text', s: 3 },
-      { t: 'head', label: 'De opdracht' },
-      { k: 'wijziging', label: 'Wat moet er getekend of gewijzigd worden', t: 'textarea', s: 6, rows: 5 },
-      { k: 'ruimte', label: 'Ruimte en bouwkundige situatie', t: 'textarea', s: 6, rows: 3, ph: 'Wanden, vloeropbouw, plafondhoogte, nis, bestaand kanaal\u2026' },
-      { k: 'maten', label: 'Maatvoering (mm)', t: 'textarea', s: 6, rows: 3 },
-      { k: 'bron_maten', label: 'Maten komen van', t: 'select', s: 3, opts: ['Inmeetformulier', 'Klant / architect', 'Zelf ter plaatse gemeten', 'Bouwtekening', 'Nog niet compleet'] },
-      { k: 'maat_gewijzigd', label: 'Maatvoering gewijzigd t.o.v. vorige versie', t: 'check', s: 3 },
-      { t: 'head', label: 'Het model' },
-      { k: 'kanaalsoort', label: 'Kanaalsoort', t: 'select', s: 3, opts: F_KANAAL },
-      { k: 'diameter', label: 'Diameter (mm)', t: 'select', s: 3, opts: F_DIAM },
-      { k: 'tags', label: 'Tags / lagen bijgewerkt', t: 'check', s: 2 },
-      { k: 'scenes', label: 'Scenes bijgewerkt', t: 'check', s: 2 },
-      { k: 'components', label: 'Componenten netjes benoemd', t: 'check', s: 2 },
-      { t: 'head', label: 'Aanzichten en uitvoer' },
+      { k: 'project', label: 'Adres klant of referentienummer', t: 'text', s: 4, ph: 'Bijv. Dorpsstraat 12, Ede \u2014 of 2024-118' },
+      { k: 'soort', label: 'Soort opdracht', t: 'select', s: 2, opts: ['Nieuwe tekening', 'Wijziging bestaande tekening', 'Haard intekenen in bestaand model'] },
+      { k: 'status', label: 'Status', t: 'select', s: 3, opts: ['Te doen', 'Model uitzoeken', 'Bezig met tekenen', 'Ter controle bij klant', 'Wijziging doorvoeren', 'Definitief'] },
+      { t: 'head', label: 'Welke haard' },
+      { k: 'haardsoort', label: 'Soort haard \u2014 bepaalt de vervolgvragen', t: 'select', s: 3, opts: F_SOORT, ctrl: true },
+      { k: 'model', label: 'Merk en model', t: 'text', s: 3, ph: 'Bijv. Barbas Unilux-7 70' },
+      { k: 'haardmaat', label: 'Afmeting haard b \u00d7 h \u00d7 d (mm)', t: 'text', s: 3, ph: 'Alleen invullen als het model afwijkt' },
+      { k: 'diameter', label: 'Diameter kanaal (mm) \u2014 mag leeg', t: 'select', s: 3, opts: F_DIAM },
+      { t: 'head', label: 'Ruimte en positie' },
+      { k: 'kamerhoogte', label: 'Kamerhoogte (mm)', t: 'text', s: 2, ph: 'Vloer tot plafond' },
+      { k: 'hoogte_haard', label: 'Hoogte haard \u2014 onderkant kader (mm)', t: 'text', s: 2, ph: 'Vanaf de vloer' },
+      { k: 'wandbreedte', label: 'Breedte van de wand (mm)', t: 'text', s: 2 },
+      { k: 'pos_soort', label: 'Positie aangeven met', t: 'select', s: 2, opts: ['Hartmaat haard', 'Begin haard links', 'Begin haard rechts'] },
+      { k: 'pos_vanaf', label: 'Gemeten vanaf', t: 'select', s: 2, opts: ['Muur links', 'Muur rechts'] },
+      { k: 'pos_maat', label: 'Die maat (mm)', t: 'text', s: 2 },
+      { k: 'ruimte', label: 'Bijzonderheden in de ruimte', t: 'textarea', s: 6, rows: 3, ph: 'Nis, bestaand kanaal, raam of deur naast de haard, vloeropbouw\u2026' },
+      { t: 'head', label: 'Boezem' },
+      { k: 'boezem_bouwen', label: 'Er wordt een boezem gebouwd', t: 'check', s: 3, when: { k: 'haardsoort', in: F_INBOUW }, ctrl: true },
+      { k: 'boezem_breedte', label: 'Boezem breedte (mm)', t: 'text', s: 2, when: { k: 'boezem_bouwen', truthy: true } },
+      { k: 'boezem_hoogte', label: 'Boezem hoogte (mm)', t: 'text', s: 2, when: { k: 'boezem_bouwen', truthy: true } },
+      { k: 'boezem_diepte', label: 'Boezem diepte (mm)', t: 'text', s: 2, when: { k: 'boezem_bouwen', truthy: true } },
+      { k: 'boezem_plafond', label: 'Boezem loopt', t: 'select', s: 3, opts: ['Tot tegen het plafond', 'Vrij van het plafond'], when: { k: 'boezem_bouwen', truthy: true } },
+      { k: 'boezem_afwerking', label: 'Afwerking', t: 'select', s: 3, opts: ['Stucwerk', 'Steenstrips', 'Betonlook', 'Hout', 'Anders'], when: { k: 'boezem_bouwen', truthy: true } },
+      { k: 'conv_onder', label: 'Convectierooster onder \u2014 maat en positie', t: 'text', s: 3, ph: 'Bijv. 1000 \u00d7 100, 200 mm onder de haard', when: { k: 'boezem_bouwen', truthy: true } },
+      { k: 'conv_boven', label: 'Convectierooster boven \u2014 maat en positie', t: 'text', s: 3, ph: 'Bijv. 1000 \u00d7 100, 300 mm onder het plafond', when: { k: 'boezem_bouwen', truthy: true } },
+      { k: 'boezem_opm', label: 'Opmerking boezem', t: 'textarea', s: 6, rows: 2, when: { k: 'boezem_bouwen', truthy: true } },
+      { t: 'head', label: 'Gas, elektra en techniekluik' },
+      { k: 'gas_positie', label: 'Waar komt de gasaansluiting', t: 'text', s: 3, when: { k: 'haardsoort', in: ['Inbouwhaard gas'] } },
+      { k: 'elektra_positie', label: 'Waar komt de elektra', t: 'text', s: 3, when: { k: 'haardsoort', in: ['Inbouwhaard gas'] } },
+      { k: 'luik_positie', label: 'Waar komt het techniekluik', t: 'text', s: 3, when: { k: 'haardsoort', in: ['Inbouwhaard gas'] } },
+      { k: 'luik_maat', label: 'Afmeting techniekluik (mm)', t: 'text', s: 3, when: { k: 'haardsoort', in: ['Inbouwhaard gas'] } },
+      { t: 'head', label: 'Aansluiting en vloerplaat' },
+      { k: 'aansluiting', label: 'Aansluiting kanaal', t: 'select', s: 3, opts: ['Bovenaansluiting', 'Achteraansluiting'], when: { k: 'haardsoort', in: F_KACHEL } },
+      { k: 'nisbus', label: 'Nisbus nodig', t: 'check', s: 3, when: { k: 'haardsoort', in: F_KACHEL }, ctrl: true },
+      { k: 'nisbus_maat', label: 'Nisbus \u2014 hoogte hart gat (mm)', t: 'text', s: 3, when: { k: 'nisbus', truthy: true } },
+      { k: 'vloerplaat', label: 'Er komt een vloerplaat', t: 'check', s: 3, when: { k: 'haardsoort', in: F_KACHEL }, ctrl: true },
+      { k: 'vloerplaat_maat', label: 'Afmeting vloerplaat (mm)', t: 'text', s: 3, ph: 'Bijv. 1000 \u00d7 800', when: { k: 'vloerplaat', truthy: true } },
+      { k: 'vloerplaat_mat', label: 'Materiaal vloerplaat', t: 'select', s: 3, opts: ['Glas', 'Staal', 'Natuursteen', 'Anders'], when: { k: 'vloerplaat', truthy: true } },
+      { t: 'head', label: 'Wat moet er getekend worden' },
+      { k: 'wijziging', label: 'Toelichting voor de tekenaar', t: 'textarea', s: 6, rows: 4 },
       { k: 'v_plattegrond', label: 'Plattegrond', t: 'check', s: 2 },
       { k: 'v_voor', label: 'Vooraanzicht', t: 'check', s: 2 },
       { k: 'v_zij', label: 'Zijaanzicht', t: 'check', s: 2 },
       { k: 'v_doorsnede', label: 'Doorsnede', t: 'check', s: 2 },
       { k: 'v_3d', label: '3D-weergave', t: 'check', s: 2 },
-      { k: 'v_detail', label: 'Detail dakdoorvoer', t: 'check', s: 2 },
-      { k: 'export', label: 'Export voor klant', t: 'select', s: 3, opts: ['PDF', 'Afbeelding (JPG/PNG)', 'DWG', 'LayOut-set', '3D-model (.skp)', 'Nog niet'] },
-      { k: 'layout', label: 'LayOut-set bijgewerkt', t: 'check', s: 3 },
-      { k: 'akkoord', label: 'Klant heeft akkoord gegeven', t: 'check', s: 3 },
-      { k: 'doorgegeven', label: 'Doorgegeven aan', t: 'text', s: 3 }
+      { k: 'export', label: 'Aanleveren als', t: 'select', s: 3, opts: ['PDF', 'Afbeelding (JPG/PNG)', 'DWG', '3D-model', 'Nog niet'] }
     ]
   },
   {
@@ -5940,6 +6050,7 @@ function formFieldEl(f, spec) {
       box.classList.toggle('checked', !!f.data[spec.k]);
       f.updatedAt = Date.now();
       saveForms();
+      if (spec.ctrl) { renderFormDetail(); return; }
       renderFormsList();
       renderFormFilters();
     });
@@ -5977,7 +6088,7 @@ function formFieldEl(f, spec) {
     saveFormsSoon();
   };
   el.addEventListener('input', commit);
-  el.addEventListener('change', () => { commit(); renderFormsList(); });
+  el.addEventListener('change', () => { commit(); if (spec.ctrl) { renderFormDetail(); return; } renderFormsList(); });
   wrap.appendChild(el);
   return wrap;
 }
@@ -6391,6 +6502,7 @@ function formAsText(f) {
   if (client) lines.push('Klant: ' + (client.name || ''));
   def.fields.forEach(spec => {
     if (spec.t === 'head') { lines.push('', spec.label.toUpperCase()); return; }
+    if (!fieldVisible(f, spec)) return;
     const v = f.data[spec.k];
     if (spec.t === 'check') { if (v) lines.push(spec.label + ': ja'); return; }
     if (v) lines.push(spec.label + ': ' + v);
@@ -6490,7 +6602,7 @@ function renderFormDetail() {
     if (spec.t === 'head') {
       if (cur.fields.length) blocks.push(cur);
       cur = { label: spec.label, fields: [] };
-    } else cur.fields.push(spec);
+    } else if (fieldVisible(f, spec)) cur.fields.push(spec);
   });
   if (cur.fields.length) blocks.push(cur);
   blocks.forEach((bl, bi) => {
@@ -10911,6 +11023,120 @@ function fillPsheetPreview(calc, open) {
 document.getElementById('calc-send-btn').addEventListener('click', () => {
   fillPsheetPreview(window.__editingCalc, true);
 });
+function collectCalcProductLines(calc) {
+  const groups = [];
+  const eigen = (calc.products || []).filter(p => p.label && p.price)
+    .map(p => ({ label: p.label, qty: 1, unit: parseFloat(p.price) || 0, total: parseFloat(p.price) || 0 }));
+  if (eigen.length) groups.push({ label: 'Haard en losse posten', items: eigen });
+  CALC_CATALOG.forEach(section => {
+    const qty = (calc.qty && calc.qty[section.key]) || {};
+    const items = section.items.filter(it => it.key && (parseFloat(qty[it.key]) || 0) > 0)
+      .map(it => { const n = parseFloat(qty[it.key]) || 0; return { label: it.label, qty: n, unit: it.price, total: n * it.price }; });
+    if (section.key === 'installatie') {
+      const auto = calcInstallatieAutoTotal(calc);
+      if (auto > 0) items.push({ label: 'Toeslag klein materiaal en voorrijden (automatisch)', qty: 1, unit: auto, total: auto });
+    }
+    if (items.length) groups.push({ label: section.label, items: items });
+  });
+  return groups;
+}
+function fillPlistPreview(calc, open) {
+  const client = clients.find(x => x.id === calc.clientId);
+  const addr = client ? [[client.street, client.houseNumber].filter(Boolean).join(' '), [client.postcode, client.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '';
+  const groups = collectCalcProductLines(calc);
+  let rows = '', count = 0;
+  groups.forEach(g => {
+    rows += '<tr class="plist-group"><td colspan="4">' + g.label + '</td></tr>';
+    g.items.forEach(it => {
+      count++;
+      rows += '<tr><td>' + it.label + '</td><td class="num">' + (Math.round(it.qty * 100) / 100).toLocaleString('nl-NL') + '</td><td class="num">' + fmtEUR(it.unit) + '</td><td class="num">' + fmtEUR(it.total) + '</td></tr>';
+    });
+  });
+  if (!rows) rows = '<tr><td colspan="4">Nog geen producten in deze calculatie.</td></tr>';
+  document.getElementById('plist-rows').innerHTML = rows;
+  document.getElementById('plist-count').textContent = count ? count + ' regel' + (count === 1 ? '' : 's') + ' in deze calculatie.' : '';
+  const totC = Math.round(calcGrandTotal(calc) * 100);
+  const inclusief = vatMode() === 'incl';
+  const exclC = inclusief ? Math.round(totC / 1.21) : totC;
+  const btwC = (inclusief ? totC : Math.round(totC * 1.21)) - exclC;
+  document.getElementById('plist-excl').textContent = fmtEUR(exclC / 100);
+  document.getElementById('plist-btw').textContent = fmtEUR(btwC / 100);
+  document.getElementById('plist-total').textContent = fmtEUR((exclC + btwC) / 100);
+  document.getElementById('plist-client-name').textContent = calc.clientName || (client ? client.name : '') || '\u2014';
+  document.getElementById('plist-client-addr').textContent = addr || '\u2014';
+  document.getElementById('plist-title').textContent = (calc.title || '').trim() || '\u2014';
+  document.getElementById('plist-status').textContent = calc.status === 'definitief' ? 'Definitief' : 'Concept';
+  document.getElementById('plist-date').textContent = calc.date ? new Date(calc.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const logoSrc = document.querySelector('.sidebar .brand-mark');
+  if (logoSrc) document.getElementById('plist-logo').src = logoSrc.src;
+  if (open) document.getElementById('plist-backdrop').classList.add('open');
+}
+function buildProductListText(calc) {
+  const lines = ['PRODUCTENLIJST \u2014 basis voor offerte', 'Klant: ' + (calc.clientName || '\u2014') + ((calc.title || '').trim() ? ' | ' + calc.title.trim() : ''), ''];
+  collectCalcProductLines(calc).forEach(g => {
+    lines.push(g.label.toUpperCase());
+    g.items.forEach(it => lines.push('  ' + it.label + ' \u2014 ' + (Math.round(it.qty * 100) / 100) + ' x ' + fmtEUR(it.unit) + ' = ' + fmtEUR(it.total)));
+    lines.push('');
+  });
+  lines.push('Totaal: ' + fmtEUR(calcGrandTotal(calc)));
+  return lines.join('\n');
+}
+document.getElementById('calc-plist-btn').addEventListener('click', () => {
+  fillPlistPreview(window.__editingCalc, true);
+});
+document.getElementById('plist-close-btn').addEventListener('click', () => {
+  document.getElementById('plist-backdrop').classList.remove('open');
+});
+document.getElementById('plist-print-btn').addEventListener('click', () => { window.print(); });
+document.getElementById('plist-copy-btn').addEventListener('click', () => {
+  const text = buildProductListText(window.__editingCalc);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => alert('Productenlijst gekopieerd \u2014 plak hem in een mail of bericht aan je collega.')).catch(() => alert(text));
+  } else alert(text);
+});
+document.getElementById('plist-share-btn').addEventListener('click', async () => {
+  const calc = window.__editingCalc;
+  const btn = document.getElementById('plist-share-btn');
+  const original = btn.textContent;
+  btn.textContent = 'PDF maken\u2026'; btn.disabled = true;
+  try {
+    const blob = await generatePlistPdfBlob(calc);
+    const fileName = 'Productenlijst' + ((calc.title || '').trim() ? ' ' + calc.title.trim() : '') + (calc.clientName ? ' - ' + calc.clientName : '') + '.pdf';
+    const file = new File([blob], fileName, { type: 'application/pdf' });
+    const title = 'Productenlijst' + (calc.clientName ? ' - ' + calc.clientName : '');
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: title, text: title });
+    } else {
+      downloadBlob(blob, fileName);
+      alert('PDF gedownload \u2014 voeg hem handmatig toe aan je mail of bericht.');
+    }
+  } catch (err) {
+    alert('Kon geen PDF maken: ' + err.message);
+  } finally {
+    btn.textContent = original; btn.disabled = false;
+  }
+});
+async function generatePlistPdfBlob(calc) {
+  const backdrop = document.getElementById('plist-backdrop');
+  const wasOpen = backdrop.classList.contains('open');
+  fillPlistPreview(calc, true);
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  const pageEl = document.querySelector('#plist-print-sheet .psheet-page');
+  const logoImg = document.getElementById('plist-logo');
+  if (logoImg && logoImg.src && !logoImg.complete) {
+    await new Promise(res => { logoImg.onload = res; logoImg.onerror = res; });
+  }
+  try {
+    const canvas = await html2canvas(pageEl, { scale: 2, backgroundColor: '#ffffff' });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'px', format: [canvas.width, canvas.height] });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
+    return pdf.output('blob');
+  } finally {
+    if (!wasOpen) backdrop.classList.remove('open');
+  }
+}
 function loadScriptOnce(src) {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }

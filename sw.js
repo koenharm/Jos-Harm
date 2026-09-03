@@ -17,7 +17,7 @@ try {
   });
 } catch (e) { /* messaging niet beschikbaar */ }
 
-const CACHE_NAME = 'werkplaats-v34';
+const CACHE_NAME = 'werkplaats-v36';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
