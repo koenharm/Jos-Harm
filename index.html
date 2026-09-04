@@ -1309,6 +1309,30 @@
   @media print {
     .plist-table th { color: #6b6b6b; }
   }
+  /* ---- Databeveiliging: waarschuwing en herstel ---- */
+  #data-warning { display: none; }
+  #data-warning.open {
+    display: flex; gap: 12px; align-items: flex-start;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 520;
+    background: #7A2318; color: #FFF6EE; padding: 12px 16px;
+    font-family: 'League Spartan', sans-serif; font-size: 13px; line-height: 1.5;
+    border-bottom: 2px solid #4A1109; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+  #data-warning-text { flex: 1; }
+  #data-warning .btn { border-color: rgba(255,255,255,0.4); color: #FFF6EE; background: rgba(255,255,255,0.08); flex-shrink: 0; }
+  .rec-block { border: 1px solid var(--hairline); background: var(--panel); padding: 14px 16px; margin-bottom: 12px; }
+  .rec-block-title { font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ember); margin-bottom: 4px; }
+  .rec-block-desc { font-size: 12px; color: var(--smoke); line-height: 1.55; margin-bottom: 10px; }
+  .rec-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--hairline); font-size: 12.5px; }
+  .rec-row:first-of-type { border-top: none; }
+  .rec-row-main { flex: 1; min-width: 0; }
+  .rec-row-when { color: var(--paper); }
+  .rec-row-sub { font-size: 11px; color: var(--smoke); margin-top: 2px; }
+  .rec-empty { font-size: 12px; color: var(--smoke); font-style: italic; padding: 6px 0; }
+  .rec-status { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: var(--smoke); }
+  .rec-status span b { color: var(--paper); font-weight: 600; }
+  .modal-backdrop { z-index: 500; }
+  .modal-backdrop.open ~ .postit-pad, body:has(.modal-backdrop.open) .postit-pad { display: none !important; }
   .room-size-toggles { display: flex; gap: 8px; }
   .toggle-chip {
     display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--paper);
@@ -2128,6 +2152,22 @@
   </div>
 </div>
 
+<div id="data-warning">
+  <div id="data-warning-text"></div>
+  <button class="btn btn-sm" id="data-warning-open" type="button">Herstel openen</button>
+  <button class="btn btn-sm" id="data-warning-close" type="button">Sluiten</button>
+</div>
+
+<div class="modal-backdrop" id="recover-backdrop">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head">
+      <h2>Herstel &amp; back-up</h2>
+      <button class="btn btn-ghost btn-sm" id="recover-close" type="button">Sluiten</button>
+    </div>
+    <div id="recover-body"></div>
+  </div>
+</div>
+
 <div class="search-overlay" id="search-overlay">
   <div class="search-overlay-bar">
     <div class="sidebar-search" style="flex:1">
@@ -2255,7 +2295,10 @@
           <div class="view-title">Prioriteitenbord</div>
           <div class="view-desc">Drie vlakken: Klanten linksboven, Tekenwerk rechtsboven en Algemeen onderaan. Sleep een post-it naar een vlak om hem in die categorie te zetten — je ziet het terug op je telefoon. Hoe hoger de prioriteit, hoe groter de post-it; klik de puntjes om die aan te passen.</div>
         </div>
-        <button class="btn btn-primary board-new-btn" id="board-new-btn" type="button">Nieuwe post-it</button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <button class="btn btn-ghost" id="board-recover-btn" type="button" title="Post-its terughalen">Herstel</button>
+          <button class="btn btn-primary board-new-btn" id="board-new-btn" type="button">Nieuwe post-it</button>
+        </div>
       </div>
       <div class="board-hint">Tip: dubbelklik op een leeg plekje in een vlak om daar meteen een post-it te plakken.</div>
       <div class="board" id="board"></div>
@@ -3290,6 +3333,7 @@ function listenRemote(key, onChange) {
     if (suppressRemote) return;
     const val = snap.val();
     if (val === null || val === undefined) return;
+    if (guarded(key)) { lastKnown[key] = val; dataLoadOk[key] = true; }
     onChange(val);
   });
 }
@@ -3316,13 +3360,92 @@ async function registerPushToken() {
 }
 
 let storageMode = 'local';
+// ---------- Databeveiliging: laadstatus, geschiedenis en wisbeveiliging ----------
+const DATA_KEYS = {
+  'tasks-data': 'Post-its / taken',
+  'notes-data': 'Notities',
+  'clients-data': 'Klanten',
+  'forms-data': 'Formulieren',
+  'calculations-data': 'Calculaties',
+  'fireplace-catalog': 'Haardendatabase',
+  'forms-library': 'Bestelbibliotheek',
+  'skp-models': 'Modelbibliotheek'
+};
+const dataLoadOk = {};
+let trash = [];
+const lastKnown = {};
+const histPruned = {};
+const lastHistAt = {};
+let fbReadFailed = false;
+function dataName(key) { return DATA_KEYS[key] || key; }
+function guarded(key) { return Object.prototype.hasOwnProperty.call(DATA_KEYS, key); }
+function itemCount(json) {
+  try {
+    const v = typeof json === 'string' ? JSON.parse(json) : json;
+    if (Array.isArray(v)) return v.length;
+    if (v && typeof v === 'object') return Object.keys(v).length;
+    return -1;
+  } catch (e) { return -1; }
+}
+async function writeHistory(key, prevValue, force) {
+  if (!guarded(key) || typeof prevValue !== 'string' || !prevValue) return;
+  const now = Date.now();
+  if (!force && now - (lastHistAt[key] || 0) < 90000) return;
+  lastHistAt[key] = now;
+  if (prevValue.length < 400000) {
+    try {
+      let arr = JSON.parse(localStorage.getItem('werkplaats:hist:' + key) || '[]');
+      arr.unshift({ t: now, v: prevValue });
+      localStorage.setItem('werkplaats:hist:' + key, JSON.stringify(arr.slice(0, 6)));
+    } catch (e) { /* localStorage vol */ }
+  }
+  if (!fbReady) return;
+  try {
+    await fbDb.ref('werkplaats/history/' + key).push({ t: now, v: prevValue });
+    if (histPruned[key]) return;
+    histPruned[key] = true;
+    const snap = await fbDb.ref('werkplaats/history/' + key).orderByChild('t').once('value');
+    const ids = [];
+    snap.forEach(c => { ids.push(c.key); });
+    await Promise.all(ids.slice(0, Math.max(0, ids.length - 24)).map(id => fbDb.ref('werkplaats/history/' + key + '/' + id).remove()));
+  } catch (e) { console.warn('Geschiedenis opslaan mislukt', e); }
+}
+async function maybeDailyBackup() {
+  const today = new Date().toISOString().slice(0, 10);
+  try { if (localStorage.getItem('werkplaats:lastBackup') === today) return; } catch (e) {}
+  const data = {};
+  let n = 0;
+  Object.keys(DATA_KEYS).forEach(k => {
+    const v = lastKnown[k];
+    if (typeof v === 'string' && v.length < 1200000 && itemCount(v) > 0) { data[k] = v; n++; }
+  });
+  if (!n) return;
+  try { localStorage.setItem('werkplaats:localBackup', JSON.stringify({ t: Date.now(), data })); } catch (e) {}
+  if (fbReady) {
+    try {
+      await fbDb.ref('werkplaats/backups/' + today).set({ t: Date.now(), data });
+      const snap = await fbDb.ref('werkplaats/backups').once('value');
+      const days = [];
+      snap.forEach(c => { days.push(c.key); });
+      days.sort();
+      await Promise.all(days.slice(0, Math.max(0, days.length - 14)).map(d => fbDb.ref('werkplaats/backups/' + d).remove()));
+    } catch (e) { console.warn('Dagelijkse back-up mislukt', e); }
+  }
+  try { localStorage.setItem('werkplaats:lastBackup', today); } catch (e) {}
+}
+function showDataWarning(msg) {
+  const bar = document.getElementById('data-warning');
+  if (!bar) { alert(msg); return; }
+  document.getElementById('data-warning-text').textContent = msg;
+  bar.classList.add('open');
+}
 async function storageGet(key) {
   if (fbReady) {
     try {
       const snap = await fbDb.ref('werkplaats/' + key).once('value');
       const val = snap.val();
       if (val !== null && val !== undefined) return { key, value: val };
-    } catch (e) { console.error('Firebase get mislukt', e); }
+    } catch (e) { console.error('Firebase get mislukt', e); fbReadFailed = true; }
   }
   if (storageMode === 'claude') {
     let lastErr = null;
@@ -3336,7 +3459,45 @@ async function storageGet(key) {
   if (raw === null) throw new Error('not found');
   return { key, value: raw };
 }
-async function storageSet(key, value) {
+async function loadJson(key, fallback) {
+  try {
+    const r = await storageGet(key);
+    const val = r ? r.value : null;
+    dataLoadOk[key] = true;
+    lastKnown[key] = val != null ? val : JSON.stringify(fallback);
+    return val ? JSON.parse(val) : fallback;
+  } catch (e) {
+    const leeg = e && /not found/i.test(e.message || '') && !fbReadFailed;
+    if (leeg) {
+      dataLoadOk[key] = true;
+      lastKnown[key] = JSON.stringify(fallback);
+      return fallback;
+    }
+    dataLoadOk[key] = false;
+    console.error('Laden mislukt: ' + key, e);
+    showDataWarning('\u201c' + dataName(key) + '\u201d kon niet worden geladen. Opslaan is voor dit onderdeel geblokkeerd tot je de app opnieuw opent \u2014 zo kan bestaande data niet overschreven worden.');
+    return fallback;
+  }
+}
+async function storageSet(key, value, opts) {
+  opts = opts || {};
+  if (guarded(key)) {
+    if (dataLoadOk[key] !== true) {
+      showDataWarning('Opslaan geblokkeerd: \u201c' + dataName(key) + '\u201d is bij het openen niet goed geladen. Sluit de app en open hem opnieuw met internet, dan blijft alles behouden.');
+      throw new Error('opslaan geblokkeerd \u2014 niet geladen');
+    }
+    const prev = lastKnown[key];
+    if (typeof prev === 'string' && !opts.allowShrink) {
+      const nOud = itemCount(prev), nNieuw = itemCount(value);
+      const groofVerlies = nOud > 0 && nNieuw >= 0 && (nNieuw === 0 || (nOud - nNieuw >= 3 && nNieuw < nOud * 0.6));
+      if (groofVerlies) {
+        await writeHistory(key, prev, true);
+        showDataWarning('Opslaan geblokkeerd: dit zou ' + (nOud - nNieuw) + ' van de ' + nOud + ' items in \u201c' + dataName(key) + '\u201d wissen. Er is een veiligheidskopie bewaard \u2014 open Herstel als dit niet de bedoeling was.');
+        throw new Error('opslaan geblokkeerd \u2014 te veel verlies');
+      }
+    }
+    await writeHistory(key, prev, false);
+  }
   if (fbReady) {
     try {
       suppressRemote = true;
@@ -3344,8 +3505,11 @@ async function storageSet(key, value) {
     } catch (e) { console.error('Firebase set mislukt', e); }
     finally { setTimeout(() => { suppressRemote = false; }, 300); }
   }
+  if (guarded(key)) lastKnown[key] = value;
   if (storageMode === 'claude') {
-    return await window.storage.set(key, value);
+    const res = await window.storage.set(key, value);
+    try { localStorage.setItem('werkplaats:' + key, value); } catch (e) {}
+    return res;
   }
   localStorage.setItem('werkplaats:' + key, value);
   return { key, value };
@@ -3361,24 +3525,12 @@ async function loadData() {
       ? 'Alles wat je hier invoert, wordt automatisch bewaard via Claude — je kunt dus altijd verder waar je gebleven was.'
       : 'Alles wat je hier invoert, wordt bewaard in deze browser op deze computer. Open je het bestand op een ander apparaat of in een andere browser, dan begin je daar opnieuw.';
   }
-  try {
-    const t = await storageGet('tasks-data');
-    tasks = t ? JSON.parse(t.value) : [];
-  } catch (e) { console.error('Laden taken mislukt', e); tasks = []; }
+  tasks = await loadJson('tasks-data', []);
   tasks.forEach(t => { if (!t.priority) t.priority = 3; if (!t.subtasks) t.subtasks = []; if (t.clientId === undefined) t.clientId = null; if (t.dueDate === undefined) t.dueDate = null; if (t.dueTime === undefined) t.dueTime = null; if (t.reminderFired === undefined) t.reminderFired = false; });
-  try {
-    const c = await storageGet('clients-data');
-    clients = c ? JSON.parse(c.value) : [];
-  } catch (e) { console.error('Laden klanten mislukt', e); clients = []; }
+  clients = await loadJson('clients-data', []);
   clients.forEach(c => { if (!c.phase) c.phase = 'lead'; if (!c.projectPhotos) c.projectPhotos = []; });
-  try {
-    const f = await storageGet('fireplace-catalog');
-    fireplaces = f ? JSON.parse(f.value) : [];
-  } catch (e) { console.error('Laden haardendatabase mislukt', e); fireplaces = []; }
-  try {
-    const cd = await storageGet('calculations-data');
-    calculations = cd ? JSON.parse(cd.value) : [];
-  } catch (e) { console.error('Laden calculaties mislukt', e); calculations = []; }
+  fireplaces = await loadJson('fireplace-catalog', []);
+  calculations = await loadJson('calculations-data', []);
   calculations.forEach(c => { if (!c.createdAt) c.createdAt = Date.now(); if (!c.products) c.products = []; if (!c.qty) c.qty = {}; if (c.title === undefined) c.title = ''; });
   try {
     const s = await storageGet('settings-data');
@@ -3389,22 +3541,14 @@ async function loadData() {
     const pr = await storageGet('calc-prices');
     priceOverrides = pr ? JSON.parse(pr.value) : {};
   } catch (e) { console.error('Laden prijzen mislukt', e); priceOverrides = {}; }
+  notes = await loadJson('notes-data', []);
+  forms = await loadJson('forms-data', []);
+  formLibrary = await loadJson('forms-library', []);
+  modelLibrary = await loadJson('skp-models', []);
   try {
-    const nt = await storageGet('notes-data');
-    notes = nt ? JSON.parse(nt.value) : [];
-  } catch (e) { console.error('Laden notities mislukt', e); notes = []; }
-  try {
-    const fd = await storageGet('forms-data');
-    forms = fd ? JSON.parse(fd.value) : [];
-  } catch (e) { console.error('Laden formulieren mislukt', e); forms = []; }
-  try {
-    const fl = await storageGet('forms-library');
-    formLibrary = fl ? JSON.parse(fl.value) : [];
-  } catch (e) { console.error('Laden bestelbibliotheek mislukt', e); formLibrary = []; }
-  try {
-    const ml = await storageGet('skp-models');
-    modelLibrary = ml ? JSON.parse(ml.value) : [];
-  } catch (e) { console.error('Laden modelbibliotheek mislukt', e); modelLibrary = []; }
+    const tr = await storageGet('trash-data');
+    trash = tr ? JSON.parse(tr.value) : [];
+  } catch (e) { trash = []; }
   applyPriceOverrides();
   applyReminderSettingToUI();
   renderNotes();
@@ -3417,6 +3561,7 @@ async function loadData() {
   migrateOversizedPhotos();
   checkTaskReminders();
   setupRealtimeSync();
+  maybeDailyBackup();
 }
 function setupRealtimeSync() {
   if (!fbReady) return;
@@ -4129,6 +4274,7 @@ async function deleteNoteById(id, opts) {
   }
   const idx = notes.indexOf(removed);
   notes = notes.filter(x => x.id !== id);
+  pushTrash('notitie', noteHeading(removed), removed);
   if (openNoteId === id) openNoteId = null;
   if (dict.noteId === id) { dict.open = false; dict.noteId = null; }
   await saveNotes();
@@ -7037,6 +7183,7 @@ function renderRail() {
         e.stopPropagation();
         e.currentTarget.classList.add('on');
         t.done = true;
+        t.doneAt = Date.now();
         await saveTasks();
         renderTasks();
         renderBoard();
@@ -7391,7 +7538,7 @@ function renderBoard() {
   if (open.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'board-empty';
-    empty.textContent = 'Geen openstaande taken — het bord is leeg.';
+    empty.textContent = 'Geen openstaande post-its \u2014 mis je er een? Tik op Herstel.';
     board.appendChild(empty);
     return;
   }
@@ -7554,6 +7701,7 @@ function renderBoard() {
       const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const finishTask = () => {
         t.done = true;
+        t.doneAt = Date.now();
         saveTasks();
         renderBoard();
         renderTasks();
@@ -7785,9 +7933,18 @@ function taskCard(t) {
     renderTasks();
   });
   el.querySelector('.task-del').addEventListener('click', () => {
+    const verwijderd = t;
+    const idx = tasks.indexOf(t);
     tasks = tasks.filter(x => x.id !== t.id);
+    pushTrash('taak', verwijderd.text || 'Taak', verwijderd);
     saveTasks();
     renderTasks();
+    showUndoToast('Post-it verwijderd \u2014 staat 30 dagen in de prullenbak', async () => {
+      tasks.splice(Math.min(idx, tasks.length), 0, verwijderd);
+      await saveTasks();
+      renderTasks();
+      renderBoard();
+    });
   });
   el.querySelector('.task-due').addEventListener('click', () => {
     const dueEl = el.querySelector('.task-due');
@@ -9372,7 +9529,7 @@ document.getElementById('reminder-dismiss-btn').addEventListener('click', closeR
 document.getElementById('reminder-done-btn').addEventListener('click', () => {
   const taskId = document.getElementById('reminder-modal-backdrop').dataset.taskId;
   const t = tasks.find(x => x.id === taskId);
-  if (t) { t.done = true; saveTasks(); renderTasks(); renderBoard(); }
+  if (t) { t.done = true; t.doneAt = Date.now(); saveTasks(); renderTasks(); renderBoard(); }
   closeReminderPopup();
 });
 // ---------- Clock ----------
@@ -11172,6 +11329,257 @@ document.getElementById('psheet-close-btn').addEventListener('click', () => {
 document.getElementById('psheet-vat-mode').addEventListener('change', (e) => {
   try { localStorage.setItem('werkplaats:vatMode', e.target.value); } catch (err) {}
   if (window.__editingCalc) fillPsheetPreview(window.__editingCalc, false);
+});
+
+// ---------- Herstel, prullenbak en back-up ----------
+async function saveTrash() {
+  trash = trash.filter(e => Date.now() - e.t < 30 * 864e5).slice(0, 200);
+  try { await storageSet('trash-data', JSON.stringify(trash)); } catch (e) { console.warn('Prullenbak opslaan mislukt', e); }
+}
+function pushTrash(kind, label, item) {
+  trash.unshift({ id: 'tr' + Date.now() + Math.random().toString(36).slice(2, 6), t: Date.now(), kind, label: label || '', item });
+  saveTrash();
+}
+function recWhen(ts) {
+  if (!ts) return 'Onbekend moment';
+  const d = new Date(ts);
+  return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+}
+async function collectRecoverySources(key) {
+  const out = [];
+  const push = (t, v, src) => { if (typeof v === 'string' && itemCount(v) > 0) out.push({ t, v, src }); };
+  try { JSON.parse(localStorage.getItem('werkplaats:hist:' + key) || '[]').forEach(e => push(e.t, e.v, 'Vorige versie op dit apparaat')); } catch (e) {}
+  try { push(null, localStorage.getItem('werkplaats:' + key), 'Kopie in deze browser'); } catch (e) {}
+  try {
+    const lb = JSON.parse(localStorage.getItem('werkplaats:localBackup') || 'null');
+    if (lb && lb.data) push(lb.t, lb.data[key], 'Dagback-up op dit apparaat');
+  } catch (e) {}
+  if (fbReady) {
+    try {
+      const snap = await fbDb.ref('werkplaats/history/' + key).orderByChild('t').once('value');
+      snap.forEach(c => { const e = c.val(); if (e) push(e.t, e.v, 'Versiegeschiedenis (gedeeld)'); });
+    } catch (e) {}
+    try {
+      const snap = await fbDb.ref('werkplaats/backups').once('value');
+      snap.forEach(c => { const b = c.val(); if (b && b.data) push(b.t, b.data[key], 'Dagback-up ' + c.key); });
+    } catch (e) {}
+  }
+  const seen = {};
+  return out.filter(e => {
+    const k = e.v.length + ':' + itemCount(e.v);
+    if (seen[k]) return false;
+    seen[k] = 1;
+    return true;
+  }).sort((a, b) => (b.t || 0) - (a.t || 0)).slice(0, 14);
+}
+async function restoreVersion(key, value) {
+  const n = itemCount(value);
+  if (!confirm('Deze versie van \u201c' + dataName(key) + '\u201d terugzetten? Er komen dan ' + n + ' items terug te staan. De huidige versie wordt eerst als veiligheidskopie bewaard.')) return;
+  try {
+    await writeHistory(key, lastKnown[key], true);
+    await storageSet(key, value, { allowShrink: true });
+    alert('Teruggezet. De app wordt nu opnieuw geladen.');
+    location.reload();
+  } catch (e) {
+    alert('Terugzetten mislukt: ' + (e && e.message ? e.message : e));
+  }
+}
+function recRow(whenText, subText, buttons) {
+  const row = document.createElement('div');
+  row.className = 'rec-row';
+  const main = document.createElement('div');
+  main.className = 'rec-row-main';
+  main.innerHTML = '<div class="rec-row-when"></div><div class="rec-row-sub"></div>';
+  main.querySelector('.rec-row-when').textContent = whenText;
+  main.querySelector('.rec-row-sub').textContent = subText;
+  row.appendChild(main);
+  buttons.forEach(([label, fn, cls]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn btn-sm' + (cls ? ' ' + cls : '');
+    b.textContent = label;
+    b.addEventListener('click', fn);
+    row.appendChild(b);
+  });
+  return row;
+}
+function previewItems(key, value) {
+  let arr = [];
+  try { arr = JSON.parse(value) || []; } catch (e) {}
+  if (!Array.isArray(arr)) arr = Object.values(arr);
+  const titel = (x) => x.text || x.title || x.name || x.clientName || (x.data && (x.data.project || x.data.model)) || '(zonder titel)';
+  alert(dataName(key) + ' \u2014 ' + arr.length + ' items:\n\n' + arr.slice(0, 40).map(x => '\u2022 ' + titel(x)).join('\n'));
+}
+async function renderRecover() {
+  const body = document.getElementById('recover-body');
+  body.innerHTML = '';
+
+  const status = document.createElement('div');
+  status.className = 'rec-block';
+  status.innerHTML = '<div class="rec-block-title">Nu in de app</div><div class="rec-block-desc">Zo staat het er op dit moment voor. Wordt een onderdeel niet goed geladen, dan blokkeert de app het opslaan zodat goede gegevens niet overschreven worden.</div>';
+  const st = document.createElement('div');
+  st.className = 'rec-status';
+  st.innerHTML = ['tasks-data', 'notes-data', 'clients-data', 'forms-data', 'calculations-data']
+    .map(k => '<span>' + dataName(k) + ': <b>' + Math.max(0, itemCount(lastKnown[k] || '[]')) + '</b>' + (dataLoadOk[k] === true ? '' : ' \u26a0 niet geladen') + '</span>').join('');
+  status.appendChild(st);
+  const sync = document.createElement('div');
+  sync.className = 'rec-row-sub';
+  sync.style.marginTop = '8px';
+  sync.textContent = fbReady ? 'Synchronisatie actief \u2014 versiegeschiedenis en dagback-ups worden bewaard.' : 'Geen synchronisatie op dit moment: alleen dit apparaat. Wijzigingen gaan niet naar je andere apparaten.';
+  status.appendChild(sync);
+  body.appendChild(status);
+
+  const done = tasks.filter(t => t.done).sort((a, b) => (b.doneAt || b.updatedAt || 0) - (a.doneAt || a.updatedAt || 0)).slice(0, 12);
+  const dblock = document.createElement('div');
+  dblock.className = 'rec-block';
+  dblock.innerHTML = '<div class="rec-block-title">Afgevinkte post-its</div><div class="rec-block-desc">Een post-it verdwijnt ook van het bord als hij (per ongeluk) is afgevinkt. Hier zet je hem in \u00e9\u00e9n tik terug.</div>';
+  if (!done.length) dblock.insertAdjacentHTML('beforeend', '<div class="rec-empty">Niets afgevinkt.</div>');
+  done.forEach(t => {
+    dblock.appendChild(recRow(t.text || 'Taak', 'Afgevinkt: ' + recWhen(t.doneAt), [['Terug op bord', async () => {
+      t.done = false;
+      t.doneAt = null;
+      await saveTasks();
+      renderTasks();
+      renderBoard();
+      renderRecover();
+    }]]));
+  });
+  body.appendChild(dblock);
+
+  const tblock = document.createElement('div');
+  tblock.className = 'rec-block';
+  tblock.innerHTML = '<div class="rec-block-title">Prullenbak</div><div class="rec-block-desc">Verwijderde post-its en notities blijven hier 30 dagen staan.</div>';
+  if (!trash.length) tblock.insertAdjacentHTML('beforeend', '<div class="rec-empty">Prullenbak is leeg.</div>');
+  trash.slice(0, 25).forEach(e => {
+    tblock.appendChild(recRow(e.label || e.kind, e.kind + ' \u2014 verwijderd ' + recWhen(e.t), [['Terugzetten', async () => {
+      if (e.kind === 'taak') { tasks.unshift(e.item); await saveTasks(); renderTasks(); renderBoard(); }
+      else { notes.unshift(e.item); await saveNotes(); renderNotes(); }
+      trash = trash.filter(x => x.id !== e.id);
+      await saveTrash();
+      renderRecover();
+    }]]));
+  });
+  body.appendChild(tblock);
+
+  const vblock = document.createElement('div');
+  vblock.className = 'rec-block';
+  vblock.innerHTML = '<div class="rec-block-title">Vorige versies</div><div class="rec-block-desc">Elke bewaarde versie van v\u00f3\u00f3r een wijziging \u2014 van dit apparaat en van de gedeelde synchronisatie. Kies een moment waarvan je weet dat alles er nog stond.</div>';
+  vblock.insertAdjacentHTML('beforeend', '<div class="rec-empty">Zoeken\u2026</div>');
+  body.appendChild(vblock);
+
+  const exp = document.createElement('div');
+  exp.className = 'rec-block';
+  exp.innerHTML = '<div class="rec-block-title">Eigen back-up</div><div class="rec-block-desc">Zet af en toe een volledige kopie op je telefoon of pc. Dat bestand staat los van de app en kan nooit door de app overschreven worden.</div>';
+  const expBtn = document.createElement('button');
+  expBtn.type = 'button';
+  expBtn.className = 'btn btn-sm';
+  expBtn.textContent = 'Back-upbestand opslaan';
+  expBtn.addEventListener('click', () => {
+    const data = {};
+    Object.keys(DATA_KEYS).forEach(k => { if (lastKnown[k]) data[k] = lastKnown[k]; });
+    const blob = new Blob([JSON.stringify({ t: Date.now(), data }, null, 2)], { type: 'application/json' });
+    downloadBlob(blob, 'werkplaats-backup-' + new Date().toISOString().slice(0, 10) + '.json');
+  });
+  const impLabel = document.createElement('label');
+  impLabel.className = 'btn btn-sm';
+  impLabel.style.marginLeft = '8px';
+  impLabel.textContent = 'Back-upbestand inlezen';
+  const imp = document.createElement('input');
+  imp.type = 'file';
+  imp.accept = 'application/json,.json';
+  imp.style.display = 'none';
+  imp.addEventListener('change', async () => {
+    const file = imp.files && imp.files[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      const keys = Object.keys(parsed.data || {});
+      if (!keys.length) throw new Error('geen gegevens in dit bestand');
+      if (!confirm('Alles uit deze back-up van ' + recWhen(parsed.t) + ' terugzetten? Dit overschrijft ' + keys.length + ' onderdelen.')) return;
+      for (const k of keys) {
+        await writeHistory(k, lastKnown[k], true);
+        await storageSet(k, parsed.data[k], { allowShrink: true });
+      }
+      alert('Back-up teruggezet. De app wordt opnieuw geladen.');
+      location.reload();
+    } catch (e) {
+      alert('Inlezen mislukt: ' + (e && e.message ? e.message : e));
+    }
+  });
+  impLabel.appendChild(imp);
+  const expRow = document.createElement('div');
+  expRow.appendChild(expBtn);
+  expRow.appendChild(impLabel);
+  exp.appendChild(expRow);
+  body.appendChild(exp);
+
+  const scan = document.createElement('div');
+  scan.className = 'rec-block';
+  scan.innerHTML = '<div class="rec-block-title">Diepe scan op dit apparaat</div><div class="rec-block-desc">Zoekt in de volledige opslag van deze browser naar elke lijst die op post-its lijkt \u2014 ook onder oude of onverwachte namen. Doe dit op elk apparaat waar je de app gebruikt.</div>';
+  const scanBtn = document.createElement('button');
+  scanBtn.type = 'button';
+  scanBtn.className = 'btn btn-sm';
+  scanBtn.textContent = 'Scan starten';
+  scanBtn.addEventListener('click', () => {
+    scanBtn.disabled = true;
+    const hits = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const lsKey = localStorage.key(i);
+      let raw;
+      try { raw = localStorage.getItem(lsKey); } catch (e) { continue; }
+      if (!raw || raw.charAt(0) !== '[') continue;
+      let arr;
+      try { arr = JSON.parse(raw); } catch (e) { continue; }
+      if (!Array.isArray(arr) || !arr.length) continue;
+      const taakachtig = arr.filter(x => x && typeof x === 'object' && typeof x.text === 'string' && ('done' in x || 'priority' in x)).length;
+      if (taakachtig) hits.push({ lsKey, raw, n: arr.length, taakachtig });
+    }
+    hits.sort((a, b) => b.taakachtig - a.taakachtig);
+    if (!hits.length) {
+      scan.insertAdjacentHTML('beforeend', '<div class="rec-empty">Niets gevonden in de opslag van dit apparaat. Probeer de scan op je andere telefoon, tablet of pc \u2014 een apparaat dat sinds het verdwijnen niets heeft opgeslagen, heeft de oude lijst mogelijk nog.</div>');
+      return;
+    }
+    hits.forEach(h => {
+      scan.appendChild(recRow(h.taakachtig + ' post-its gevonden', 'Opslagnaam: ' + h.lsKey, [
+        ['Bekijken', () => previewItems('tasks-data', h.raw)],
+        ['Terugzetten', () => restoreVersion('tasks-data', h.raw)]
+      ]));
+    });
+  });
+  scan.appendChild(scanBtn);
+  body.insertBefore(scan, vblock.nextSibling);
+
+  const perKey = await Promise.all(Object.keys(DATA_KEYS).map(async k => ({ k, list: await collectRecoverySources(k) })));
+  vblock.querySelector('.rec-empty').remove();
+  let gevonden = 0;
+  perKey.forEach(({ k, list }) => {
+    if (!list.length) return;
+    gevonden += list.length;
+    const head = document.createElement('div');
+    head.className = 'rec-row-sub';
+    head.style.cssText = 'margin:12px 0 2px; color:var(--paper); font-size:12px; font-weight:600';
+    head.textContent = dataName(k);
+    vblock.appendChild(head);
+    list.forEach(e => {
+      vblock.appendChild(recRow(recWhen(e.t), e.src + ' \u2014 ' + itemCount(e.v) + ' items', [
+        ['Bekijken', () => previewItems(k, e.v)],
+        ['Terugzetten', () => restoreVersion(k, e.v)]
+      ]));
+    });
+  });
+  if (!gevonden) vblock.insertAdjacentHTML('beforeend', '<div class="rec-empty">Geen oudere versies gevonden. Vanaf nu bewaart de app ze automatisch bij elke wijziging.</div>');
+}
+function openRecover() {
+  document.getElementById('recover-backdrop').classList.add('open');
+  renderRecover();
+}
+document.getElementById('board-recover-btn').addEventListener('click', openRecover);
+document.getElementById('recover-close').addEventListener('click', () => {
+  document.getElementById('recover-backdrop').classList.remove('open');
+});
+document.getElementById('data-warning-open').addEventListener('click', openRecover);
+document.getElementById('data-warning-close').addEventListener('click', () => {
+  document.getElementById('data-warning').classList.remove('open');
 });
 document.getElementById('psheet-print-btn').addEventListener('click', () => { window.print(); });
 document.getElementById('calc-copy-btn').addEventListener('click', () => {
