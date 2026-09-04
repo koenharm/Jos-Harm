@@ -2654,11 +2654,9 @@
           <div class="view-title">Afgeronde projecten</div>
           <div class="view-desc">De showroombibliotheek — ons eigen werk op foto, gesorteerd op soort haard. Laat hier in de showroom zien wat we al hebben gemaakt.</div>
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap">
-          <label class="btn btn-ghost" for="bulk-folder-input" style="cursor:pointer">Map inlezen</label>
-          <input type="file" id="bulk-folder-input" webkitdirectory directory multiple accept="image/*" style="display:none" />
-          <button class="btn btn-primary" id="lib-add-btn" type="button">+ Project toevoegen</button>
-        </div>
+        <button class="btn btn-primary" id="lib-add-btn" type="button">+ Toevoegen</button>
+        <input type="file" id="bulk-folder-input" webkitdirectory directory multiple accept="image/*" style="display:none" />
+        <input type="file" id="bulk-zip-input" accept=".zip,application/zip,application/x-zip-compressed" multiple style="display:none" />
       </div>
       <div class="lib-wall" id="lib-wall"></div>
       <div class="lib-crumbs" id="lib-crumbs"></div>
@@ -8851,20 +8849,18 @@ function bulkRaadCat(tekst) {
 function bulkIsTekening(naam) {
   return /website|sketchup|skp|maatvoering|tekening|aanzicht/i.test(naam);
 }
-document.getElementById('bulk-folder-input').addEventListener('change', (e) => {
-  const files = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type));
-  e.target.value = '';
-  if (!files.length) { alert('Geen afbeeldingen gevonden in deze map.'); return; }
+function bulkVanBestanden(items, standaardNaam) {
+  // items: [{ naam, pad, file }]
   const perMap = {};
-  files.forEach(f => {
-    const delen = (f.webkitRelativePath || f.name).split('/');
-    const map = delen.length > 1 ? delen[delen.length - 2] : 'Zonder map';
-    (perMap[map] = perMap[map] || []).push(f);
+  items.forEach(it => {
+    const delen = (it.pad || it.naam).split('/').filter(Boolean);
+    const map = delen.length > 1 ? delen[delen.length - 2] : (standaardNaam || 'Zonder map');
+    (perMap[map] = perMap[map] || []).push(it);
   });
   bulkGroups = Object.keys(perMap).sort((a, b) => a.localeCompare(b, 'nl', { numeric: true })).map((map, i) => {
-    const lijst = perMap[map].map(f => ({ naam: f.name, file: f }));
+    const lijst = perMap[map].slice();
     lijst.sort((a, b) => (bulkIsTekening(a.naam) ? 1 : 0) - (bulkIsTekening(b.naam) ? 1 : 0) || bulkNatuurlijk(a, b));
-    const titel = map.replace(/-\d{8}T\d+Z.*$/i, '').replace(/[_-]+/g, ' ').trim();
+    const titel = map.replace(/-\d{8}T\d+Z.*$/i, '').replace(/\.zip$/i, '').replace(/[_-]+/g, ' ').trim();
     return { id: 'bg' + i, map, titel, files: lijst, cat: bulkRaadCat(map + ' ' + lijst.map(x => x.naam).join(' ')), sub: null, model: '', aan: true };
   });
   bulkGroups.forEach(g => { g.sub = (LIB_CATS.find(c => c.key === g.cat) || LIB_CATS[0]).subs[0]; });
@@ -8872,6 +8868,83 @@ document.getElementById('bulk-folder-input').addEventListener('change', (e) => {
   document.getElementById('bulk-status').textContent = '';
   document.getElementById('bulk-bar').style.display = 'none';
   document.getElementById('bulk-backdrop').classList.add('open');
+}
+document.getElementById('bulk-folder-input').addEventListener('change', (e) => {
+  const files = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type));
+  e.target.value = '';
+  if (!files.length) { alert('Geen afbeeldingen gevonden in deze map.'); return; }
+  bulkVanBestanden(files.map(f => ({ naam: f.name, pad: f.webkitRelativePath || f.name, file: f })));
+});
+// ---- Zipbestanden uitpakken in de browser ----
+async function unzip(blob) {
+  const buf = await blob.arrayBuffer();
+  const dv = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+  let eocd = -1;
+  for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 66000); i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error('geen geldig zip-bestand');
+  const aantal = dv.getUint16(eocd + 10, true);
+  let p = dv.getUint32(eocd + 16, true);
+  const uit = [];
+  const dec = new TextDecoder();
+  for (let i = 0; i < aantal; i++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const methode = dv.getUint16(p + 10, true);
+    const compLen = dv.getUint32(p + 20, true);
+    const naamLen = dv.getUint16(p + 28, true);
+    const extraLen = dv.getUint16(p + 30, true);
+    const cmtLen = dv.getUint16(p + 32, true);
+    const lokaal = dv.getUint32(p + 42, true);
+    const pad = dec.decode(bytes.subarray(p + 46, p + 46 + naamLen));
+    p += 46 + naamLen + extraLen + cmtLen;
+    if (/\/$/.test(pad) || /(^|\/)__MACOSX\//.test(pad) || /(^|\/)\._/.test(pad)) continue;
+    if (!/\.(jpe?g|png|webp|gif|bmp)$/i.test(pad)) continue;
+    const lNaamLen = dv.getUint16(lokaal + 26, true);
+    const lExtraLen = dv.getUint16(lokaal + 28, true);
+    const start = lokaal + 30 + lNaamLen + lExtraLen;
+    const rauw = bytes.subarray(start, start + compLen);
+    let data;
+    if (methode === 0) data = new Blob([rauw]);
+    else if (methode === 8 && typeof DecompressionStream !== 'undefined') {
+      const ds = new DecompressionStream('deflate-raw');
+      data = await new Response(new Blob([rauw]).stream().pipeThrough(ds)).blob();
+    } else continue;
+    const naam = pad.split('/').pop();
+    const soort = /\.png$/i.test(naam) ? 'image/png' : /\.webp$/i.test(naam) ? 'image/webp' : 'image/jpeg';
+    uit.push({ naam, pad, file: new File([data], naam, { type: soort }) });
+  }
+  return uit;
+}
+document.getElementById('bulk-zip-input').addEventListener('change', async (e) => {
+  const zips = Array.from(e.target.files || []);
+  e.target.value = '';
+  if (!zips.length) return;
+  const btn = document.getElementById('lib-add-btn');
+  const oud = btn.textContent;
+  btn.textContent = 'Uitpakken\u2026';
+  btn.disabled = true;
+  try {
+    let alles = [];
+    for (const z of zips) {
+      const items = await unzip(z);
+      const basis = z.name.replace(/\.zip$/i, '');
+      // bestanden in de zipwortel krijgen de zipnaam als project
+      alles = alles.concat(items.map(it => ({
+        naam: it.naam,
+        pad: it.pad.includes('/') ? it.pad : basis + '/' + it.naam,
+        file: it.file
+      })));
+    }
+    if (!alles.length) { alert('Geen afbeeldingen in dit zip-bestand gevonden.'); return; }
+    bulkVanBestanden(alles);
+  } catch (err) {
+    alert('Uitpakken mislukt: ' + (err && err.message ? err.message : err));
+  } finally {
+    btn.textContent = oud;
+    btn.disabled = false;
+  }
 });
 function renderBulk() {
   const wrap = document.getElementById('bulk-groups');
@@ -9126,7 +9199,7 @@ function pdOpen(anchor, sections) {
   });
 }
 document.addEventListener('click', (e) => {
-  if (pdOpenFor && !e.target.closest('#pd-menu') && !e.target.closest('.pd-btn') && !e.target.closest('.lib-card-more')) pdClose();
+  if (pdOpenFor && !e.target.closest('#pd-menu') && !pdOpenFor.contains(e.target)) pdClose();
 });
 window.addEventListener('resize', pdClose);
 
@@ -9488,7 +9561,15 @@ function openLibDetail(id) {
   }
   document.getElementById('lib-detail-backdrop').classList.add('open');
 }
-document.getElementById('lib-add-btn').addEventListener('click', () => openLibModal(null, null));
+document.getElementById('lib-add-btn').addEventListener('click', (e) => {
+  pdOpen(e.currentTarget, [
+    { items: [{ label: '\u00c9\u00e9n project invullen', onSelect: () => openLibModal(null, null) }] },
+    { title: 'In \u00e9\u00e9n keer', items: [
+      { label: 'Map inlezen', onSelect: () => document.getElementById('bulk-folder-input').click() },
+      { label: 'Zip-bestand inlezen', onSelect: () => document.getElementById('bulk-zip-input').click() }
+    ] }
+  ]);
+});
 document.getElementById('lib-modal-close').addEventListener('click', closeLibModal);
 document.getElementById('lib-cancel-btn').addEventListener('click', closeLibModal);
 document.getElementById('lf-cat').addEventListener('change', e => libFillSubs(e.target.value, null));
