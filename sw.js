@@ -17,8 +17,8 @@ try {
   });
 } catch (e) { /* messaging niet beschikbaar */ }
 
-const CACHE_NAME = 'werkplaats-v38';
-const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'werkplaats-v57';
+const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './assets/front-gas-wide3.jpg', './assets/front-hout-wide.jpg', './assets/front-bio-wide.jpg', './assets/front-elek-wide.jpg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

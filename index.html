@@ -1331,6 +1331,233 @@
   .rec-empty { font-size: 12px; color: var(--smoke); font-style: italic; padding: 6px 0; }
   .rec-status { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: var(--smoke); }
   .rec-status span b { color: var(--paper); font-weight: 600; }
+  .lib-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-family: 'League Spartan', sans-serif; font-size: 12px; color: var(--smoke); margin: 4px 0 12px; }
+  .lib-crumb { background: none; border: none; padding: 0; font: inherit; color: var(--smoke); cursor: pointer; }
+  .lib-crumb:hover { color: var(--ember); }
+  .lib-crumb.here { color: var(--paper); font-weight: 600; cursor: default; }
+  .lib-crumb-sep { opacity: 0.5; }
+  .lib-subnav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--hairline); }
+  .lib-subnav:empty { display: none; }
+  .lib-subitem {
+    display: flex; align-items: center; gap: 8px; min-height: 40px;
+    font-family: 'League Spartan', sans-serif; font-size: 13px; letter-spacing: 0.02em;
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 9px 13px; color: var(--paper-dim); cursor: pointer;
+  }
+  .lib-subitem:hover { border-color: var(--ember-dim); color: var(--paper); }
+  .lib-subitem.on { background: var(--paper); color: var(--soot); border-color: var(--paper); font-weight: 600; }
+  .lib-subitem.leeg { opacity: 0.42; cursor: default; }
+  .lib-subitem .n { font-size: 11px; opacity: 0.65; }
+
+  /* ---- Map inlezen ---- */
+  .bulk-row { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 12px 0; border-top: 1px solid var(--hairline); }
+  .bulk-row:first-of-type { border-top: none; }
+  .bulk-row-head { display: flex; align-items: center; gap: 10px; }
+  .bulk-row-name { flex: 1; min-width: 0; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 13px; }
+  .bulk-row-count { font-family: 'League Spartan', sans-serif; font-size: 11px; color: var(--smoke); }
+  .bulk-row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bulk-row-fields select, .bulk-row-fields input {
+    width: 100%; background: var(--soot); border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 8px 10px; color: var(--paper); font-family: inherit; font-size: 12.5px;
+  }
+  .bulk-row-fields select:focus, .bulk-row-fields input:focus { outline: none; border-color: var(--ember); }
+  .bulk-row.uit { opacity: 0.42; }
+  .bulk-thumbs { display: flex; gap: 4px; overflow-x: auto; }
+  .bulk-thumbs img { width: 46px; height: 46px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--hairline); }
+  .bulk-status { font-size: 12px; color: var(--smoke); line-height: 1.6; margin-top: 10px; }
+  .bulk-bar { height: 4px; background: var(--panel-raised); margin-top: 8px; }
+  .bulk-bar span { display: block; height: 100%; background: var(--ember); width: 0; transition: width 0.2s; }
+
+  /* ---- Fotoviewer ---- */
+  #gal-backdrop { display: none; position: fixed; inset: 0; z-index: 700; background: rgba(20,19,17,0.94); flex-direction: column; }
+  #gal-backdrop.open { display: flex; }
+  .gal-bar { display: flex; align-items: center; gap: 12px; padding: 12px 16px calc(12px); flex-shrink: 0; }
+  .gal-bar-title { flex: 1; min-width: 0; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: #F7F6F4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gal-count { font-family: 'League Spartan', sans-serif; font-size: 12.5px; letter-spacing: 0.08em; color: rgba(247,246,244,0.85); }
+  .gal-close {
+    background: none; border: none; cursor: pointer; color: #F7F6F4;
+    font-family: 'League Spartan', sans-serif; font-size: 12.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px;
+  }
+  .gal-close:hover { color: var(--ember); }
+  .gal-stage { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; padding: 0 14px; }
+  .gal-stage img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+  .gal-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(247,246,244,0.14); border: 1px solid rgba(247,246,244,0.35); color: #F7F6F4;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .gal-arrow:hover { background: rgba(247,246,244,0.26); }
+  .gal-arrow svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #gal-prev { left: 10px; }
+  #gal-next { right: 10px; }
+  .gal-strip {
+    display: flex; gap: 6px; overflow-x: auto; padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+    flex-shrink: 0; scrollbar-width: none;
+  }
+  .gal-strip::-webkit-scrollbar { display: none; }
+  .gal-thumb {
+    width: 74px; height: 56px; flex-shrink: 0; object-fit: cover; cursor: pointer;
+    border: 2px solid transparent; opacity: 0.55; background: #2E2B29;
+  }
+  .gal-thumb:hover { opacity: 0.85; }
+  .gal-thumb.on { opacity: 1; border-color: var(--ember); }
+  .gal-note { padding: 0 16px 4px; font-size: 12px; color: rgba(247,246,244,0.7); line-height: 1.5; max-width: 900px; }
+  @media (max-width: 560px) {
+    .gal-thumb { width: 58px; height: 44px; }
+    .gal-note { display: none; }
+  }
+
+  /* ---- Galeriewand: vier verticale panelen ---- */
+  .lib-wall {
+    display: flex; gap: 3px; height: clamp(240px, 42vh, 420px);
+    margin: 2px 0 24px; overflow: hidden;
+  }
+  .lib-panel {
+    position: relative; flex: 1 1 0; min-width: 0; overflow: hidden; cursor: pointer;
+    background: #201E1D; border: none; padding: 0; color: #F7F6F4;
+    transition: flex-grow 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lib-panel-img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 52%;
+    filter: grayscale(0.25) brightness(0.95) contrast(1.04);
+    transition: filter 0.55s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lib-panel-veil { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,19,17,0.62) 0%, rgba(20,19,17,0.5) 14%, rgba(20,19,17,0) 30%, rgba(20,19,17,0) 52%, rgba(20,19,17,0.55) 74%, rgba(20,19,17,0.88) 100%); }
+  .lib-panel-blank { position: absolute; inset: 0; background: repeating-linear-gradient(135deg, #201E1D 0 9px, #2E2B29 9px 18px); }
+  .lib-panel-inner { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: flex-end; padding: 20px 2px 14px; }
+  .lib-panel-name {
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font-family: 'Poppins', sans-serif; font-weight: 700; letter-spacing: 0.01em;
+    font-size: clamp(17px, 2.3vw, 30px); line-height: 1; white-space: nowrap; color: #F7F6F4;
+    text-shadow: 0 1px 6px rgba(20,19,17,0.9);
+    padding: 16px 9px; border-radius: 3px;
+    background: linear-gradient(90deg, rgba(20,19,17,0) 0%, rgba(20,19,17,0.8) 34%, rgba(20,19,17,0.84) 100%);
+  }
+  .lib-panel-count {
+    position: absolute; top: 16px; left: 0; right: 0; text-align: center;
+    font-family: 'League Spartan', sans-serif; font-size: 11px; letter-spacing: 0.09em;
+    text-transform: uppercase; color: #F7F6F4; opacity: 0.95;
+    text-shadow: 0 1px 3px rgba(20,19,17,0.95), 0 0 14px rgba(20,19,17,0.85);
+  }
+  .lib-panel-arrow {
+    position: absolute; top: 42px; left: 50%; transform: translate(-50%, 8px); opacity: 0;
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .lib-panel-arrow svg { width: 22px; height: 22px; stroke: #F7F6F4; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 3px rgba(20,19,17,0.95)) drop-shadow(0 0 10px rgba(20,19,17,0.8)); }
+  .lib-panel:hover .lib-panel-img, .lib-panel.sel .lib-panel-img { filter: grayscale(0) brightness(1) contrast(1.02); }
+  .lib-panel:hover .lib-panel-arrow, .lib-panel.sel .lib-panel-arrow { opacity: 1; transform: translate(-50%, 0); }
+  .lib-panel:hover { flex-grow: 1.7; }
+  .lib-panel.sel { flex-grow: 2.6; }
+  .lib-wall.has-sel .lib-panel:not(.sel) { flex-grow: 0.72; }
+  .lib-wall.has-sel .lib-panel:not(.sel):hover { flex-grow: 1.1; }
+  .lib-panel:focus-visible { outline: 2px solid var(--ember); outline-offset: -2px; }
+  .lib-panel.sel .lib-panel-name { color: #FFFFFF; }
+  .lib-panel.sel::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--ember); }
+  @media (max-width: 560px) {
+    .lib-wall { height: clamp(200px, 34vh, 300px); }
+    .lib-panel-name { font-size: 15px; padding: 12px 7px; }
+    .lib-panel-count { font-size: 9.5px; }
+  }
+
+  /* ---- Pull-down menu's (Apple HIG-model: verborgen tot je erom vraagt) ---- */
+  .pd-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: 'League Spartan', sans-serif; font-size: 12px; letter-spacing: 0.03em;
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 8px 11px; color: var(--paper-dim); cursor: pointer; user-select: none;
+    max-width: 100%; min-height: 38px;
+  }
+  .pd-btn:hover { border-color: var(--ember-dim); color: var(--paper); }
+  .pd-btn.on { border-color: var(--ember); color: var(--paper); }
+  .pd-btn .pd-btn-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pd-btn .pd-btn-lead { color: var(--smoke); }
+  .pd-btn svg { width: 13px; height: 13px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .pd-clear {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 38px;
+    font-family: 'League Spartan', sans-serif; font-size: 12px; color: var(--smoke);
+    background: none; border: none; cursor: pointer; padding: 0 4px;
+  }
+  .pd-clear:hover { color: var(--ember); }
+  .pd-menu {
+    display: none; position: fixed; z-index: 620; min-width: 232px; max-width: min(92vw, 320px);
+    background: var(--panel); border: 1px solid var(--hairline); border-radius: 10px;
+    box-shadow: 0 18px 44px rgba(0,0,0,0.5); padding: 6px; overflow-y: auto; max-height: 70vh;
+  }
+  .pd-menu.open { display: block; }
+  .pd-menu-title {
+    font-family: 'League Spartan', sans-serif; font-size: 9.5px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--smoke); padding: 8px 10px 5px;
+  }
+  .pd-menu-sep { height: 1px; background: var(--hairline); margin: 5px 6px; }
+  .pd-item {
+    display: flex; align-items: center; gap: 9px; width: 100%;
+    padding: 9px 10px; border-radius: 6px; cursor: pointer; text-align: left;
+    background: none; border: none; color: var(--paper); font-family: inherit; font-size: 13px;
+  }
+  .pd-item .pd-check { width: 14px; flex-shrink: 0; color: var(--ember); display: flex; }
+  .pd-item .pd-check svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .pd-item .pd-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pd-item .pd-count { font-family: 'League Spartan', sans-serif; font-size: 11px; color: var(--smoke); flex-shrink: 0; }
+  .pd-item:hover:not(.disabled), .pd-item.focus:not(.disabled) { background: var(--panel-raised); }
+  .pd-item.disabled { opacity: 0.4; cursor: default; }
+  .pd-item.destructive { color: var(--ember); }
+  .pd-item.destructive:hover { background: rgba(216,90,44,0.12); }
+  .lib-card-more {
+    position: absolute; top: 8px; left: 8px; width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(20,19,17,0.66); color: #F7F6F4; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s;
+  }
+  .lib-card:hover .lib-card-more, .lib-card-more:focus-visible, .lib-card-more.on { opacity: 1; }
+  .lib-card-more svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+  @media (hover: none) { .lib-card-more { opacity: 1; } }
+
+  /* ---- Showroombibliotheek ---- */
+  .lib-group { margin-bottom: 30px; }
+  .lib-group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .lib-group-title { font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--paper); }
+  .lib-group-count { font-family: 'League Spartan', sans-serif; font-size: 11px; color: var(--smoke); }
+  .lib-group-rule { height: 2px; background: var(--ember-dim); margin: 8px 0 16px; }
+  .lib-sub { margin-bottom: 22px; }
+  .lib-sub-title { font-family: 'League Spartan', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ember); margin-bottom: 10px; }
+  .lib-sub { margin-bottom: 26px; }
+  .lib-grid { column-count: 4; column-gap: 12px; }
+  @media (max-width: 1100px) { .lib-grid { column-count: 3; } }
+  @media (max-width: 760px) { .lib-grid { column-count: 2; column-gap: 9px; } }
+  .lib-card {
+    position: relative; break-inside: avoid; margin: 0 0 12px; display: block;
+    background: var(--panel-raised); border: none; cursor: pointer; overflow: hidden;
+    transition: opacity 0.2s;
+  }
+  @media (max-width: 760px) { .lib-card { margin-bottom: 9px; } }
+  .lib-card:hover { opacity: 0.94; }
+  .lib-card-photo { width: 100%; height: auto; display: block; aspect-ratio: 3 / 4; object-fit: cover; background: var(--panel-raised); }
+  .lib-card-empty {
+    width: 100%; aspect-ratio: 4 / 5; display: flex; align-items: center; justify-content: center;
+    background: repeating-linear-gradient(135deg, var(--panel) 0 9px, var(--panel-raised) 9px 18px);
+    color: var(--smoke); font-size: 11.5px; font-style: italic;
+  }
+  .lib-card-body {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 12px 11px;
+    background: linear-gradient(180deg, rgba(20,19,17,0) 0%, rgba(20,19,17,0.82) 62%, rgba(20,19,17,0.92) 100%);
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .lib-card:hover .lib-card-body, .lib-card:focus-within .lib-card-body { opacity: 1; }
+  @media (hover: none) { .lib-card-body { opacity: 1; } }
+  .lib-card-title { font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 12.5px; line-height: 1.3; color: #F7F6F4; }
+  .lib-card-meta { font-family: 'League Spartan', sans-serif; font-size: 10.5px; color: rgba(247,246,244,0.78); letter-spacing: 0.03em; margin-top: 2px; }
+  .lib-card-badge {
+    position: absolute; top: 8px; right: 8px; background: rgba(20,19,17,0.72); color: #F7F6F4;
+    font-family: 'League Spartan', sans-serif; font-size: 10.5px; padding: 3px 7px; letter-spacing: 0.04em;
+  }
+  .lib-pending { border: 1px solid var(--hairline); background: var(--panel); padding: 14px 16px; margin-bottom: 26px; }
+  .lib-pending-title { font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ember); margin-bottom: 4px; }
+  .lib-pending-desc { font-size: 12px; color: var(--smoke); line-height: 1.55; margin-bottom: 10px; }
+  .lib-pending-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--hairline); font-size: 12.5px; }
+  .lib-pending-row:first-of-type { border-top: none; }
+  .lib-pending-row-main { flex: 1; min-width: 0; }
+  .lib-pending-row-sub { font-size: 11px; color: var(--smoke); margin-top: 2px; }
+  .lib-empty { color: var(--smoke); font-size: 13px; font-style: italic; padding: 22px 2px; }
   .modal-backdrop { z-index: 500; }
   .modal-backdrop.open ~ .postit-pad, body:has(.modal-backdrop.open) .postit-pad { display: none !important; }
   .room-size-toggles { display: flex; gap: 8px; }
@@ -2425,10 +2652,19 @@
       <div class="view-header">
         <div>
           <div class="view-title">Afgeronde projecten</div>
-          <div class="view-desc">Alle projecten die klaar zijn, met foto's en het AI-gegenereerde verhaal erbij.</div>
+          <div class="view-desc">De showroombibliotheek — ons eigen werk op foto, gesorteerd op soort haard. Laat hier in de showroom zien wat we al hebben gemaakt.</div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <label class="btn btn-ghost" for="bulk-folder-input" style="cursor:pointer">Map inlezen</label>
+          <input type="file" id="bulk-folder-input" webkitdirectory directory multiple accept="image/*" style="display:none" />
+          <button class="btn btn-primary" id="lib-add-btn" type="button">+ Project toevoegen</button>
         </div>
       </div>
-      <div class="project-gallery" id="project-gallery"></div>
+      <div class="lib-wall" id="lib-wall"></div>
+      <div class="lib-crumbs" id="lib-crumbs"></div>
+      <div class="lib-subnav" id="lib-subnav"></div>
+      <div id="lib-pending"></div>
+      <div id="lib-body"></div>
     </div>
 
     <!-- HAARDENDATABASE -->
@@ -2998,6 +3234,116 @@
 
 <div id="toast" class="toast"></div>
 
+<div class="modal-backdrop" id="lib-modal-backdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="lib-modal-title">Project toevoegen</h2>
+      <div class="modal-close" id="lib-modal-close">&times;</div>
+    </div>
+    <div class="field">
+      <label>Titel</label>
+      <input type="text" id="lf-title" placeholder="bijv. Inbouwhaard met steenstrips, Ede" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Soort haard</label>
+        <select id="lf-cat"></select>
+      </div>
+      <div class="field">
+        <label>Uitvoering</label>
+        <select id="lf-sub"></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Merk en model</label>
+        <input type="text" id="lf-model" placeholder="bijv. Kalfire GP65/55F" />
+      </div>
+      <div class="field">
+        <label>Plaats</label>
+        <input type="text" id="lf-plaats" placeholder="bijv. Barneveld" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Jaar</label>
+        <input type="text" id="lf-jaar" placeholder="bijv. 2026" />
+      </div>
+      <div class="field">
+        <label>Afwerking</label>
+        <input type="text" id="lf-afwerking" placeholder="bijv. stucwerk, steenstrips" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Toelichting voor de showroom</label>
+      <textarea id="lf-notes" rows="3" placeholder="Wat maakt dit project bijzonder — vertel het verhaal dat je aan de klant meegeeft…"></textarea>
+    </div>
+    <div class="field">
+      <label>Foto's — de eerste is de omslagfoto</label>
+      <div class="detail-photos" id="lf-photos"></div>
+      <div class="photo-upload-row">
+        <div class="photo-add-btn" id="lf-photo-add">+</div>
+      </div>
+      <input type="file" id="lf-photo-input" accept="image/*" multiple style="display:none" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="lib-delete-btn" type="button" style="display:none">Verwijderen</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="lib-cancel-btn" type="button">Annuleren</button>
+      <button class="btn btn-primary" id="lib-save-btn" type="button">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="lib-detail-backdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="lib-detail-title">Project</h2>
+      <div class="modal-close" id="lib-detail-close">&times;</div>
+    </div>
+    <div id="lib-detail-body"></div>
+    <div class="modal-actions">
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="lib-detail-edit" type="button">Bewerken</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="bulk-backdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Map inlezen</h2>
+      <div class="modal-close" id="bulk-close">&times;</div>
+    </div>
+    <div class="bulk-status" id="bulk-intro">Elke submap wordt één project. Kies per project de soort en de uitvoering, pas de titel aan waar nodig, en zet ze in één keer in de bibliotheek. Foto's worden automatisch verkleind.</div>
+    <div id="bulk-groups" style="margin-top:6px"></div>
+    <div class="bulk-status" id="bulk-status"></div>
+    <div class="bulk-bar" id="bulk-bar" style="display:none"><span></span></div>
+    <div class="modal-actions">
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="bulk-cancel" type="button">Annuleren</button>
+      <button class="btn btn-primary" id="bulk-start" type="button">Alles toevoegen</button>
+    </div>
+  </div>
+</div>
+
+<div id="gal-backdrop">
+  <div class="gal-bar">
+    <div class="gal-bar-title" id="gal-title"></div>
+    <div class="gal-count" id="gal-count"></div>
+    <button class="gal-close" id="gal-close" type="button">Sluiten</button>
+  </div>
+  <div class="gal-stage">
+    <button class="gal-arrow" id="gal-prev" type="button" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <img id="gal-img" alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
+    <button class="gal-arrow" id="gal-next" type="button" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+  <div class="gal-note" id="gal-note"></div>
+  <div class="gal-strip" id="gal-strip"></div>
+</div>
+
+<div class="pd-menu" id="pd-menu"></div>
+
 <div class="lightbox-backdrop" id="lightbox-backdrop">
   <div class="lightbox-close">&times;</div>
   <div class="lightbox-arrow" id="lightbox-prev"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div>
@@ -3369,10 +3715,12 @@ const DATA_KEYS = {
   'calculations-data': 'Calculaties',
   'fireplace-catalog': 'Haardendatabase',
   'forms-library': 'Bestelbibliotheek',
-  'skp-models': 'Modelbibliotheek'
+  'skp-models': 'Modelbibliotheek',
+  'showcase-data': 'Showroombibliotheek'
 };
 const dataLoadOk = {};
 let trash = [];
+let showcase = [];
 const lastKnown = {};
 const histPruned = {};
 const lastHistAt = {};
@@ -3489,7 +3837,7 @@ async function storageSet(key, value, opts) {
     const prev = lastKnown[key];
     if (typeof prev === 'string' && !opts.allowShrink) {
       const nOud = itemCount(prev), nNieuw = itemCount(value);
-      const groofVerlies = nOud > 0 && nNieuw >= 0 && (nNieuw === 0 || (nOud - nNieuw >= 3 && nNieuw < nOud * 0.6));
+      const groofVerlies = nOud >= 3 && nNieuw >= 0 && (nNieuw === 0 || (nOud - nNieuw >= 3 && nNieuw < nOud * 0.6));
       if (groofVerlies) {
         await writeHistory(key, prev, true);
         showDataWarning('Opslaan geblokkeerd: dit zou ' + (nOud - nNieuw) + ' van de ' + nOud + ' items in \u201c' + dataName(key) + '\u201d wissen. Er is een veiligheidskopie bewaard \u2014 open Herstel als dit niet de bedoeling was.');
@@ -3545,6 +3893,7 @@ async function loadData() {
   forms = await loadJson('forms-data', []);
   formLibrary = await loadJson('forms-library', []);
   modelLibrary = await loadJson('skp-models', []);
+  showcase = await loadJson('showcase-data', []);
   try {
     const tr = await storageGet('trash-data');
     trash = tr ? JSON.parse(tr.value) : [];
@@ -3598,6 +3947,10 @@ function setupRealtimeSync() {
   });
   listenRemote('skp-models', (val) => {
     try { modelLibrary = JSON.parse(val) || []; } catch (e) { return; }
+  });
+  listenRemote('showcase-data', (val) => {
+    try { showcase = JSON.parse(val) || []; } catch (e) { return; }
+    renderProjectGallery();
   });
   listenRemote('calculations-data', (val) => {
     try { calculations = JSON.parse(val); } catch (e) { return; }
@@ -8483,39 +8836,722 @@ function renderClients() {
   populateTaskClientSelect();
 }
 
-function renderProjectGallery() {
-  const gallery = document.getElementById('project-gallery');
-  gallery.innerHTML = '';
-  const done = clients.filter(c => c.phase === 'afgerond').sort((a, b) => a.createdAt - b.createdAt);
-  document.getElementById('count-afgerond').textContent = done.length;
+// ---------- Map inlezen: meerdere projecten in één keer ----------
+let bulkGroups = [];
+function bulkNatuurlijk(a, b) {
+  return a.naam.localeCompare(b.naam, 'nl', { numeric: true, sensitivity: 'base' });
+}
+function bulkRaadCat(tekst) {
+  const t = (tekst || '').toLowerCase();
+  if (/bio|ethanol/.test(t)) return 'bio';
+  if (/elektr|electr/.test(t)) return 'elek';
+  if (/hout|wood|kachel/.test(t)) return 'hout';
+  return 'gas';
+}
+function bulkIsTekening(naam) {
+  return /website|sketchup|skp|maatvoering|tekening|aanzicht/i.test(naam);
+}
+document.getElementById('bulk-folder-input').addEventListener('change', (e) => {
+  const files = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type));
+  e.target.value = '';
+  if (!files.length) { alert('Geen afbeeldingen gevonden in deze map.'); return; }
+  const perMap = {};
+  files.forEach(f => {
+    const delen = (f.webkitRelativePath || f.name).split('/');
+    const map = delen.length > 1 ? delen[delen.length - 2] : 'Zonder map';
+    (perMap[map] = perMap[map] || []).push(f);
+  });
+  bulkGroups = Object.keys(perMap).sort((a, b) => a.localeCompare(b, 'nl', { numeric: true })).map((map, i) => {
+    const lijst = perMap[map].map(f => ({ naam: f.name, file: f }));
+    lijst.sort((a, b) => (bulkIsTekening(a.naam) ? 1 : 0) - (bulkIsTekening(b.naam) ? 1 : 0) || bulkNatuurlijk(a, b));
+    const titel = map.replace(/-\d{8}T\d+Z.*$/i, '').replace(/[_-]+/g, ' ').trim();
+    return { id: 'bg' + i, map, titel, files: lijst, cat: bulkRaadCat(map + ' ' + lijst.map(x => x.naam).join(' ')), sub: null, model: '', aan: true };
+  });
+  bulkGroups.forEach(g => { g.sub = (LIB_CATS.find(c => c.key === g.cat) || LIB_CATS[0]).subs[0]; });
+  renderBulk();
+  document.getElementById('bulk-status').textContent = '';
+  document.getElementById('bulk-bar').style.display = 'none';
+  document.getElementById('bulk-backdrop').classList.add('open');
+});
+function renderBulk() {
+  const wrap = document.getElementById('bulk-groups');
+  wrap.innerHTML = '';
+  bulkGroups.forEach(g => {
+    const row = document.createElement('div');
+    row.className = 'bulk-row' + (g.aan ? '' : ' uit');
+    const head = document.createElement('div');
+    head.className = 'bulk-row-head';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = g.aan;
+    cb.addEventListener('change', () => { g.aan = cb.checked; renderBulk(); });
+    const naam = document.createElement('input');
+    naam.className = 'bulk-row-name';
+    naam.value = g.titel;
+    naam.style.cssText = 'background:var(--soot); border:1px solid var(--hairline); border-radius:6px; padding:7px 9px; color:var(--paper); font-family:inherit';
+    naam.addEventListener('input', () => { g.titel = naam.value; });
+    const n = document.createElement('div');
+    n.className = 'bulk-row-count';
+    n.textContent = g.files.length + ' foto\u2019s';
+    head.appendChild(cb);
+    head.appendChild(naam);
+    head.appendChild(n);
+    row.appendChild(head);
 
-  if (done.length === 0) {
-    gallery.innerHTML = '<div class="gallery-empty">Nog geen afgeronde projecten.</div>';
-    return;
-  }
-  done.forEach(c => {
-    const card = document.createElement('div');
-    card.className = 'project-card';
-    const cover = (c.projectPhotos && c.projectPhotos[0]) || (c.photos && c.photos[0]);
-    const metaBits = [c.fireplaceType, c.roomSize].filter(Boolean).join(' · ');
-    card.innerHTML = `
-      ${cover ? `<img class="project-card-photo" src="${cover}" />` : `<div class="project-card-photo-placeholder">Nog geen foto</div>`}
-      <div class="project-card-body">
-        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
-          <div class="project-card-title"></div>
-          ${c.simar ? `<div class="simar-badge">Simar</div>` : ''}
-        </div>
-        ${metaBits ? `<div class="project-card-meta"></div>` : ''}
-        ${c.projectStory ? `<div class="project-card-story"></div>` : ''}
-      </div>
-    `;
-    card.querySelector('.project-card-title').textContent = c.ref || c.name || 'Project';
-    if (metaBits) card.querySelector('.project-card-meta').textContent = metaBits;
-    if (c.projectStory) card.querySelector('.project-card-story').textContent = c.projectStory;
-    card.addEventListener('click', () => openDetail(c.id));
-    gallery.appendChild(card);
+    const velden = document.createElement('div');
+    velden.className = 'bulk-row-fields';
+    const catSel = document.createElement('select');
+    LIB_CATS.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.key; o.textContent = c.label;
+      catSel.appendChild(o);
+    });
+    catSel.value = g.cat;
+    const subSel = document.createElement('select');
+    const vulSubs = () => {
+      const cat = LIB_CATS.find(c => c.key === g.cat);
+      subSel.innerHTML = '';
+      cat.subs.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s; o.textContent = s;
+        subSel.appendChild(o);
+      });
+      if (!cat.subs.includes(g.sub)) g.sub = cat.subs[0];
+      subSel.value = g.sub;
+    };
+    vulSubs();
+    catSel.addEventListener('change', () => { g.cat = catSel.value; vulSubs(); });
+    subSel.addEventListener('change', () => { g.sub = subSel.value; });
+    const model = document.createElement('input');
+    model.type = 'text';
+    model.placeholder = 'Merk en model (optioneel)';
+    model.value = g.model;
+    model.addEventListener('input', () => { g.model = model.value; });
+    velden.appendChild(catSel);
+    velden.appendChild(subSel);
+    velden.appendChild(model);
+    row.appendChild(velden);
+
+    const thumbs = document.createElement('div');
+    thumbs.className = 'bulk-thumbs';
+    g.files.slice(0, 8).forEach(f => {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f.file);
+      img.alt = '';
+      thumbs.appendChild(img);
+    });
+    row.appendChild(thumbs);
+    wrap.appendChild(row);
   });
 }
+function bulkSluit() {
+  document.getElementById('bulk-backdrop').classList.remove('open');
+  bulkGroups = [];
+}
+document.getElementById('bulk-close').addEventListener('click', bulkSluit);
+document.getElementById('bulk-cancel').addEventListener('click', bulkSluit);
+document.getElementById('bulk-start').addEventListener('click', async () => {
+  const actief = bulkGroups.filter(g => g.aan);
+  if (!actief.length) { alert('Vink minstens één project aan.'); return; }
+  const btn = document.getElementById('bulk-start');
+  const status = document.getElementById('bulk-status');
+  const bar = document.getElementById('bulk-bar');
+  const balk = bar.querySelector('span');
+  bar.style.display = 'block';
+  btn.disabled = true;
+  const totaal = actief.reduce((s, g) => s + g.files.length, 0);
+  let klaar = 0, mislukt = 0;
+  for (const g of actief) {
+    const fotos = [];
+    for (const f of g.files) {
+      status.textContent = g.titel + ' \u2014 foto ' + (fotos.length + 1) + ' van ' + g.files.length;
+      try { fotos.push(await uploadPhoto(f.file, 'showroom')); }
+      catch (err) { mislukt++; console.error('Foto mislukt', f.naam, err); }
+      klaar++;
+      balk.style.width = Math.round(klaar / totaal * 100) + '%';
+    }
+    if (!fotos.length) continue;
+    showcase.unshift({
+      id: 'sc-' + Date.now() + Math.random().toString(36).slice(2, 6),
+      createdAt: Date.now(),
+      clientId: null,
+      cat: g.cat,
+      sub: g.sub,
+      title: g.titel + (g.model ? ' \u2014 ' + g.model : ''),
+      model: g.model,
+      plaats: '', jaar: '', afwerking: '', notes: '',
+      photos: fotos
+    });
+    await saveShowcase();
+    renderProjectGallery();
+  }
+  status.textContent = actief.length + ' project' + (actief.length === 1 ? '' : 'en') + ' toegevoegd' + (mislukt ? ' \u2014 ' + mislukt + ' foto\u2019s mislukt' : '') + '.';
+  btn.disabled = false;
+  setTimeout(bulkSluit, 1400);
+});
+
+// ---------- Fotoviewer van een project ----------
+let galItem = null;
+let galIndex = 0;
+function galOpen(item, index) {
+  if (!item || !(item.photos || []).length) { openLibDetail(item.id); return; }
+  galItem = item;
+  galIndex = index || 0;
+  document.getElementById('gal-title').textContent = [item.title || item.model, item.plaats, item.jaar].filter(Boolean).join(' \u00b7 ');
+  document.getElementById('gal-note').textContent = item.notes || '';
+  const strip = document.getElementById('gal-strip');
+  strip.innerHTML = '';
+  item.photos.forEach((src, i) => {
+    const t = document.createElement('img');
+    t.className = 'gal-thumb';
+    t.src = src;
+    t.alt = '';
+    t.addEventListener('click', () => galShow(i));
+    strip.appendChild(t);
+  });
+  document.getElementById('gal-backdrop').classList.add('open');
+  galShow(galIndex);
+}
+function galShow(i) {
+  if (!galItem) return;
+  const n = galItem.photos.length;
+  galIndex = (i + n) % n;
+  document.getElementById('gal-img').src = galItem.photos[galIndex];
+  document.getElementById('gal-count').textContent = (galIndex + 1) + ' van ' + n;
+  const multi = n > 1;
+  document.getElementById('gal-prev').style.display = multi ? 'flex' : 'none';
+  document.getElementById('gal-next').style.display = multi ? 'flex' : 'none';
+  const thumbs = document.querySelectorAll('#gal-strip .gal-thumb');
+  thumbs.forEach((t, k) => t.classList.toggle('on', k === galIndex));
+  const actief = thumbs[galIndex];
+  if (actief) {
+    const strip = document.getElementById('gal-strip');
+    const links = actief.offsetLeft - strip.clientWidth / 2 + actief.clientWidth / 2;
+    strip.scrollTo({ left: Math.max(0, links), behavior: 'smooth' });
+  }
+}
+function galClose() {
+  document.getElementById('gal-backdrop').classList.remove('open');
+  galItem = null;
+}
+document.getElementById('gal-close').addEventListener('click', galClose);
+document.getElementById('gal-prev').addEventListener('click', () => galShow(galIndex - 1));
+document.getElementById('gal-next').addEventListener('click', () => galShow(galIndex + 1));
+document.getElementById('gal-backdrop').addEventListener('click', (e) => { if (e.target.id === 'gal-backdrop') galClose(); });
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('gal-backdrop').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') galShow(galIndex - 1);
+  else if (e.key === 'ArrowRight') galShow(galIndex + 1);
+  else if (e.key === 'Escape') galClose();
+});
+(function () {
+  let x0 = null;
+  const stage = document.querySelector('.gal-stage');
+  stage.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 45) galShow(galIndex + (dx < 0 ? 1 : -1));
+    x0 = null;
+  });
+})();
+
+// ---------- Pull-down menu's ----------
+let pdOpenFor = null;
+function pdClose() {
+  const m = document.getElementById('pd-menu');
+  m.classList.remove('open');
+  if (pdOpenFor) pdOpenFor.classList.remove('on');
+  pdOpenFor = null;
+}
+function pdOpen(anchor, sections) {
+  const m = document.getElementById('pd-menu');
+  if (pdOpenFor === anchor) { pdClose(); return; }
+  pdClose();
+  m.innerHTML = '';
+  const items = [];
+  sections.filter(Boolean).forEach((sec, si) => {
+    if (si > 0) m.appendChild(Object.assign(document.createElement('div'), { className: 'pd-menu-sep' }));
+    if (sec.title) {
+      const t = document.createElement('div');
+      t.className = 'pd-menu-title';
+      t.textContent = sec.title;
+      m.appendChild(t);
+    }
+    (sec.items || []).filter(Boolean).forEach(it => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pd-item' + (it.disabled ? ' disabled' : '') + (it.destructive ? ' destructive' : '');
+      b.innerHTML = '<span class="pd-check">' + (it.checked ? '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>' : '') + '</span><span class="pd-label"></span><span class="pd-count"></span>';
+      b.querySelector('.pd-label').textContent = it.label;
+      b.querySelector('.pd-count').textContent = it.count == null ? '' : it.count;
+      if (!it.disabled) {
+        items.push(b);
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          pdClose();
+          if (it.onSelect) it.onSelect();
+        });
+      }
+      m.appendChild(b);
+    });
+  });
+  m.style.left = '0px';
+  m.style.top = '0px';
+  m.classList.add('open');
+  anchor.classList.add('on');
+  pdOpenFor = anchor;
+  if (m.parentElement !== document.body) document.body.appendChild(m);
+  const r = anchor.getBoundingClientRect();
+  const mr = { width: m.offsetWidth, height: m.offsetHeight };
+  let left = Math.min(r.left, window.innerWidth - mr.width - 10);
+  let top = r.bottom + 6;
+  if (top + mr.height > window.innerHeight - 10) top = Math.max(10, r.top - mr.height - 6);
+  m.style.left = Math.max(10, left) + 'px';
+  m.style.top = top + 'px';
+  let fi = -1;
+  m.onkeydown = null;
+  document.getElementById('pd-menu').tabIndex = -1;
+  m.focus({ preventScroll: true });
+  m.addEventListener('keydown', function onKey(e) {
+    if (!m.classList.contains('open')) { m.removeEventListener('keydown', onKey); return; }
+    if (e.key === 'Escape') { pdClose(); anchor.focus(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      items.forEach(x => x.classList.remove('focus'));
+      fi = (fi + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      items[fi].classList.add('focus');
+      items[fi].focus({ preventScroll: true });
+    }
+  });
+}
+document.addEventListener('click', (e) => {
+  if (pdOpenFor && !e.target.closest('#pd-menu') && !e.target.closest('.pd-btn') && !e.target.closest('.lib-card-more')) pdClose();
+});
+window.addEventListener('resize', pdClose);
+
+const LIB_CATS = [
+  { key: 'gas', label: 'Gas', subs: ['Open gas', 'Inzet gas', 'Inbouw gas', 'Gaskachel'] },
+  { key: 'hout', label: 'Hout', subs: ['Open hout', 'Inbouw hout', 'Liftdeurhaard', 'Inzethaard', 'Houtkachel'] },
+  { key: 'bio', label: 'Bio-ethanol', subs: ['Open verbranding', 'Gesloten verbranding'] },
+  { key: 'elek', label: 'Elektrisch', subs: ['Elektrisch'] }
+];
+const LIB_FRONTS = {
+  gas: { src: 'assets/front-gas-wide3.jpg', pos: '50% 50%' },
+  hout: { src: 'assets/front-hout-wide.jpg', pos: '68% 50%' },
+  bio: { src: 'assets/front-bio-wide.jpg', pos: '46% 45%' },
+  elek: { src: 'assets/front-elek-wide.jpg', pos: '45% 62%' }
+};
+let libCat = 'alles';
+let libSub = null;
+let libSort = 'nieuw';
+const LIB_SORTS = [
+  { key: 'nieuw', label: 'Nieuwste eerst' },
+  { key: 'jaar', label: 'Jaar, nieuw naar oud' },
+  { key: 'plaats', label: 'Plaats, A\u2013Z' },
+  { key: 'titel', label: 'Titel, A\u2013Z' }
+];
+function libSortList(list) {
+  const l = list.slice();
+  if (libSort === 'jaar') return l.sort((a, b) => (b.jaar || '').localeCompare(a.jaar || '') || (b.createdAt || 0) - (a.createdAt || 0));
+  if (libSort === 'plaats') return l.sort((a, b) => (a.plaats || '\uffff').localeCompare(b.plaats || '\uffff', 'nl'));
+  if (libSort === 'titel') return l.sort((a, b) => (a.title || a.model || '').localeCompare(b.title || b.model || '', 'nl'));
+  return l.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
+let libQuery = '';
+let editingLibId = null;
+let pendingLibPhotos = [];
+function libCatLabel(key) { const c = LIB_CATS.find(x => x.key === key); return c ? c.label : ''; }
+function libMatches(item) {
+  const q = libQuery.trim().toLowerCase();
+  if (!q) return true;
+  return [item.title, item.model, item.plaats, item.jaar, item.afwerking, item.notes, item.sub, libCatLabel(item.cat)]
+    .filter(Boolean).join(' ').toLowerCase().includes(q);
+}
+function libVisible() { return showcase.filter(libMatches); }
+async function saveShowcase() {
+  try { await storageSet('showcase-data', JSON.stringify(showcase)); }
+  catch (e) { console.warn('Bibliotheek opslaan mislukt', e); }
+}
+function renderLibWall(items) {
+  const wall = document.getElementById('lib-wall');
+  wall.innerHTML = '';
+  wall.classList.toggle('has-sel', libCat !== 'alles');
+  LIB_CATS.forEach(cat => {
+    const inCat = items.filter(i => i.cat === cat.key);
+    const alle = showcase.filter(i => i.cat === cat.key);
+    const eigen = (libSortList(inCat.length ? inCat : alle).find(i => (i.photos || []).length) || {}).photos;
+    const front = LIB_FRONTS[cat.key];
+    const cover = front ? [front.src] : eigen;
+    const p = document.createElement('button');
+    p.type = 'button';
+    p.className = 'lib-panel' + (libCat === cat.key ? ' sel' : '');
+    p.innerHTML = (cover ? '<img class="lib-panel-img" alt="" />' : '<div class="lib-panel-blank"></div>')
+      + '<div class="lib-panel-veil"></div>'
+      + '<div class="lib-panel-count"></div>'
+      + '<div class="lib-panel-arrow"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H9M17 7v8"/></svg></div>'
+      + '<div class="lib-panel-inner"><div class="lib-panel-name"></div></div>';
+    if (cover) {
+      const img = p.querySelector('.lib-panel-img');
+      img.src = cover[0];
+      if (front && front.pos) img.style.objectPosition = front.pos;
+    }
+    p.querySelector('.lib-panel-name').textContent = cat.label;
+    p.querySelector('.lib-panel-count').textContent = alle.length ? alle.length + (alle.length === 1 ? ' project' : ' projecten') : 'nog leeg';
+    p.addEventListener('click', () => {
+      if (libCat === cat.key) { libCat = 'alles'; libSub = null; }
+      else { libCat = cat.key; libSub = null; }
+      renderProjectGallery();
+    });
+    wall.appendChild(p);
+  });
+}
+function renderProjectGallery() {
+  const items = libVisible();
+  libGeladen = 0;
+  renderLibWall(items);
+  const nav = document.getElementById('count-afgerond');
+  if (nav) nav.textContent = showcase.length;
+
+  const activeCat = LIB_CATS.find(c => c.key === libCat);
+  const crumbs = document.getElementById('lib-crumbs');
+  crumbs.innerHTML = '';
+  const crumb = (label, here, fn) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lib-crumb' + (here ? ' here' : '');
+    b.textContent = label;
+    if (!here) b.addEventListener('click', fn);
+    crumbs.appendChild(b);
+  };
+  const sep = () => crumbs.insertAdjacentHTML('beforeend', '<span class="lib-crumb-sep">\u203a</span>');
+  crumb('Alle soorten', !activeCat, () => { libCat = 'alles'; libSub = null; renderProjectGallery(); });
+  if (activeCat) {
+    sep();
+    crumb(activeCat.label, !libSub, () => { libSub = null; renderProjectGallery(); });
+    if (libSub) { sep(); crumb(libSub, true, null); }
+  }
+
+  const subnav = document.getElementById('lib-subnav');
+  subnav.innerHTML = '';
+  if (activeCat) {
+    activeCat.subs.forEach(s => {
+      const n = showcase.filter(i => i.cat === libCat && i.sub === s).length;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'lib-subitem' + (libSub === s ? ' on' : '') + (n === 0 ? ' leeg' : '');
+      b.innerHTML = '<span></span><span class="n"></span>';
+      b.children[0].textContent = s;
+      b.children[1].textContent = n || '0';
+      if (n) b.addEventListener('click', () => { libSub = libSub === s ? null : s; renderProjectGallery(); });
+      subnav.appendChild(b);
+    });
+  }
+
+  const pendWrap = document.getElementById('lib-pending');
+  pendWrap.innerHTML = '';
+  const inLib = {};
+  showcase.forEach(i => { if (i.clientId) inLib[i.clientId] = true; });
+  const wachtend = clients.filter(c => c.phase === 'afgerond' && !inLib[c.id]);
+  if (wachtend.length) {
+    const box = document.createElement('div');
+    box.className = 'lib-pending';
+    box.innerHTML = '<div class="lib-pending-title">Klaar om toe te voegen</div><div class="lib-pending-desc">Deze afgeronde projecten staan nog niet in de bibliotheek. Foto\u2019s en gegevens worden overgenomen \u2014 je hoeft alleen de soort haard te kiezen.</div>';
+    wachtend.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'lib-pending-row';
+      const main = document.createElement('div');
+      main.className = 'lib-pending-row-main';
+      main.innerHTML = '<div></div><div class="lib-pending-row-sub"></div>';
+      main.children[0].textContent = c.ref || c.name || 'Project';
+      main.children[1].textContent = [(c.projectPhotos || []).length + ' foto\u2019s', c.fireplaceType, c.city].filter(Boolean).join(' \u00b7 ');
+      row.appendChild(main);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn btn-sm';
+      b.textContent = 'Toevoegen';
+      b.addEventListener('click', () => openLibModal(null, c));
+      row.appendChild(b);
+      box.appendChild(row);
+    });
+    pendWrap.appendChild(box);
+  }
+
+  const body = document.getElementById('lib-body');
+  body.innerHTML = '';
+  if (!showcase.length) {
+    body.innerHTML = '<div class="lib-empty">De bibliotheek is nog leeg. Voeg je eerste project toe met de knop rechtsboven \u2014 of neem een afgerond project over.</div>';
+    return;
+  }
+  if (!items.length) {
+    body.innerHTML = '<div class="lib-empty">Nog geen projecten in deze categorie.</div>';
+    return;
+  }
+  const cats = libCat === 'alles' ? LIB_CATS : LIB_CATS.filter(c => c.key === libCat);
+  let getoond = 0;
+  cats.forEach(cat => {
+    const inCat = items.filter(i => i.cat === cat.key);
+    if (!inCat.length) return;
+    const group = document.createElement('div');
+    group.className = 'lib-group';
+    group.innerHTML = '<div class="lib-group-head"><div class="lib-group-title"></div><div class="lib-group-count"></div></div><div class="lib-group-rule"></div>';
+    group.querySelector('.lib-group-title').textContent = cat.label;
+    group.querySelector('.lib-group-count').textContent = inCat.length + (inCat.length === 1 ? ' project' : ' projecten');
+    const subs = libSub && libCat === cat.key ? [libSub] : cat.subs.concat(['']);
+    subs.forEach(sub => {
+      const list = libSortList(inCat.filter(i => (sub ? i.sub === sub : !cat.subs.includes(i.sub))));
+      if (!list.length) return;
+      getoond += list.length;
+      const sec = document.createElement('div');
+      sec.className = 'lib-sub';
+      const st = document.createElement('div');
+      st.className = 'lib-sub-title';
+      st.textContent = (sub || 'Nog niet ingedeeld') + ' \u2014 ' + list.length;
+      sec.appendChild(st);
+      const grid = document.createElement('div');
+      grid.className = 'lib-grid';
+      list.forEach(item => grid.appendChild(libCard(item)));
+      sec.appendChild(grid);
+      group.appendChild(sec);
+    });
+    if (getoond) body.appendChild(group);
+  });
+  if (!body.children.length) body.innerHTML = '<div class="lib-empty">Geen projecten in deze categorie.</div>';
+}
+let libGeladen = 0;
+function libLazy(img, src) {
+  // Zichtbaarheidsmeldingen komen in dit scherm niet aan (animatie + transform),
+  // dus de eerste tegels laden direct en de rest volgt zodra de browser tijd heeft.
+  libGeladen++;
+  if (libGeladen <= 24) { img.src = src; return; }
+  const n = libGeladen;
+  setTimeout(() => { if (!img.src) img.src = src; }, Math.min(2000, (n - 24) * 60));
+}
+function libCard(item) {
+  const card = document.createElement('div');
+  card.className = 'lib-card';
+  const cover = (item.photos || [])[0];
+  card.innerHTML = (cover ? '<img class="lib-card-photo" alt="" />' : '<div class="lib-card-empty">Nog geen foto</div>')
+    + ((item.photos || []).length > 1 ? '<div class="lib-card-badge"></div>' : '')
+    + '<div class="lib-card-body"><div class="lib-card-title"></div><div class="lib-card-meta"></div></div>';
+  if (cover) {
+    const img = card.querySelector('.lib-card-photo');
+    const pasRatioAan = () => {
+      if (img.naturalWidth && img.naturalHeight) img.style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+    };
+    img.addEventListener('load', pasRatioAan);
+    libLazy(img, cover);
+  }
+  if ((item.photos || []).length > 1) card.querySelector('.lib-card-badge').textContent = item.photos.length + ' foto\u2019s';
+  card.querySelector('.lib-card-title').textContent = item.title || item.model || 'Project';
+  card.querySelector('.lib-card-meta').textContent = [item.model, item.plaats, item.jaar].filter(Boolean).join(' \u00b7 ');
+  const more = document.createElement('button');
+  more.type = 'button';
+  more.className = 'lib-card-more';
+  more.title = 'Meer';
+  more.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>';
+  more.addEventListener('click', (e) => { e.stopPropagation(); openLibCardMenu(more, item); });
+  card.appendChild(more);
+  card.addEventListener('contextmenu', (e) => { e.preventDefault(); openLibCardMenu(more, item); });
+  card.addEventListener('click', () => galOpen(item, 0));
+  return card;
+}
+function openLibCardMenu(anchor, item) {
+  const foto = (item.photos || []).length;
+  pdOpen(anchor, [
+    { items: [
+      { label: 'Foto\u2019s bekijken', onSelect: () => galOpen(item, 0) },
+      { label: 'Gegevens', onSelect: () => openLibDetail(item.id) },
+      { label: 'Bewerken', onSelect: () => openLibModal(item.id, null) },
+      { label: foto > 1 ? 'Volgende foto als omslag' : 'Omslagfoto wisselen', disabled: foto < 2, onSelect: async () => {
+        item.photos.push(item.photos.shift());
+        await saveShowcase();
+        renderProjectGallery();
+      } }
+    ] },
+    { title: 'Indelen', items: LIB_CATS.filter(c => c.key !== item.cat).map(c => ({
+      label: 'Naar ' + c.label, onSelect: async () => {
+        item.cat = c.key;
+        item.sub = c.subs[0];
+        await saveShowcase();
+        renderProjectGallery();
+        showUndoToast('Verplaatst naar ' + c.label + ' \u2014 ' + c.subs[0], null);
+      }
+    })) },
+    { items: [{ label: 'Verwijderen', destructive: true, onSelect: async () => {
+      if (!confirm('\u201c' + (item.title || item.model || 'Dit project') + '\u201d uit de bibliotheek verwijderen?')) return;
+      const idx = showcase.indexOf(item);
+      showcase.splice(idx, 1);
+      await saveShowcase();
+      renderProjectGallery();
+      showUndoToast('Uit de bibliotheek verwijderd', async () => {
+        showcase.splice(Math.min(idx, showcase.length), 0, item);
+        await saveShowcase();
+        renderProjectGallery();
+      });
+    } }] }
+  ]);
+}
+function libFillSubs(catKey, selected) {
+  const sel = document.getElementById('lf-sub');
+  const cat = LIB_CATS.find(c => c.key === catKey);
+  sel.innerHTML = '';
+  (cat ? cat.subs : []).forEach(s => {
+    const o = document.createElement('option');
+    o.value = s;
+    o.textContent = s;
+    sel.appendChild(o);
+  });
+  if (selected) sel.value = selected;
+}
+function renderLibPhotos() {
+  const wrap = document.getElementById('lf-photos');
+  wrap.innerHTML = '';
+  pendingLibPhotos.forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'photo-thumb-wrap';
+    el.innerHTML = '<img class="detail-photo" /><div class="photo-remove">&times;</div>';
+    el.querySelector('img').src = p;
+    el.querySelector('.photo-remove').addEventListener('click', ev => {
+      ev.stopPropagation();
+      pendingLibPhotos.splice(i, 1);
+      renderLibPhotos();
+    });
+    wrap.appendChild(el);
+  });
+}
+function openLibModal(itemId, fromClient) {
+  editingLibId = itemId || null;
+  const item = itemId ? showcase.find(x => x.id === itemId) : null;
+  const catSel = document.getElementById('lf-cat');
+  if (!catSel.options.length) {
+    LIB_CATS.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.key;
+      o.textContent = c.label;
+      catSel.appendChild(o);
+    });
+  }
+  document.getElementById('lib-modal-title').textContent = item ? 'Project bewerken' : 'Project toevoegen';
+  const src = item || {};
+  catSel.value = src.cat || (fromClient && /hout|kachel/i.test(fromClient.fireplaceType || '') ? 'hout' : 'gas');
+  libFillSubs(catSel.value, src.sub);
+  document.getElementById('lf-title').value = src.title || (fromClient ? (fromClient.ref || fromClient.name || '') : '');
+  document.getElementById('lf-model').value = src.model || (fromClient ? fromClient.fireplaceType || '' : '');
+  document.getElementById('lf-plaats').value = src.plaats || (fromClient ? fromClient.city || '' : '');
+  document.getElementById('lf-jaar').value = src.jaar || (fromClient && fromClient.closedAt ? String(new Date(fromClient.closedAt).getFullYear()) : String(new Date().getFullYear()));
+  document.getElementById('lf-afwerking').value = src.afwerking || '';
+  document.getElementById('lf-notes').value = src.notes || (fromClient ? fromClient.projectStory || '' : '');
+  pendingLibPhotos = item ? (item.photos || []).slice() : (fromClient ? (fromClient.projectPhotos || []).slice() : []);
+  renderLibPhotos();
+  document.getElementById('lib-delete-btn').style.display = item ? 'inline-flex' : 'none';
+  document.getElementById('lib-modal-backdrop').dataset.clientId = fromClient ? fromClient.id : (src.clientId || '');
+  document.getElementById('lib-modal-backdrop').classList.add('open');
+}
+function closeLibModal() {
+  document.getElementById('lib-modal-backdrop').classList.remove('open');
+  editingLibId = null;
+  pendingLibPhotos = [];
+}
+function openLibDetail(id) {
+  const item = showcase.find(x => x.id === id);
+  if (!item) return;
+  document.getElementById('lib-detail-backdrop').dataset.itemId = id;
+  document.getElementById('lib-detail-title').textContent = item.title || item.model || 'Project';
+  const body = document.getElementById('lib-detail-body');
+  body.innerHTML = '';
+  const meta = [libCatLabel(item.cat), item.sub, item.model, item.plaats, item.jaar, item.afwerking].filter(Boolean).join(' \u00b7 ');
+  const m = document.createElement('div');
+  m.className = 'detail-block';
+  m.innerHTML = '<div class="detail-label">Gegevens</div><div></div>';
+  m.children[1].textContent = meta || '\u2014';
+  body.appendChild(m);
+  if ((item.photos || []).length) {
+    const p = document.createElement('div');
+    p.className = 'detail-block';
+    p.innerHTML = '<div class="detail-label">Foto\u2019s \u2014 tik om groot te bekijken</div><div class="detail-photos"></div>';
+    const wrap = p.querySelector('.detail-photos');
+    item.photos.forEach(src => {
+      const img = document.createElement('img');
+      img.className = 'detail-photo';
+      img.src = src;
+      wrap.appendChild(img);
+    });
+    body.appendChild(p);
+  }
+  if (item.notes) {
+    const n = document.createElement('div');
+    n.className = 'detail-block';
+    n.innerHTML = '<div class="detail-label">Toelichting</div><div style="line-height:1.6"></div>';
+    n.children[1].textContent = item.notes;
+    body.appendChild(n);
+  }
+  document.getElementById('lib-detail-backdrop').classList.add('open');
+}
+document.getElementById('lib-add-btn').addEventListener('click', () => openLibModal(null, null));
+document.getElementById('lib-modal-close').addEventListener('click', closeLibModal);
+document.getElementById('lib-cancel-btn').addEventListener('click', closeLibModal);
+document.getElementById('lf-cat').addEventListener('change', e => libFillSubs(e.target.value, null));
+document.getElementById('lf-photo-add').addEventListener('click', () => document.getElementById('lf-photo-input').click());
+document.getElementById('lf-photo-input').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  const addBtn = document.getElementById('lf-photo-add');
+  const oud = addBtn.textContent;
+  for (let i = 0; i < files.length; i++) {
+    addBtn.textContent = files.length > 1 ? (i + 1) + '/' + files.length : '\u2026';
+    try {
+      pendingLibPhotos.push(await uploadPhoto(files[i], 'showroom'));
+      renderLibPhotos();
+    } catch (err) { console.error('Foto mislukt', err); }
+  }
+  addBtn.textContent = oud;
+});
+document.getElementById('lib-save-btn').addEventListener('click', async () => {
+  const title = document.getElementById('lf-title').value.trim();
+  const model = document.getElementById('lf-model').value.trim();
+  if (!title && !model) { alert('Vul een titel of een model in.'); return; }
+  const clientId = document.getElementById('lib-modal-backdrop').dataset.clientId || null;
+  const data = {
+    cat: document.getElementById('lf-cat').value,
+    sub: document.getElementById('lf-sub').value,
+    title, model,
+    plaats: document.getElementById('lf-plaats').value.trim(),
+    jaar: document.getElementById('lf-jaar').value.trim(),
+    afwerking: document.getElementById('lf-afwerking').value.trim(),
+    notes: document.getElementById('lf-notes').value.trim(),
+    photos: pendingLibPhotos.slice()
+  };
+  const bestaand = editingLibId ? showcase.find(x => x.id === editingLibId) : null;
+  if (bestaand) Object.assign(bestaand, data);
+  else showcase.unshift(Object.assign({ id: 'sc-' + Date.now(), createdAt: Date.now(), clientId: clientId || null }, data));
+  closeLibModal();
+  await saveShowcase();
+  renderProjectGallery();
+});
+document.getElementById('lib-delete-btn').addEventListener('click', async () => {
+  const item = showcase.find(x => x.id === editingLibId);
+  if (!item) return;
+  if (!confirm('\u201c' + (item.title || item.model || 'Dit project') + '\u201d uit de bibliotheek verwijderen?')) return;
+  const idx = showcase.indexOf(item);
+  showcase.splice(idx, 1);
+  closeLibModal();
+  await saveShowcase();
+  renderProjectGallery();
+  showUndoToast('Uit de bibliotheek verwijderd', async () => {
+    showcase.splice(Math.min(idx, showcase.length), 0, item);
+    await saveShowcase();
+    renderProjectGallery();
+  });
+});
+document.getElementById('lib-detail-close').addEventListener('click', () => {
+  document.getElementById('lib-detail-backdrop').classList.remove('open');
+});
+document.getElementById('lib-detail-edit').addEventListener('click', () => {
+  const id = document.getElementById('lib-detail-backdrop').dataset.itemId;
+  document.getElementById('lib-detail-backdrop').classList.remove('open');
+  openLibModal(id, null);
+});
 
 function openClientModal(clientId) {
   editingClientId = clientId;
