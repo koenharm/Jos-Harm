@@ -199,6 +199,10 @@
 
   /* ---- Dagpaneel (alleen breed bureaublad) ---- */
   .rail { display: none; }
+  body.showroom-view .rail { display: none !important; }
+  @media (min-width: 1500px) {
+    body.showroom-view .app { grid-template-columns: 248px minmax(0, 1fr); }
+  }
   @media (min-width: 1500px) {
     .app { grid-template-columns: 248px minmax(0, 1fr) 320px; }
     .main { max-width: none; }
@@ -1380,8 +1384,8 @@
     text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px;
   }
   .gal-close:hover { color: var(--ember); }
-  .gal-stage { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; padding: 0 14px; }
-  .gal-stage img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+  .gal-stage { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; padding: 0 14px; touch-action: pan-y; cursor: pointer; }
+  .gal-stage img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
   .gal-arrow {
     position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%;
     background: rgba(247,246,244,0.14); border: 1px solid rgba(247,246,244,0.35); color: #F7F6F4;
@@ -1521,9 +1525,26 @@
   .lib-sub { margin-bottom: 22px; }
   .lib-sub-title { font-family: 'League Spartan', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ember); margin-bottom: 10px; }
   .lib-sub { margin-bottom: 26px; }
-  .lib-grid { column-count: 4; column-gap: 12px; }
-  @media (max-width: 1100px) { .lib-grid { column-count: 3; } }
+  .lib-grid { column-count: 3; column-gap: 14px; }
+  @media (max-width: 1100px) { .lib-grid { column-count: 2; } }
   @media (max-width: 760px) { .lib-grid { column-count: 2; column-gap: 9px; } }
+  #lib-body.showroom .lib-grid { column-count: 2; column-gap: 16px; }
+  @media (max-width: 900px) { #lib-body.showroom .lib-grid { column-count: 1; } }
+  #lib-body.showroom .lib-card { margin-bottom: 16px; }
+  #lib-body.showroom .lib-card-photo { transition: transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+  #lib-body.showroom .lib-card:hover { opacity: 1; }
+  #lib-body.showroom .lib-card:hover .lib-card-photo { transform: scale(1.02); }
+  #lib-body.showroom .lib-sub-title { font-size: 11.5px; letter-spacing: 0.14em; margin-bottom: 14px; }
+  .lib-beheer-toggle {
+    display: inline-flex; align-items: center; gap: 7px; margin-top: 10px;
+    background: none; border: none; padding: 0; cursor: pointer;
+    font-family: 'League Spartan', sans-serif; font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--smoke);
+  }
+  .lib-beheer-toggle:hover { color: var(--ember); }
+  .lib-beheer-toggle.on { color: var(--ember); }
+  .lib-beheer-toggle .dot { width: 6px; height: 6px; background: currentColor; opacity: 0.5; }
+  .lib-beheer-toggle.on .dot { opacity: 1; }
   .lib-card {
     position: relative; break-inside: avoid; margin: 0 0 12px; display: block;
     background: var(--panel-raised); border: none; cursor: pointer; overflow: hidden;
@@ -2653,6 +2674,7 @@
         <div>
           <div class="view-title">Afgeronde projecten</div>
           <div class="view-desc">De showroombibliotheek — ons eigen werk op foto, gesorteerd op soort haard. Laat hier in de showroom zien wat we al hebben gemaakt.</div>
+          <button class="lib-beheer-toggle" id="lib-beheer-toggle" type="button"><span class="dot"></span><span id="lib-beheer-label">Beheer</span></button>
         </div>
         <button class="btn btn-primary" id="lib-add-btn" type="button">+ Toevoegen</button>
         <input type="file" id="bulk-folder-input" webkitdirectory directory multiple accept="image/*" style="display:none" />
@@ -7222,6 +7244,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     item.classList.add('active');
     document.getElementById('view-' + item.dataset.view).classList.add('active');
+    document.body.classList.toggle('showroom-view', item.dataset.view === 'afgeronde-projecten');
     if (item.dataset.view === 'home') renderBoard();
     if (item.dataset.view === 'assistent') populateAdviseClientSelect();
     if (item.dataset.view === 'calculatie') { await saveCalcDraftSilently(); closeCalcEditor(); renderCalcList(); }
@@ -9184,8 +9207,10 @@ function galOpen(item, index) {
   if (!item || !(item.photos || []).length) { openLibDetail(item.id); return; }
   galItem = item;
   galIndex = index || 0;
-  document.getElementById('gal-title').textContent = [item.title || item.model, item.plaats, item.jaar].filter(Boolean).join(' \u00b7 ');
-  document.getElementById('gal-note').textContent = item.notes || '';
+  document.getElementById('gal-title').textContent = libBeheer
+    ? [item.title || item.model, item.plaats, item.jaar].filter(Boolean).join(' \u00b7 ')
+    : [item.model, item.jaar].filter(Boolean).join(' \u00b7 ');
+  document.getElementById('gal-note').textContent = libBeheer ? (item.notes || '') : '';
   const strip = document.getElementById('gal-strip');
   strip.innerHTML = '';
   item.photos.forEach((src, i) => {
@@ -9232,16 +9257,39 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'Escape') galClose();
 });
 (function () {
-  let x0 = null;
   const stage = document.querySelector('.gal-stage');
-  stage.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
-  stage.addEventListener('touchend', (e) => {
-    if (x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0;
-    if (Math.abs(dx) > 45) galShow(galIndex + (dx < 0 ? 1 : -1));
-    x0 = null;
+  let x0 = null, y0 = null, t0 = 0, gesleept = false;
+  stage.addEventListener('pointerdown', (e) => {
+    x0 = e.clientX; y0 = e.clientY; t0 = Date.now(); gesleept = false;
   });
+  stage.addEventListener('pointermove', (e) => {
+    if (x0 === null) return;
+    if (Math.abs(e.clientX - x0) > 12) gesleept = true;
+  });
+  stage.addEventListener('pointerup', (e) => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0, dt = Date.now() - t0;
+    x0 = null;
+    if (e.target.closest('.gal-arrow')) return;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { galShow(galIndex + (dx < 0 ? 1 : -1)); return; }
+    if (!gesleept && dt < 400) {
+      const r = stage.getBoundingClientRect();
+      galShow(galIndex + (e.clientX - r.left < r.width / 2 ? -1 : 1));
+    }
+  });
+  stage.addEventListener('pointercancel', () => { x0 = null; });
 })();
+document.addEventListener('click', (e) => {
+  // Vangnet: ook als een tegel opnieuw is opgebouwd blijft klikken werken.
+  if (document.getElementById('gal-backdrop').classList.contains('open')) return;
+  const kaart = e.target.closest('[data-sc-id]');
+  if (!kaart || e.target.closest('.lib-card-more')) return;
+  const item = showcase.find(x => x.id === kaart.dataset.scId);
+  if (item) galOpen(item, 0);
+});
+document.getElementById('gal-img').addEventListener('error', () => {
+  document.getElementById('gal-count').textContent = 'Foto kon niet worden geladen';
+});
 
 // ---------- Pull-down menu's ----------
 let pdOpenFor = null;
@@ -9356,6 +9404,18 @@ function libMatches(item) {
     .filter(Boolean).join(' ').toLowerCase().includes(q);
 }
 function libVisible() { return showcase.filter(libMatches); }
+// Showroommodus (standaard): geen klantnamen, geen takenlijst, geen beheerknoppen.
+let libBeheer = false;
+function libSetBeheer(on) {
+  libBeheer = !!on;
+  const t = document.getElementById('lib-beheer-toggle');
+  if (t) t.classList.toggle('on', libBeheer);
+  const l = document.getElementById('lib-beheer-label');
+  if (l) l.textContent = libBeheer ? 'Beheer aan' : 'Beheer';
+  const add = document.getElementById('lib-add-btn');
+  if (add) add.style.display = libBeheer ? '' : 'none';
+  renderProjectGallery();
+}
 async function saveShowcase() {
   try { await storageSet('showcase-data', JSON.stringify(showcase)); }
   catch (e) { console.warn('Bibliotheek opslaan mislukt', e); }
@@ -9437,9 +9497,12 @@ function renderProjectGallery() {
 
   const pendWrap = document.getElementById('lib-pending');
   pendWrap.innerHTML = '';
+  const addBtn = document.getElementById('lib-add-btn');
+  if (addBtn) addBtn.style.display = libBeheer ? '' : 'none';
+  if (!libBeheer) pendWrap.style.display = 'none'; else pendWrap.style.display = '';
   const inLib = {};
   showcase.forEach(i => { if (i.clientId) inLib[i.clientId] = true; });
-  const wachtend = clients.filter(c => c.phase === 'afgerond' && !inLib[c.id]);
+  const wachtend = libBeheer ? clients.filter(c => c.phase === 'afgerond' && !inLib[c.id]) : [];
   if (wachtend.length) {
     const box = document.createElement('div');
     box.className = 'lib-pending';
@@ -9465,9 +9528,12 @@ function renderProjectGallery() {
   }
 
   const body = document.getElementById('lib-body');
+  body.classList.toggle('showroom', !libBeheer);
   body.innerHTML = '';
   if (!showcase.length) {
-    body.innerHTML = '<div class="lib-empty">De bibliotheek is nog leeg. Voeg je eerste project toe met de knop rechtsboven \u2014 of neem een afgerond project over.</div>';
+    body.innerHTML = libBeheer
+      ? '<div class="lib-empty">De bibliotheek is nog leeg. Voeg je eerste project toe met de knop rechtsboven \u2014 of neem een afgerond project over.</div>'
+      : '<div class="lib-empty">Nog geen projecten in de bibliotheek.</div>';
     return;
   }
   if (!items.length) {
@@ -9520,7 +9586,7 @@ function libCard(item) {
   const cover = (item.photos || [])[0];
   card.innerHTML = (cover ? '<img class="lib-card-photo" alt="" />' : '<div class="lib-card-empty">Nog geen foto</div>')
     + ((item.photos || []).length > 1 ? '<div class="lib-card-badge"></div>' : '')
-    + '<div class="lib-card-body"><div class="lib-card-title"></div><div class="lib-card-meta"></div></div>';
+    + (libBeheer ? '<div class="lib-card-body"><div class="lib-card-title"></div><div class="lib-card-meta"></div></div>' : '');
   if (cover) {
     const img = card.querySelector('.lib-card-photo');
     const pasRatioAan = () => {
@@ -9530,16 +9596,19 @@ function libCard(item) {
     libLazy(img, cover);
   }
   if ((item.photos || []).length > 1) card.querySelector('.lib-card-badge').textContent = item.photos.length + ' foto\u2019s';
-  card.querySelector('.lib-card-title').textContent = item.title || item.model || 'Project';
-  card.querySelector('.lib-card-meta').textContent = [item.model, item.plaats, item.jaar].filter(Boolean).join(' \u00b7 ');
-  const more = document.createElement('button');
-  more.type = 'button';
-  more.className = 'lib-card-more';
-  more.title = 'Meer';
-  more.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>';
-  more.addEventListener('click', (e) => { e.stopPropagation(); openLibCardMenu(more, item); });
-  card.appendChild(more);
-  card.addEventListener('contextmenu', (e) => { e.preventDefault(); openLibCardMenu(more, item); });
+  if (libBeheer) {
+    card.querySelector('.lib-card-title').textContent = item.title || item.model || 'Project';
+    card.querySelector('.lib-card-meta').textContent = [item.model, item.plaats, item.jaar].filter(Boolean).join(' \u00b7 ');
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'lib-card-more';
+    more.title = 'Meer';
+    more.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>';
+    more.addEventListener('click', (e) => { e.stopPropagation(); openLibCardMenu(more, item); });
+    card.appendChild(more);
+    card.addEventListener('contextmenu', (e) => { e.preventDefault(); openLibCardMenu(more, item); });
+  }
+  card.dataset.scId = item.id;
   card.addEventListener('click', () => galOpen(item, 0));
   return card;
 }
@@ -9675,6 +9744,11 @@ function openLibDetail(id) {
   }
   document.getElementById('lib-detail-backdrop').classList.add('open');
 }
+document.getElementById('lib-beheer-toggle').addEventListener('click', () => {
+  libSetBeheer(!libBeheer);
+  try { localStorage.setItem('lib-beheer', libBeheer ? '1' : '0'); } catch (e) {}
+});
+try { if (localStorage.getItem('lib-beheer') !== '1') document.getElementById('lib-add-btn').style.display = 'none'; else libBeheer = true; } catch (e) {}
 document.getElementById('lib-add-btn').addEventListener('click', (e) => {
   pdOpen(e.currentTarget, [
     { items: [{ label: '\u00c9\u00e9n project invullen', onSelect: () => openLibModal(null, null) }] },
