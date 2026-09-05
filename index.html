@@ -3638,20 +3638,38 @@ async function shrinkToBlob(file, maxDim, quality) {
   canvas.getContext('2d').drawImage(img, 0, 0, w, h);
   return await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
 }
+let storageStuk = false;
+function putMetLimiet(ref, blob, ms) {
+  return new Promise((resolve, reject) => {
+    const taak = ref.put(blob, { contentType: 'image/jpeg', cacheControl: 'public,max-age=31536000' });
+    const klok = setTimeout(() => {
+      try { taak.cancel(); } catch (e) {}
+      reject(new Error('Opslag reageert niet (tijdslimiet)'));
+    }, ms);
+    taak.then(() => { clearTimeout(klok); resolve(); }, (e) => { clearTimeout(klok); reject(e); });
+  });
+}
 async function putBlob(blob, path) {
   let lastErr = null;
   const tries = [];
   if (fbStorage) tries.push(fbStorage);
-  ALT_BUCKETS.forEach(b => { try { tries.push(firebase.app().storage(b)); } catch (e) {} });
+  ALT_BUCKETS.forEach(b => {
+    try {
+      const st = firebase.app().storage(b);
+      if (!tries.some(x => x.app.options.storageBucket === st.app.options.storageBucket)) tries.push(st);
+    } catch (e) {}
+  });
   for (const st of tries) {
     try {
+      // Niet eindeloos opnieuw proberen: anders lijkt het uploaden te hangen.
+      try { st.setMaxUploadRetryTime(12000); st.setMaxOperationRetryTime(12000); } catch (e) {}
       const ref = st.ref().child(path);
-      await ref.put(blob, { contentType: 'image/jpeg', cacheControl: 'public,max-age=31536000' });
+      await putMetLimiet(ref, blob, 30000);
       const url = await ref.getDownloadURL();
       try { localStorage.setItem('werkplaats:bucket', 'gs://' + st.app.options.storageBucket); } catch (e) {}
       fbStorage = st;
       return url;
-    } catch (e) { lastErr = e; }
+    } catch (e) { lastErr = e; console.warn('Bucket werkt niet:', st.app.options.storageBucket, e && e.code || e); }
   }
   throw lastErr || new Error('Geen opslag beschikbaar');
 }
@@ -3662,9 +3680,12 @@ function blobToDataUrl(blob) {
 async function uploadPhoto(file, folder) {
   const blob = await shrinkToBlob(file, 1800, 0.82);
   const id = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-  if (fbReady && window.firebase && firebase.storage) {
+  if (!storageStuk && fbReady && window.firebase && firebase.storage) {
     try { return await putBlob(blob, folder + '/' + id + '.jpg'); }
-    catch (e) { console.error('Foto-upload mislukt, val terug op lokale opslag', e); }
+    catch (e) {
+      storageStuk = true;
+      console.error('Foto-opslag onbereikbaar, val terug op lokale opslag', e);
+    }
   }
   const small = await shrinkToBlob(file, 900, 0.7);
   return await blobToDataUrl(small);
@@ -9025,7 +9046,7 @@ document.getElementById('bulk-close').addEventListener('click', bulkSluit);
 document.getElementById('bulk-cancel').addEventListener('click', bulkSluit);
 document.getElementById('bulk-start').addEventListener('click', async () => {
   const actief = bulkGroups.filter(g => g.aan);
-  if (!actief.length) { alert('Vink minstens één project aan.'); return; }
+  if (!actief.length) { alert('Vink minstens \u00e9\u00e9n project aan.'); return; }
   const btn = document.getElementById('bulk-start');
   const status = document.getElementById('bulk-status');
   const bar = document.getElementById('bulk-bar');
@@ -9033,35 +9054,103 @@ document.getElementById('bulk-start').addEventListener('click', async () => {
   bar.style.display = 'block';
   btn.disabled = true;
   const totaal = actief.reduce((s, g) => s + g.files.length, 0);
-  let klaar = 0, mislukt = 0;
+  let klaar = 0, mislukt = 0, toegevoegd = 0;
+  let gestopt = false;
   for (const g of actief) {
+    if (gestopt) break;
     const fotos = [];
     for (const f of g.files) {
-      status.textContent = g.titel + ' \u2014 foto ' + (fotos.length + 1) + ' van ' + g.files.length;
-      try { fotos.push(await uploadPhoto(f.file, 'showroom')); }
-      catch (err) { mislukt++; console.error('Foto mislukt', f.naam, err); }
+      status.textContent = g.titel + ' \u2014 foto ' + (fotos.length + 1) + ' van ' + g.files.length + ' (' + (klaar + 1) + ' van ' + totaal + ' in totaal)';
+      try {
+        fotos.push(await uploadPhoto(f.file, 'showroom'));
+      } catch (err) {
+        mislukt++;
+        console.error('Foto mislukt', f.naam, err);
+      }
+      if (storageStuk) {
+        // Zonder werkende fotobewaarplaats zouden de foto's in de gedeelde
+        // gegevens belanden; dat loopt vast. Dus meteen stoppen en het zeggen.
+        gestopt = true;
+        break;
+      }
       klaar++;
       balk.style.width = Math.round(klaar / totaal * 100) + '%';
     }
-    if (!fotos.length) continue;
-    showcase.unshift({
-      id: 'sc-' + Date.now() + Math.random().toString(36).slice(2, 6),
-      createdAt: Date.now(),
-      clientId: null,
-      cat: g.cat,
-      sub: g.sub,
-      title: g.titel + (g.model ? ' \u2014 ' + g.model : ''),
-      model: g.model,
-      plaats: '', jaar: '', afwerking: '', notes: '',
-      photos: fotos
-    });
-    await saveShowcase();
-    renderProjectGallery();
+    if (fotos.length && !gestopt) {
+      showcase.unshift({
+        id: 'sc-' + Date.now() + Math.random().toString(36).slice(2, 6),
+        createdAt: Date.now(),
+        clientId: null,
+        cat: g.cat,
+        sub: g.sub,
+        title: g.titel + (g.model ? ' \u2014 ' + g.model : ''),
+        model: g.model,
+        plaats: '', jaar: '', afwerking: '', notes: '',
+        photos: fotos
+      });
+      await saveShowcase();
+      renderProjectGallery();
+      toegevoegd++;
+      // Klaar gemelde projecten uit de lijst halen, zodat je ziet wat nog moet.
+      g.aan = false;
+      renderBulk();
+    }
   }
-  status.textContent = actief.length + ' project' + (actief.length === 1 ? '' : 'en') + ' toegevoegd' + (mislukt ? ' \u2014 ' + mislukt + ' foto\u2019s mislukt' : '') + '.';
   btn.disabled = false;
-  setTimeout(bulkSluit, 1400);
+  if (gestopt) {
+    status.innerHTML = '<strong style="color:var(--ember)">De fotobewaarplaats is niet bereikbaar.</strong><br>' +
+      'Er is gestopt na ' + toegevoegd + ' project' + (toegevoegd === 1 ? '' : 'en') + '. ' +
+      'Controleer in Firebase of Storage aanstaat en of de regels uploaden toestaan; probeer het daarna opnieuw.';
+    return;
+  }
+  status.textContent = toegevoegd + ' project' + (toegevoegd === 1 ? '' : 'en') + ' toegevoegd' + (mislukt ? ' \u2014 ' + mislukt + ' foto\u2019s mislukt' : '') + '.';
+  setTimeout(bulkSluit, 1600);
 });
+
+// ---------- Opslagtest: waarom lukt uploaden niet? ----------
+async function opslagTest() {
+  const regels = [];
+  regels.push('Synchronisatie: ' + (typeof fbReady !== 'undefined' && fbReady ? 'actief' : 'NIET actief'));
+  if (!window.firebase || !firebase.storage) {
+    alert(regels.join('\n') + '\n\nDe opslagmodule is niet geladen.');
+    return;
+  }
+  const kandidaten = [];
+  try { if (fbStorage) kandidaten.push(fbStorage); } catch (e) {}
+  ALT_BUCKETS.forEach(b => {
+    try {
+      const st = firebase.app().storage(b);
+      if (!kandidaten.some(x => x.app.options.storageBucket === st.app.options.storageBucket)) kandidaten.push(st);
+    } catch (e) {}
+  });
+  for (const st of kandidaten) {
+    const naam = st.app.options.storageBucket;
+    try { st.setMaxUploadRetryTime(8000); st.setMaxOperationRetryTime(8000); } catch (e) {}
+    const ref = st.ref().child('showroom/_test-' + Date.now() + '.txt');
+    try {
+      const taak = ref.putString('test');
+      const uitslag = await Promise.race([
+        taak.then(() => 'ok'),
+        new Promise(r => setTimeout(() => { try { taak.cancel(); } catch (e) {} r('tijdslimiet'); }, 12000))
+      ]);
+      if (uitslag === 'ok') {
+        regels.push(naam + ': WERKT');
+        try { await ref.delete(); } catch (e) {}
+      } else {
+        regels.push(naam + ': geen antwoord binnen 12 seconden');
+      }
+    } catch (e) {
+      const code = (e && e.code) || '';
+      let uitleg = code || (e && e.message) || String(e);
+      if (/unauthorized/i.test(code)) uitleg += ' \u2014 de opslagregels staan uploaden niet toe';
+      else if (/bucket-not-found|project-not-found/i.test(code)) uitleg += ' \u2014 deze bewaarplaats bestaat niet';
+      else if (/retry-limit|canceled/i.test(code)) uitleg += ' \u2014 geen verbinding of geblokkeerd';
+      regels.push(naam + ': ' + uitleg);
+    }
+  }
+  storageStuk = false;
+  alert('Opslagtest\n\n' + regels.join('\n'));
+}
 
 // ---------- Fotoviewer van een project ----------
 let galItem = null;
@@ -9567,7 +9656,8 @@ document.getElementById('lib-add-btn').addEventListener('click', (e) => {
     { title: 'In \u00e9\u00e9n keer', items: [
       { label: 'Map inlezen', onSelect: () => document.getElementById('bulk-folder-input').click() },
       { label: 'Zip-bestand inlezen', onSelect: () => document.getElementById('bulk-zip-input').click() }
-    ] }
+    ] },
+    { items: [{ label: 'Fotobewaarplaats testen', onSelect: () => opslagTest() }] }
   ]);
 });
 document.getElementById('lib-modal-close').addEventListener('click', closeLibModal);
