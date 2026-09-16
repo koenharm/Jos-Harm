@@ -2513,6 +2513,7 @@
     <div class="sidebar-foot">
       <div class="sidebar-foot-text" id="sidebar-foot-text">Alles wat je hier invoert, wordt automatisch bewaard zodra je deze app via Claude opent — je kunt dus altijd verder waar je gebleven was.</div>
       <div class="save-status" id="save-status"><div class="save-status-dot"></div><span id="save-status-text">Alles opgeslagen</span></div>
+      <div class="sidebar-foot-text" id="sync-state-text" style="margin-top:6px">Verbinding controleren…</div>
     </div>
   </div>
 
@@ -3724,14 +3725,107 @@ async function uploadPhoto(file, folder) {
 }
 
 let suppressRemote = false;
+// Verbindingsstatus: fbReady zegt alleen dat de module geladen is, niet dat er
+// verbinding is. Hierop wachten we voordat we data lezen, anders lijkt een trage
+// start op “kon niet worden geladen”.
+let fbOnline = false;
+let fbEverOnline = false;
+const fbOnlineWatchers = [];
+function fbWatchConnection() {
+  if (!fbReady) return;
+  try {
+    fbDb.ref('.info/connected').on('value', (s) => {
+      fbOnline = s.val() === true;
+      if (fbOnline) fbEverOnline = true;
+      fbOnlineWatchers.forEach(fn => { try { fn(fbOnline); } catch (e) {} });
+      updateSyncStatus();
+    });
+  } catch (e) {}
+}
+function waitForConnection(ms) {
+  if (!fbReady) return Promise.resolve(false);
+  if (fbOnline) return Promise.resolve(true);
+  return new Promise(res => {
+    let klaar = false;
+    const t = setTimeout(() => { if (!klaar) { klaar = true; res(false); } }, ms || 7000);
+    fbOnlineWatchers.push((on) => { if (on && !klaar) { klaar = true; clearTimeout(t); res(true); } });
+  });
+}
+function updateSyncStatus() {
+  const el = document.getElementById('sync-state-text');
+  const tekst = !fbReady ? 'Geen synchronisatie ingesteld'
+    : fbDenied ? 'Synchronisatie geweigerd door de databaseregels — alleen dit apparaat'
+    : fbOnline ? 'Synchroon met je andere apparaten'
+    : 'Geen verbinding — wijzigingen worden verstuurd zodra je weer online bent';
+  if (el) el.textContent = tekst;
+  const foot = document.getElementById('sidebar-foot-text');
+  if (foot && fbReady) {
+    foot.textContent = fbDenied
+      ? 'Let op: de database weigert toegang, dus wijzigingen blijven op dit apparaat. Werk de regels in Firebase bij om weer te synchroniseren.'
+      : fbOnline
+      ? 'Alles wat je hier invoert wordt automatisch gesynchroniseerd tussen al je apparaten.'
+      : 'Even geen verbinding. Je wijzigingen worden bewaard en automatisch verstuurd zodra je weer online bent.';
+  }
+}
+// Samenvoegen in plaats van overschrijven: items die alleen hier bestaan blijven
+// staan, items die elders zijn bijgewerkt komen binnen, gewiste items (prullenbak)
+// komen niet terug.
+function tombstoneIds() {
+  const set = {};
+  (trash || []).forEach(e => { const it = e && e.item; if (it && it.id != null) set[it.id] = e.t || 0; });
+  return set;
+}
+function mergeArrays(localArr, remoteArr) {
+  if (!Array.isArray(localArr) || !Array.isArray(remoteArr)) return null;
+  const alleIds = a => a.every(x => x && typeof x === 'object' && x.id != null);
+  if (!alleIds(localArr) || !alleIds(remoteArr)) return null;
+  const dood = tombstoneIds();
+  const uit = [];
+  const gezien = {};
+  const stamp = x => x.updatedAt || x.editedAt || x.createdAt || 0;
+  remoteArr.forEach(r => {
+    if (dood[r.id]) return;
+    const l = localArr.find(x => x.id === r.id);
+    uit.push(l && stamp(l) > stamp(r) ? l : r);
+    gezien[r.id] = true;
+  });
+  let extra = 0;
+  localArr.forEach(l => {
+    if (gezien[l.id] || dood[l.id]) return;
+    uit.push(l); extra++;
+  });
+  return { list: uit, localOnly: extra };
+}
+function mergeJson(key, remoteVal) {
+  const localVal = lastKnown[key];
+  if (typeof localVal !== 'string' || typeof remoteVal !== 'string') return { value: remoteVal, localOnly: 0 };
+  if (localVal === remoteVal) return { value: remoteVal, localOnly: 0 };
+  try {
+    const m = mergeArrays(JSON.parse(localVal), JSON.parse(remoteVal));
+    if (m) return { value: JSON.stringify(m.list), localOnly: m.localOnly };
+  } catch (e) {}
+  return { value: remoteVal, localOnly: 0 };
+}
+const pendingWrite = {};
+let fbLastAck = 0;
 function listenRemote(key, onChange) {
   if (!fbReady) return;
   fbDb.ref('werkplaats/' + key).on('value', (snap) => {
-    if (suppressRemote) return;
     const val = snap.val();
     if (val === null || val === undefined) return;
-    if (guarded(key)) { lastKnown[key] = val; dataLoadOk[key] = true; }
-    onChange(val);
+    // Eigen echo overslaan — maar nooit meer een tijdvenster waarin echte
+    // wijzigingen van een ander apparaat weggegooid worden.
+    if (val === lastKnown[key]) { if (guarded(key)) dataLoadOk[key] = true; return; }
+    if (pendingWrite[key]) return;
+    const m = mergeJson(key, val);
+    if (guarded(key)) { lastKnown[key] = m.value; dataLoadOk[key] = true; }
+    onChange(m.value);
+    // Had dit apparaat items die elders nog niet stonden? Terugsturen, zodat
+    // beide kanten compleet zijn.
+    if (m.localOnly > 0 && m.value !== val) {
+      fbDb.ref('werkplaats/' + key).set(m.value).catch(() => {});
+      try { localStorage.setItem('werkplaats:' + key, m.value); } catch (e) {}
+    }
   });
 }
 
@@ -3776,6 +3870,7 @@ const lastKnown = {};
 const histPruned = {};
 const lastHistAt = {};
 let fbReadFailed = false;
+const fbKeyFailed = {};
 function dataName(key) { return DATA_KEYS[key] || key; }
 function guarded(key) { return Object.prototype.hasOwnProperty.call(DATA_KEYS, key); }
 function itemCount(json) {
@@ -3798,7 +3893,7 @@ async function writeHistory(key, prevValue, force) {
       localStorage.setItem('werkplaats:hist:' + key, JSON.stringify(arr.slice(0, 6)));
     } catch (e) { /* localStorage vol */ }
   }
-  if (!fbReady) return;
+  if (!fbReady || fbDenied) return;
   try {
     await fbDb.ref('werkplaats/history/' + key).push({ t: now, v: prevValue });
     if (histPruned[key]) return;
@@ -3820,7 +3915,7 @@ async function maybeDailyBackup() {
   });
   if (!n) return;
   try { localStorage.setItem('werkplaats:localBackup', JSON.stringify({ t: Date.now(), data })); } catch (e) {}
-  if (fbReady) {
+  if (fbReady && !fbDenied) {
     try {
       await fbDb.ref('werkplaats/backups/' + today).set({ t: Date.now(), data });
       const snap = await fbDb.ref('werkplaats/backups').once('value');
@@ -3838,13 +3933,55 @@ function showDataWarning(msg) {
   document.getElementById('data-warning-text').textContent = msg;
   bar.classList.add('open');
 }
+const dataStale = {};
+let fbDenied = false;
+function isDenied(e) {
+  if (!e) return false;
+  const c = (e.code || '') + '';
+  return /permission[_ ]denied/i.test(c) || /permission[_ ]denied/i.test(e.message || '');
+}
+function markDenied() {
+  if (fbDenied) return;
+  fbDenied = true;
+  updateSyncStatus();
+  showDataWarning('Synchronisatie is geweigerd door de databaseregels van Firebase. De app werkt nu alleen op dit apparaat \u2014 wijzigingen gaan niet naar je andere apparaten. Open Firebase \u2192 Realtime Database \u2192 Regels en zet de regels weer open (testregels verlopen na 30 dagen).');
+}
+function withTimeout(p, ms, label) {
+  return new Promise((res, rej) => {
+    const t = setTimeout(() => rej(new Error('timeout: ' + label)), ms);
+    p.then(v => { clearTimeout(t); res(v); }, e => { clearTimeout(t); rej(e); });
+  });
+}
 async function storageGet(key) {
   if (fbReady) {
-    try {
-      const snap = await fbDb.ref('werkplaats/' + key).once('value');
-      const val = snap.val();
-      if (val !== null && val !== undefined) return { key, value: val };
-    } catch (e) { console.error('Firebase get mislukt', e); fbReadFailed = true; }
+    let laatste = null;
+    for (let i = 0; i < 3; i++) {
+      try {
+        const snap = await withTimeout(fbDb.ref('werkplaats/' + key).once('value'), 9000, key);
+        const val = snap.val();
+        fbKeyFailed[key] = false;
+        if (val !== null && val !== undefined) {
+          try { localStorage.setItem('werkplaats:' + key, val); } catch (e) {}
+          return { key, value: val };
+        }
+        laatste = null;
+        break;
+      } catch (e) {
+        laatste = e;
+        // Geweigerd door de databaseregels is een definitieve fout: niet opnieuw
+        // proberen, dat vertraagt de start alleen.
+        if (isDenied(e)) { markDenied(); break; }
+        await new Promise(r => setTimeout(r, 500 * (i + 1)));
+      }
+    }
+    if (laatste) {
+      console.error('Firebase get mislukt: ' + key, laatste);
+      fbReadFailed = true; fbKeyFailed[key] = true;
+      // Server onbereikbaar: verder met de kopie op dit apparaat in plaats van
+      // alles blokkeren. Bij het eerstvolgende opslaan wordt samengevoegd.
+      const cache = localStorage.getItem('werkplaats:' + key);
+      if (cache !== null) { dataStale[key] = true; return { key, value: cache }; }
+    }
   }
   if (storageMode === 'claude') {
     let lastErr = null;
@@ -3866,11 +4003,19 @@ async function loadJson(key, fallback) {
     lastKnown[key] = val != null ? val : JSON.stringify(fallback);
     return val ? JSON.parse(val) : fallback;
   } catch (e) {
-    const leeg = e && /not found/i.test(e.message || '') && !fbReadFailed;
+    const leeg = e && /not found/i.test(e.message || '') && !fbKeyFailed[key];
     if (leeg) {
       dataLoadOk[key] = true;
       lastKnown[key] = JSON.stringify(fallback);
       return fallback;
+    }
+    // Regels weigeren de toegang: dan is dit apparaat gewoon de enige bron.
+    // Wel één duidelijke melding (markDenied), maar niet opslaan blokkeren.
+    if (fbDenied) {
+      const cache = (() => { try { return localStorage.getItem('werkplaats:' + key); } catch (x) { return null; } })();
+      dataLoadOk[key] = true;
+      lastKnown[key] = cache != null ? cache : JSON.stringify(fallback);
+      try { return cache != null ? JSON.parse(cache) : fallback; } catch (x) { return fallback; }
     }
     dataLoadOk[key] = false;
     console.error('Laden mislukt: ' + key, e);
@@ -3897,12 +4042,44 @@ async function storageSet(key, value, opts) {
     }
     await writeHistory(key, prev, false);
   }
-  if (fbReady) {
+  if (fbReady && !fbDenied) {
+    // Werd dit onderdeel met een lokale kopie geopend (server was toen
+    // onbereikbaar)? Dan eerst kijken wat er op de server staat en samenvoegen,
+    // zodat werk van een ander apparaat niet overschreven wordt.
+    if (dataStale[key]) {
+      try {
+        const snap = await withTimeout(fbDb.ref('werkplaats/' + key).once('value'), 6000, key);
+        const rem = snap.val();
+        if (typeof rem === 'string' && rem !== value) {
+          const eerder = lastKnown[key];
+          lastKnown[key] = value;
+          const m = mergeJson(key, rem);
+          lastKnown[key] = eerder;
+          if (m.value && m.localOnly >= 0) value = m.value;
+        }
+        dataStale[key] = false;
+      } catch (e) { /* nog steeds offline: schrijven wordt in de wachtrij gezet */ }
+    }
+    // Eerst vastleggen wat we wegschrijven: Firebase laat de eigen listener al
+    // afgaan vóór de bevestiging, en zonder dit zou die echo als “wijziging van
+    // een ander apparaat” worden samengevoegd (en net gewiste items terugzetten).
+    if (guarded(key)) lastKnown[key] = value;
+    pendingWrite[key] = (pendingWrite[key] || 0) + 1;
     try {
-      suppressRemote = true;
-      await fbDb.ref('werkplaats/' + key).set(value);
-    } catch (e) { console.error('Firebase set mislukt', e); }
-    finally { setTimeout(() => { suppressRemote = false; }, 300); }
+      // Offline lost de set-belofte pas op na verbinding; niet blijven hangen.
+      await withTimeout(fbDb.ref('werkplaats/' + key).set(value), 6000, 'set ' + key);
+      fbLastAck = Date.now();
+    } catch (e) {
+      if (isDenied(e)) {
+        markDenied();
+        pendingWrite[key]--;
+        try { localStorage.setItem('werkplaats:' + key, value); } catch (x) {}
+        throw new Error('synchronisatie geweigerd door de databaseregels');
+      }
+      if (/^timeout/.test(e.message || '')) { console.warn('Nog geen verbinding — wijziging staat in de wachtrij: ' + key); updateSyncStatus(); }
+      else console.error('Firebase set mislukt', e);
+    }
+    setTimeout(() => { pendingWrite[key] = Math.max(0, (pendingWrite[key] || 1) - 1); }, 1500);
   }
   if (guarded(key)) lastKnown[key] = value;
   if (storageMode === 'claude') {
@@ -3916,6 +4093,9 @@ async function storageSet(key, value, opts) {
 
 async function loadData() {
   storageMode = await waitForStorage();
+  fbWatchConnection();
+  if (fbReady) await waitForConnection(7000);
+  updateSyncStatus();
   const footText = document.getElementById('sidebar-foot-text');
   if (footText) {
     footText.textContent = fbReady
@@ -4007,6 +4187,21 @@ function setupRealtimeSync() {
     try { calculations = JSON.parse(val); } catch (e) { return; }
     renderCalcList();
   });
+  listenRemote('trash-data', (val) => {
+    try { trash = JSON.parse(val) || []; } catch (e) { return; }
+  });
+  // Bij terugkomst online: alles opnieuw ophalen, zodat een apparaat dat in de
+  // tussentijd sliep nooit met oude gegevens verder werkt.
+  fbOnlineWatchers.push((on) => {
+    if (!on || !fbEverOnline || fbDenied) return;
+    Object.keys(DATA_KEYS).forEach(k => {
+      fbDb.ref('werkplaats/' + k).once('value').then(s => {
+        const v = s.val();
+        if (typeof v === 'string' && v !== lastKnown[k]) fbDb.ref('werkplaats/' + k).set(mergeJson(k, v).value).catch(() => {});
+      }).catch(() => {});
+    });
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) updateSyncStatus(); });
 }
 let saveStatusTimer = null;
 let pendingSaveCount = 0;
@@ -12034,6 +12229,9 @@ function calcSuggestions() {
   lines.forEach(l => {
     const pair = l.section === 'renovatie' && flexPairs[l.key];
     if (pair) add('renovatie', pair[0], 2, 'Bij RVS flex ' + pair[1] + ' horen meestal twee koppelstukken');
+    if (l.section === 'renovatie' && l.key === 'r1') {
+      add('renovatie', 'r7', 1, 'Bij RVS flex 100 hoort een renovatiekap 100/150');
+    }
   });
 
   // Schoorsteenboezem → drie convectieroosters
