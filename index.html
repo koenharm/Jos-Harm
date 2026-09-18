@@ -1366,6 +1366,11 @@
   }
   .bulk-row-fields select:focus, .bulk-row-fields input:focus { outline: none; border-color: var(--ember); }
   .bulk-row.uit { opacity: 0.42; }
+  #bulk-alles select {
+    background: var(--panel-raised); border: 1px solid var(--hairline); border-radius: 6px;
+    padding: 8px 10px; color: var(--paper); font-family: inherit; font-size: 12.5px; flex: 1; min-width: 120px;
+  }
+  #bulk-alles select:focus { outline: none; border-color: var(--ember); }
   .bulk-thumbs { display: flex; gap: 4px; overflow-x: auto; }
   .bulk-thumbs img { width: 46px; height: 46px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--hairline); }
   .bulk-status { font-size: 12px; color: var(--smoke); line-height: 1.6; margin-top: 10px; }
@@ -3336,7 +3341,13 @@
       <h2>Map inlezen</h2>
       <div class="modal-close" id="bulk-close">&times;</div>
     </div>
-    <div class="bulk-status" id="bulk-intro">Elke submap wordt één project. Kies per project de soort en de uitvoering, pas de titel aan waar nodig, en zet ze in één keer in de bibliotheek. Foto's worden automatisch verkleind.</div>
+    <div class="bulk-status" id="bulk-intro">Elke submap wordt één project. Zet ze hieronder in één keer op dezelfde soort — bijvoorbeeld alles op Liftdeurhaard — of kies per project de soort en de uitvoering, pas de titel aan waar nodig, en zet ze in één keer in de bibliotheek. Foto's worden automatisch verkleind.</div>
+    <div id="bulk-alles" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px; padding:11px 12px; border:1px solid var(--hairline); border-radius:8px; background:var(--soot)">
+      <div style="font-family:'Poppins',sans-serif; font-size:10.5px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:var(--smoke); width:100%">Alles in één groep</div>
+      <select id="bulk-alles-cat"></select>
+      <select id="bulk-alles-sub"></select>
+      <button class="btn btn-ghost btn-sm" id="bulk-alles-apply" type="button">Op alle projecten toepassen</button>
+    </div>
     <div id="bulk-groups" style="margin-top:6px"></div>
     <div class="bulk-status" id="bulk-status"></div>
     <div class="bulk-bar" id="bulk-bar" style="display:none"><span></span></div>
@@ -9113,6 +9124,7 @@ function bulkVanBestanden(items, standaardNaam) {
     return { id: 'bg' + i, map, titel, files: lijst, cat: bulkRaadCat(map + ' ' + lijst.map(x => x.naam).join(' ')), sub: null, model: '', aan: true };
   });
   bulkGroups.forEach(g => { g.sub = (LIB_CATS.find(c => c.key === g.cat) || LIB_CATS[0]).subs[0]; });
+  bulkAllesInit();
   renderBulk();
   document.getElementById('bulk-status').textContent = '';
   document.getElementById('bulk-bar').style.display = 'none';
@@ -9195,6 +9207,41 @@ document.getElementById('bulk-zip-input').addEventListener('change', async (e) =
     btn.disabled = false;
   }
 });
+// Eén soort + uitvoering voor de hele map in één keer.
+function bulkAllesInit() {
+  const catSel = document.getElementById('bulk-alles-cat');
+  const subSel = document.getElementById('bulk-alles-sub');
+  if (!catSel.dataset.gevuld) {
+    LIB_CATS.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.key; o.textContent = c.label;
+      catSel.appendChild(o);
+    });
+    catSel.addEventListener('change', bulkAllesVulSubs);
+    document.getElementById('bulk-alles-apply').addEventListener('click', () => {
+      const cat = catSel.value, sub = subSel.value;
+      bulkGroups.forEach(g => { g.cat = cat; g.sub = sub; });
+      renderBulk();
+      document.getElementById('bulk-status').textContent = bulkGroups.length + ' project' + (bulkGroups.length === 1 ? '' : 'en') + ' op ' + sub + ' gezet.';
+    });
+    catSel.dataset.gevuld = '1';
+  }
+  const eerste = bulkGroups[0];
+  catSel.value = (eerste && eerste.cat) || LIB_CATS[0].key;
+  bulkAllesVulSubs();
+  if (eerste && eerste.sub) subSel.value = eerste.sub;
+}
+function bulkAllesVulSubs() {
+  const catSel = document.getElementById('bulk-alles-cat');
+  const subSel = document.getElementById('bulk-alles-sub');
+  const cat = LIB_CATS.find(c => c.key === catSel.value) || LIB_CATS[0];
+  subSel.innerHTML = '';
+  cat.subs.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    subSel.appendChild(o);
+  });
+}
 function renderBulk() {
   const wrap = document.getElementById('bulk-groups');
   wrap.innerHTML = '';
