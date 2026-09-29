@@ -1008,7 +1008,7 @@
   .calc-card-del:hover { color: var(--danger); }
   .calc-empty { color: var(--smoke); font-size: 13px; font-style: italic; padding: 20px 2px; }
   .calc-editor { display: flex; flex-direction: column; gap: 18px; }
-  .calc-top-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  .calc-top-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
   .price-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .price-toolbar input[type="text"] {
     flex: 1 1 220px; min-width: 0; background: var(--soot); border: 1px solid var(--hairline);
@@ -2825,6 +2825,10 @@
               <label>Datum</label>
               <input type="date" id="calc-date" />
             </div>
+            <div class="field">
+              <label>Adviseur</label>
+              <select id="calc-advisor"></select>
+            </div>
           </div>
           <details class="calc-section" id="calc-client-block" open>
             <summary>Klantinformatie <span class="calc-section-sub" id="calc-client-summary"></span></summary>
@@ -2905,7 +2909,7 @@
               <button class="btn btn-ghost" id="calc-share-btn">Delen</button>
               <div class="calc-share-menu" id="calc-share-menu">
                 <button type="button" class="calc-share-option" data-channel="whatsapp">Via WhatsApp</button>
-                <button type="button" class="calc-share-option" data-channel="email">Via e-mail (koen@josharm.nl)</button>
+                <button type="button" class="calc-share-option" data-channel="email">Via e-mail (<span class="calc-advisor-email">koen@josharm.nl</span>)</button>
               </div>
             </div>
             <button class="btn btn-ghost" id="calc-send-btn">Digitaal verzenden</button>
@@ -3489,7 +3493,7 @@
           </div>
           <div class="psheet-meta">
             <div id="plist-date"></div>
-            <div>Opgesteld door: Koen Harm</div>
+            <div>Opgesteld door: <span class="calc-advisor-name">Koen Harm</span></div>
           </div>
         </div>
         <div class="psheet-title">Productenlijst</div>
@@ -3557,7 +3561,7 @@
           </div>
           <div class="psheet-meta">
             <div id="psheet-date"></div>
-            <div>Adviseur: Koen Harm</div>
+            <div>Adviseur: <span class="calc-advisor-name">Koen Harm</span></div>
           </div>
         </div>
         <div class="psheet-title">Prijsopgave</div>
@@ -3602,12 +3606,12 @@
           <div class="psheet-sign-col">
             <div class="psheet-sign-label">Jos Harm</div>
             <div class="psheet-sign-line"></div>
-            <div class="psheet-sign-hint">Koen Harm</div>
+            <div class="psheet-sign-hint calc-advisor-name">Koen Harm</div>
           </div>
         </div>
         <div class="psheet-foot">
           <div>Jos Harm</div>
-          <div>koen@josharm.nl</div>
+          <div class="calc-advisor-email">koen@josharm.nl</div>
         </div>
       </div>
     </div>
@@ -11961,7 +11965,7 @@ document.querySelectorAll('.calc-share-option').forEach(opt => {
         } else {
           downloadBlob(blob, fileName);
           alert('PDF gedownload \u2014 je e-mailapp ondersteunt geen automatische bijlage vanuit de browser. Open je mailprogramma en voeg het gedownloade bestand handmatig toe.');
-          window.location.href = `mailto:koen@josharm.nl?subject=${encodeURIComponent(subjectFor(calc))}&body=${encodeURIComponent(text)}`;
+          window.location.href = `mailto:${calcAdvisor(calc).email}?subject=${encodeURIComponent(subjectFor(calc))}&body=${encodeURIComponent(text)}`;
         }
       }
     } catch (err) {
@@ -12675,6 +12679,10 @@ function openCalcEditor(calc) {
   document.getElementById('calc-client-select').value = calc.clientId || '';
   document.getElementById('calc-client-name').value = /^Naamloze berekening/.test(calc.clientName || '') ? '' : (calc.clientName || '');
   calcFillContactFields(calc);
+  if (!calc.advisor) calc.advisor = calculations.some(c => c.id === calc.id) ? 'koen' : calcDefaultAdvisorId();
+  calcFillAdvisorSelect();
+  document.getElementById('calc-advisor').value = calcAdvisor(calc).id;
+  calcApplyAdvisor(calc);
   document.getElementById('calc-date').value = calc.date || new Date().toISOString().slice(0,10);
   document.getElementById('calc-delete-btn').style.display = calculations.some(c => c.id === calc.id) ? 'inline-block' : 'none';
   renderCalcProducts();
@@ -12771,6 +12779,28 @@ document.getElementById('calc-client-select').addEventListener('change', (e) => 
     }
     calcFillContactFields(calc);
   }
+});
+const CALC_ADVISORS = [
+  { id: 'koen', name: 'Koen Harm', email: 'koen@josharm.nl' },
+  { id: 'jeroen', name: 'Jeroen Harm', email: 'jeroen@josharm.nl' }
+];
+function calcDefaultAdvisorId() { return document.documentElement.classList.contains('calc-only') ? 'jeroen' : 'koen'; }
+function calcAdvisor(calc) { return CALC_ADVISORS.find(a => a.id === (calc && calc.advisor)) || CALC_ADVISORS[0]; }
+function calcFillAdvisorSelect() {
+  const sel = document.getElementById('calc-advisor');
+  if (sel.options.length) return;
+  CALC_ADVISORS.forEach(a => { const o = document.createElement('option'); o.value = a.id; o.textContent = a.name; sel.appendChild(o); });
+}
+function calcApplyAdvisor(calc) {
+  const a = calcAdvisor(calc);
+  document.querySelectorAll('.calc-advisor-name').forEach(el => { el.textContent = a.name; });
+  document.querySelectorAll('.calc-advisor-email').forEach(el => { el.textContent = a.email; });
+}
+document.getElementById('calc-advisor').addEventListener('change', (e) => {
+  const calc = window.__editingCalc;
+  if (!calc) return;
+  calc.advisor = e.target.value;
+  calcApplyAdvisor(calc);
 });
 const CALC_ADDR_FIELDS = [['calc-client-phone', 'clientPhone'], ['calc-client-email', 'clientEmail'], ['calc-client-postcode', 'clientPostcode'], ['calc-client-housenumber', 'clientHouseNumber'], ['calc-client-street', 'clientStreet'], ['calc-client-city', 'clientCity']];
 function calcComposeAddress(calc) {
@@ -12908,6 +12938,7 @@ function calcClientInfo(calc) {
   };
 }
 function fillPsheetPreview(calc, open) {
+  calcApplyAdvisor(calc);
   const { client, addr, phone, email } = calcClientInfo(calc);
   document.getElementById('psheet-client-phone').textContent = phone;
   document.getElementById('psheet-client-phone-wrap').style.display = phone ? '' : 'none';
@@ -12965,6 +12996,7 @@ function collectCalcProductLines(calc) {
   return groups;
 }
 function fillPlistPreview(calc, open) {
+  calcApplyAdvisor(calc);
   const { client, addr } = calcClientInfo(calc);
   const groups = collectCalcProductLines(calc);
   let rows = '', count = 0;
