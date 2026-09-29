@@ -5,6 +5,7 @@
 <meta name="omelette-owns-print">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Werkplaats</title>
+<script>if (window.name === 'jh-calc-only') document.documentElement.classList.add('calc-only');</script>
 
 <!-- Cloud-sync (Firebase Realtime Database) — zorgt dat telefoon en computer dezelfde data zien -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -2161,6 +2162,15 @@
   .toast-undo:hover { text-decoration: underline; }
   .mobile-topbar { display: none; }
   .tabbar { display: none; }
+  /* ---- Losse calculatie-app (calculatie.html) ---- */
+  .calc-only-field { display: none; }
+  html.calc-only .calc-only-field { display: flex; }
+  html.calc-only .calc-client-link-field { display: none !important; }
+  html.calc-only .sidebar, html.calc-only .rail, html.calc-only .tabbar,
+  html.calc-only .mobile-topbar, html.calc-only .showroom-exit { display: none !important; }
+  html.calc-only .app { grid-template-columns: minmax(0, 1fr) !important; }
+  html.calc-only .main { max-width: 1100px; margin: 0 auto; width: 100%; padding: 28px 28px 60px !important; }
+  @media (max-width: 700px) { html.calc-only .main { padding: 18px 14px 50px !important; } }
 
   @media (max-width: 980px) {
     .kanban { grid-template-columns: 1fr 1fr; }
@@ -2805,7 +2815,11 @@
               <label>Naam van deze calculatie</label>
               <input type="text" id="calc-title" placeholder="bijv. Calculatie gashaard" autocomplete="off" />
             </div>
-            <div class="field">
+            <div class="field calc-only-field" style="flex-direction:column">
+              <label>Klant</label>
+              <input type="text" id="calc-client-name" placeholder="Naam van de klant" autocomplete="off" />
+            </div>
+            <div class="field calc-client-link-field">
               <label>Klant</label>
               <select id="calc-client-select">
                 <option value="">— Geen klant gekoppeld —</option>
@@ -12612,6 +12626,7 @@ function openCalcEditor(calc) {
   renderRecentProducts();
   populateCalcClientSelect();
   document.getElementById('calc-client-select').value = calc.clientId || '';
+  document.getElementById('calc-client-name').value = /^Naamloze berekening/.test(calc.clientName || '') ? '' : (calc.clientName || '');
   document.getElementById('calc-date').value = calc.date || new Date().toISOString().slice(0,10);
   document.getElementById('calc-delete-btn').style.display = calculations.some(c => c.id === calc.id) ? 'inline-block' : 'none';
   renderCalcProducts();
@@ -12698,7 +12713,17 @@ document.getElementById('calc-client-select').addEventListener('change', (e) => 
   const c = clients.find(x => x.id === calc.clientId);
   if (c) calc.clientName = c.name;
 });
+document.getElementById('calc-client-name').addEventListener('input', (e) => {
+  const calc = window.__editingCalc;
+  if (!calc) return;
+  calc.clientName = e.target.value.trim();
+  if (calc.clientId) { const c = clients.find(x => x.id === calc.clientId); if (!c || c.name !== calc.clientName) calc.clientId = ''; }
+});
 document.getElementById('calc-date').addEventListener('change', (e) => { window.__editingCalc.date = e.target.value; });
+if (document.documentElement.classList.contains('calc-only')) {
+  document.title = 'Calculatie — Jos Harm';
+  setTimeout(() => { const nav = document.querySelector('.nav-item[data-view="calculatie"]'); if (nav) nav.click(); }, 0);
+}
 document.getElementById('calc-title').addEventListener('input', (e) => {
   const calc = window.__editingCalc;
   if (!calc) return;
