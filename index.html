@@ -1035,6 +1035,10 @@
   .price-row-reset:disabled { opacity: 0.3; cursor: default; }
   .price-row-reset:not(:disabled):hover { color: var(--paper); border-color: var(--ember); }
   .calc-top-row > .field { min-width: 0; }
+  .calc-client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; padding: 4px 16px 10px; }
+  .calc-client-grid .calc-client-full { grid-column: 1 / -1; }
+  .calc-client-grid .addr-status { margin: -4px 0 4px 2px; }
+  @media (max-width: 600px) { .calc-client-grid { grid-template-columns: 1fr; } }
   .calc-diam-field { margin-bottom: 0; }
   .calc-section { scroll-margin-top: 200px; }
   .calc-editor { max-width: 100%; }
@@ -2813,25 +2817,55 @@
             <div class="calc-filterrow calc-jumprow" id="calc-jump-row"></div>
           </div>
           <div class="calc-top-row">
-            <div class="field" style="grid-column: 1 / -1">
+            <div class="field">
               <label>Naam van deze calculatie</label>
               <input type="text" id="calc-title" placeholder="bijv. Calculatie gashaard" autocomplete="off" />
-            </div>
-            <div class="field calc-only-field" style="flex-direction:column">
-              <label>Klant</label>
-              <input type="text" id="calc-client-name" placeholder="Naam van de klant" autocomplete="off" />
-            </div>
-            <div class="field calc-client-link-field">
-              <label>Klant</label>
-              <select id="calc-client-select">
-                <option value="">— Geen klant gekoppeld —</option>
-              </select>
             </div>
             <div class="field">
               <label>Datum</label>
               <input type="date" id="calc-date" />
             </div>
           </div>
+          <details class="calc-section" id="calc-client-block" open>
+            <summary>Klantinformatie <span class="calc-section-sub" id="calc-client-summary"></span></summary>
+            <div class="calc-client-grid">
+              <div class="field calc-only-field calc-client-full" style="flex-direction:column">
+                <label>Naam klant</label>
+                <input type="text" id="calc-client-name" placeholder="Naam van de klant" autocomplete="off" />
+              </div>
+              <div class="field calc-client-link-field calc-client-full">
+                <label>Klant</label>
+                <select id="calc-client-select">
+                  <option value="">— Geen klant gekoppeld —</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Telefoonnummer</label>
+                <input type="tel" id="calc-client-phone" placeholder="06 12345678" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>E-mail</label>
+                <input type="email" id="calc-client-email" placeholder="naam@voorbeeld.nl" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>Postcode</label>
+                <input type="text" id="calc-client-postcode" placeholder="bijv. 1234AB" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>Huisnummer</label>
+                <input type="text" id="calc-client-housenumber" placeholder="bijv. 12" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>Straat</label>
+                <input type="text" id="calc-client-street" placeholder="Straatnaam" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label>Plaats</label>
+                <input type="text" id="calc-client-city" placeholder="Plaats" autocomplete="off" />
+              </div>
+              <div class="addr-status calc-client-full" id="calc-client-addr-status">Vul postcode + huisnummer in, of straat + huisnummer + plaats — de rest vult zich vanzelf aan.</div>
+            </div>
+          </details>
           <details class="calc-section calc-selected-block" id="calc-selected-block" open>
             <summary>In deze calculatie <span class="calc-section-sub" id="calc-selected-count">0 regels</span></summary>
             <div class="calc-rows" id="calc-selected-list"></div>
@@ -3536,6 +3570,14 @@
           <div>
             <div class="psheet-client-label">Adres</div>
             <div id="psheet-client-addr"></div>
+          </div>
+          <div id="psheet-client-phone-wrap">
+            <div class="psheet-client-label">Telefoon</div>
+            <div id="psheet-client-phone"></div>
+          </div>
+          <div id="psheet-client-email-wrap">
+            <div class="psheet-client-label">E-mail</div>
+            <div id="psheet-client-email"></div>
           </div>
         </div>
         <table class="psheet-table">
@@ -12632,6 +12674,7 @@ function openCalcEditor(calc) {
   populateCalcClientSelect();
   document.getElementById('calc-client-select').value = calc.clientId || '';
   document.getElementById('calc-client-name').value = /^Naamloze berekening/.test(calc.clientName || '') ? '' : (calc.clientName || '');
+  calcFillContactFields(calc);
   document.getElementById('calc-date').value = calc.date || new Date().toISOString().slice(0,10);
   document.getElementById('calc-delete-btn').style.display = calculations.some(c => c.id === calc.id) ? 'inline-block' : 'none';
   renderCalcProducts();
@@ -12718,12 +12761,105 @@ document.getElementById('calc-client-select').addEventListener('change', (e) => 
   calc.clientId = e.target.value;
   const c = clients.find(x => x.id === calc.clientId);
   if (c) calc.clientName = c.name;
+  if (c) {
+    if (!(calc.clientPhone || '').trim()) calc.clientPhone = c.phone || '';
+    if (!(calc.clientEmail || '').trim()) calc.clientEmail = c.email || '';
+    if (!['clientPostcode', 'clientHouseNumber', 'clientStreet', 'clientCity'].some(k => (calc[k] || '').trim())) {
+      calc.clientPostcode = c.postcode || ''; calc.clientHouseNumber = c.houseNumber || '';
+      calc.clientStreet = c.street || ''; calc.clientCity = c.city || '';
+      calc.clientAddress = calcComposeAddress(calc);
+    }
+    calcFillContactFields(calc);
+  }
 });
+const CALC_ADDR_FIELDS = [['calc-client-phone', 'clientPhone'], ['calc-client-email', 'clientEmail'], ['calc-client-postcode', 'clientPostcode'], ['calc-client-housenumber', 'clientHouseNumber'], ['calc-client-street', 'clientStreet'], ['calc-client-city', 'clientCity']];
+function calcComposeAddress(calc) {
+  const pc = (calc.clientPostcode || '').trim().toUpperCase().replace(/^(\d{4})\s*([A-Z]{2})$/, '$1 $2');
+  return [[calc.clientStreet, calc.clientHouseNumber].map(v => (v || '').trim()).filter(Boolean).join(' '), [pc, (calc.clientCity || '').trim()].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+}
+function calcUpdateClientSummary(calc) {
+  const el = document.getElementById('calc-client-summary');
+  if (el) el.textContent = [calc.clientName && !/^Naamloze berekening/.test(calc.clientName) ? calc.clientName : '', (calc.clientCity || '').trim()].filter(Boolean).join(' \u00b7 ');
+}
+function calcFillContactFields(calc) {
+  const c = clients.find(x => x.id === calc.clientId);
+  const hasOwn = CALC_ADDR_FIELDS.some(([, k]) => (calc[k] || '').trim());
+  if (!hasOwn && c) {
+    calc.clientPhone = c.phone || ''; calc.clientEmail = c.email || '';
+    calc.clientPostcode = c.postcode || ''; calc.clientHouseNumber = c.houseNumber || '';
+    calc.clientStreet = c.street || ''; calc.clientCity = c.city || '';
+    calc.clientAddress = calcComposeAddress(calc);
+  } else if (!hasOwn && (calc.clientAddress || '').trim()) {
+    calc.clientStreet = calc.clientAddress.trim();
+  }
+  CALC_ADDR_FIELDS.forEach(([id, k]) => { document.getElementById(id).value = calc[k] || ''; });
+  const st = document.getElementById('calc-client-addr-status');
+  if (st) st.textContent = 'Vul postcode + huisnummer in, of straat + huisnummer + plaats \u2014 de rest vult zich vanzelf aan.';
+  calcUpdateClientSummary(calc);
+}
+let calcAddrTimer = null;
+CALC_ADDR_FIELDS.forEach(([id, k]) => {
+  document.getElementById(id).addEventListener('input', (e) => {
+    const calc = window.__editingCalc;
+    if (!calc) return;
+    calc[k] = e.target.value;
+    calc.clientAddress = calcComposeAddress(calc);
+    calcUpdateClientSummary(calc);
+    if (['clientPostcode', 'clientHouseNumber', 'clientStreet', 'clientCity'].includes(k)) {
+      clearTimeout(calcAddrTimer);
+      calcAddrTimer = setTimeout(() => calcAddrLookup(k), 600);
+    }
+  });
+});
+async function calcAddrLookup(changedKey) {
+  const calc = window.__editingCalc;
+  if (!calc) return;
+  const st = document.getElementById('calc-client-addr-status');
+  const pc = (calc.clientPostcode || '').trim().replace(/\s+/g, '').toUpperCase();
+  const num = (calc.clientHouseNumber || '').trim();
+  const street = (calc.clientStreet || '').trim();
+  const city = (calc.clientCity || '').trim();
+  const pcValid = /^[1-9][0-9]{3}[A-Z]{2}$/.test(pc);
+  let mode = null;
+  if (pcValid && num && (changedKey === 'clientPostcode' || changedKey === 'clientHouseNumber' || !street || !city)) mode = 'fwd';
+  else if (street && num && city && !pcValid) mode = 'rev';
+  if (!mode) return;
+  st.textContent = mode === 'fwd' ? 'Adres zoeken\u2026' : 'Postcode zoeken\u2026';
+  const q = mode === 'fwd' ? pc + ' ' + num : street + ' ' + num + ' ' + city;
+  try {
+    const res = await fetch('https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=' + encodeURIComponent(q) + '&fq=type:adres&rows=1');
+    const data = await res.json();
+    const doc = data && data.response && data.response.docs && data.response.docs[0];
+    if (window.__editingCalc !== calc) return;
+    if (!doc) { st.textContent = mode === 'fwd' ? 'Geen adres gevonden \u2014 vul straat en plaats zelf in.' : 'Geen postcode gevonden \u2014 controleer straat, huisnummer en plaats.'; return; }
+    if (mode === 'fwd') {
+      calc.clientStreet = doc.straatnaam || street;
+      calc.clientCity = doc.woonplaatsnaam || city;
+      calc.clientPostcode = pc;
+      st.textContent = 'Adres gevonden \u2713';
+    } else {
+      calc.clientPostcode = doc.postcode || '';
+      if (doc.straatnaam) calc.clientStreet = doc.straatnaam;
+      if (doc.woonplaatsnaam) calc.clientCity = doc.woonplaatsnaam;
+      st.textContent = 'Postcode gevonden: ' + (doc.postcode || '') + ' (' + (doc.weergavenaam || '') + ') \u2713';
+    }
+    ['calc-client-postcode', 'calc-client-street', 'calc-client-city'].forEach(id => {
+      const k = CALC_ADDR_FIELDS.find(f => f[0] === id)[1];
+      const el = document.getElementById(id);
+      if (document.activeElement !== el || mode === 'rev' && id === 'calc-client-postcode' || mode === 'fwd' && id !== 'calc-client-postcode') el.value = calc[k] || '';
+    });
+    calc.clientAddress = calcComposeAddress(calc);
+    calcUpdateClientSummary(calc);
+  } catch (e) {
+    st.textContent = 'Adres opzoeken lukt nu niet \u2014 vul het zelf in.';
+  }
+}
 document.getElementById('calc-client-name').addEventListener('input', (e) => {
   const calc = window.__editingCalc;
   if (!calc) return;
   calc.clientName = e.target.value.trim();
   if (calc.clientId) { const c = clients.find(x => x.id === calc.clientId); if (!c || c.name !== calc.clientName) calc.clientId = ''; }
+  calcUpdateClientSummary(calc);
 });
 document.getElementById('calc-date').addEventListener('change', (e) => { window.__editingCalc.date = e.target.value; });
 if (document.documentElement.classList.contains('calc-only')) {
@@ -12761,9 +12897,22 @@ document.getElementById('calc-delete-btn').addEventListener('click', async () =>
 function vatMode() {
   try { return localStorage.getItem('werkplaats:vatMode') === 'excl' ? 'excl' : 'incl'; } catch (e) { return 'incl'; }
 }
-function fillPsheetPreview(calc, open) {
+function calcClientInfo(calc) {
   const client = clients.find(x => x.id === calc.clientId);
-  const addr = client ? [[client.street, client.houseNumber].filter(Boolean).join(' '), [client.postcode, client.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '';
+  const clientAddr = client ? [[client.street, client.houseNumber].filter(Boolean).join(' '), [client.postcode, client.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '';
+  return {
+    client,
+    addr: calcComposeAddress(calc) || (calc.clientAddress || '').trim() || clientAddr,
+    phone: (calc.clientPhone || '').trim() || (client && client.phone) || '',
+    email: (calc.clientEmail || '').trim() || (client && client.email) || ''
+  };
+}
+function fillPsheetPreview(calc, open) {
+  const { client, addr, phone, email } = calcClientInfo(calc);
+  document.getElementById('psheet-client-phone').textContent = phone;
+  document.getElementById('psheet-client-phone-wrap').style.display = phone ? '' : 'none';
+  document.getElementById('psheet-client-email').textContent = email;
+  document.getElementById('psheet-client-email-wrap').style.display = email ? '' : 'none';
   let rows = '';
   let mat = '';
   (calc.products || []).forEach(p => { if (p.label && p.price) mat += `<tr><td>${p.label}</td><td>${fmtEUR(p.price)}</td></tr>`; });
@@ -12816,8 +12965,7 @@ function collectCalcProductLines(calc) {
   return groups;
 }
 function fillPlistPreview(calc, open) {
-  const client = clients.find(x => x.id === calc.clientId);
-  const addr = client ? [[client.street, client.houseNumber].filter(Boolean).join(' '), [client.postcode, client.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') : '';
+  const { client, addr } = calcClientInfo(calc);
   const groups = collectCalcProductLines(calc);
   let rows = '', count = 0;
   groups.forEach(g => {

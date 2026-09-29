@@ -17,7 +17,7 @@ try {
   });
 } catch (e) { /* messaging niet beschikbaar */ }
 
-const CACHE_NAME = 'werkplaats-v81';
+const CACHE_NAME = 'werkplaats-v83';
 const APP_SHELL = ['./', './index.html', './manifest.json', './calculatie.html', './calculatie-manifest.json', './icon-192.png', './icon-512.png', './assets/front-gas-wide3.jpg', './assets/front-hout-wide.jpg', './assets/front-bio-wide.jpg', './assets/front-elek-wide.jpg'];
 
 self.addEventListener('install', (event) => {
