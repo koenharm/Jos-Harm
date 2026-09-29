@@ -5,7 +5,7 @@
 <meta name="omelette-owns-print">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Werkplaats</title>
-<script>if (window.name === 'jh-calc-only') document.documentElement.classList.add('calc-only');</script>
+<script>(function(){ try { if (window.name === 'jh-calc-only' || /calc-only/.test(location.hash) || /[?&]app=calc/.test(location.search) || (window.top !== window.self && /calculatie\.html/.test(window.parent.location.pathname))) { window.name = 'jh-calc-only'; document.documentElement.classList.add('calc-only'); } } catch (e) {} })();</script>
 
 <!-- Cloud-sync (Firebase Realtime Database) — zorgt dat telefoon en computer dezelfde data zien -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -2761,6 +2761,7 @@
             <button class="btn btn-primary" id="calc-new-btn">+ Nieuwe berekening</button>
           </div>
         </div>
+        <div class="forms-search" style="margin: 0 0 14px; max-width: 360px"><input type="search" id="calc-list-search" placeholder="Zoek op naam van de calculatie…" autocomplete="off" /></div>
         <div class="calc-list" id="calc-list"></div>
       </div>
 
@@ -11943,7 +11944,10 @@ function renderCalcList() {
   if (countEl) countEl.textContent = calculations.length;
   list.innerHTML = '';
   if (!calculations.length) { list.innerHTML = '<div class="calc-empty">Nog geen berekeningen \u2014 maak de eerste met "+ Nieuwe berekening".</div>'; return; }
-  calculations.slice().sort((a,b) => (b.createdAt||0) - (a.createdAt||0)).forEach(calc => {
+  const calcQ = ((document.getElementById('calc-list-search') || {}).value || '').trim().toLowerCase();
+  const calcShown = calcQ ? calculations.filter(c => [c.title, c.clientName, calcDisplayName(c)].some(v => (v || '').toLowerCase().includes(calcQ))) : calculations;
+  if (!calcShown.length) { list.innerHTML = '<div class="calc-empty">Geen calculaties gevonden voor \u201c' + calcQ.replace(/[<>&]/g, '') + '\u201d.</div>'; return; }
+  calcShown.slice().sort((a,b) => (b.createdAt||0) - (a.createdAt||0)).forEach(calc => {
     const card = document.createElement('div');
     card.className = 'calc-card';
     card.innerHTML = `
@@ -12658,6 +12662,7 @@ async function saveCalcDraftSilently() {
   await saveCalculations();
 }
 document.getElementById('calc-new-btn').addEventListener('click', () => openCalcEditor(newCalc()));
+document.getElementById('calc-list-search').addEventListener('input', () => renderCalcList());
 document.getElementById('calc-prices-btn').addEventListener('click', () => {
   document.getElementById('calc-list-panel').style.display = 'none';
   document.getElementById('calc-editor-panel').style.display = 'none';
