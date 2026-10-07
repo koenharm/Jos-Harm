@@ -12691,6 +12691,7 @@ function openCalcEditor(calc) {
   updateCalcTotals();
 }
 function closeCalcEditor() {
+  clearTimeout(calcAutoSaveTimer); calcAutoSaveTimer = null;
   const pp = document.getElementById('calc-prices-panel');
   if (pp) pp.style.display = 'none';
   document.getElementById('calc-editor-panel').style.display = 'none';
@@ -12713,6 +12714,40 @@ async function saveCalcDraftSilently() {
   if (idx >= 0) calculations[idx] = snapshot; else calculations.unshift(snapshot);
   await saveCalculations();
 }
+let calcAutoSaveTimer = null;
+async function calcAutoSave() {
+  calcAutoSaveTimer = null;
+  const calc = window.__editingCalc;
+  if (!calc || !editingCalcId || calc.id !== editingCalcId) return;
+  const snapshot = JSON.parse(JSON.stringify(calc));
+  if (!snapshot.clientName) {
+    const c = clients.find(x => x.id === snapshot.clientId);
+    snapshot.clientName = c ? c.name : 'Naamloze berekening (concept)';
+  }
+  if (snapshot.status !== 'definitief') snapshot.status = 'concept';
+  snapshot.updatedAt = Date.now();
+  const idx = calculations.findIndex(c => c.id === snapshot.id);
+  if (idx >= 0) calculations[idx] = snapshot; else calculations.unshift(snapshot);
+  const del = document.getElementById('calc-delete-btn');
+  if (del) del.style.display = 'inline-block';
+  await saveCalculations();
+}
+function scheduleCalcAutoSave() {
+  if (!editingCalcId) return;
+  clearTimeout(calcAutoSaveTimer);
+  calcAutoSaveTimer = setTimeout(calcAutoSave, 1200);
+}
+(function () {
+  const panel = document.getElementById('calc-editor-panel');
+  if (!panel) return;
+  ['input', 'change'].forEach(ev => panel.addEventListener(ev, scheduleCalcAutoSave));
+  panel.addEventListener('click', (e) => {
+    if (e.target.closest('#calc-save-btn, #calc-back-btn, #calc-draft-btn, #calc-delete-btn')) return;
+    if (e.target.closest('button, [role="button"], input[type="checkbox"], input[type="radio"]')) scheduleCalcAutoSave();
+  });
+  window.addEventListener('pagehide', () => { if (calcAutoSaveTimer) { clearTimeout(calcAutoSaveTimer); calcAutoSave(); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && calcAutoSaveTimer) { clearTimeout(calcAutoSaveTimer); calcAutoSave(); } });
+})();
 document.getElementById('calc-new-btn').addEventListener('click', () => openCalcEditor(newCalc()));
 document.getElementById('calc-list-search').addEventListener('input', () => renderCalcList());
 document.getElementById('calc-prices-btn').addEventListener('click', () => {
