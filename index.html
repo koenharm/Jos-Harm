@@ -3504,8 +3504,16 @@
             <div id="plist-client-name"></div>
           </div>
           <div>
+            <div class="psheet-client-label">Telefoon</div>
+            <div id="plist-client-phone"></div>
+          </div>
+          <div>
             <div class="psheet-client-label">Adres</div>
             <div id="plist-client-addr"></div>
+          </div>
+          <div>
+            <div class="psheet-client-label">E-mail</div>
+            <div id="plist-client-email" style="word-break:break-all"></div>
           </div>
           <div>
             <div class="psheet-client-label">Calculatie</div>
@@ -13032,7 +13040,9 @@ function collectCalcProductLines(calc) {
 }
 function fillPlistPreview(calc, open) {
   calcApplyAdvisor(calc);
-  const { client, addr } = calcClientInfo(calc);
+  const { client, addr, phone, email } = calcClientInfo(calc);
+  document.getElementById('plist-client-phone').textContent = phone || '\u2014';
+  document.getElementById('plist-client-email').textContent = email || '\u2014';
   const groups = collectCalcProductLines(calc);
   let rows = '', count = 0;
   groups.forEach(g => {
@@ -13062,7 +13072,14 @@ function fillPlistPreview(calc, open) {
   if (open) document.getElementById('plist-backdrop').classList.add('open');
 }
 function buildProductListText(calc) {
-  const lines = ['PRODUCTENLIJST \u2014 basis voor offerte', 'Klant: ' + (calc.clientName || '\u2014') + ((calc.title || '').trim() ? ' | ' + calc.title.trim() : ''), ''];
+  const ci = calcClientInfo(calc);
+  const lines = ['PRODUCTENLIJST \u2014 basis voor offerte', '', 'KLANTGEGEVENS',
+    '  Naam: ' + (calc.clientName || (ci.client ? ci.client.name : '') || '\u2014'),
+    '  Telefoon: ' + (ci.phone || '\u2014'),
+    '  E-mail: ' + (ci.email || '\u2014'),
+    '  Adres: ' + (ci.addr || '\u2014'),
+    '  Calculatie: ' + ((calc.title || '').trim() || '\u2014'),
+    '  Status: ' + (calc.status === 'definitief' ? 'Definitief' : 'Concept'), ''];
   collectCalcProductLines(calc).forEach(g => {
     lines.push(g.label.toUpperCase());
     g.items.forEach(it => lines.push('  ' + it.label + ' \u2014 ' + (Math.round(it.qty * 100) / 100) + ' x ' + fmtEUR(it.unit) + ' = ' + fmtEUR(it.total)));
