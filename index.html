@@ -2167,8 +2167,7 @@
   .mobile-topbar { display: none; }
   .tabbar { display: none; }
   /* ---- Losse calculatie-app (calculatie.html) ---- */
-  .calc-only-field { display: none; }
-  html.calc-only .calc-only-field { display: flex; }
+  .calc-only-field { display: flex; }
   html.calc-only .calc-client-link-field { display: none !important; }
   html.calc-only .sidebar, html.calc-only .rail, html.calc-only .tabbar,
   html.calc-only .mobile-topbar, html.calc-only .showroom-exit { display: none !important; }
@@ -2838,7 +2837,7 @@
                 <input type="text" id="calc-client-name" placeholder="Naam van de klant" autocomplete="off" />
               </div>
               <div class="field calc-client-link-field calc-client-full">
-                <label>Klant</label>
+                <label>Bestaande klant koppelen (optioneel)</label>
                 <select id="calc-client-select">
                   <option value="">— Geen klant gekoppeld —</option>
                 </select>
@@ -11956,7 +11955,7 @@ document.querySelectorAll('.calc-share-option').forEach(opt => {
     shareBtn.textContent = 'PDF maken\u2026'; shareBtn.disabled = true;
     try {
       const blob = await generateCalcPdfBlob(calc);
-      const fileName = `Calculatie${(calc.title || '').trim() ? ' ' + calc.title.trim() : ''}${calc.clientName ? ' - ' + calc.clientName : ''}.pdf`;
+      const fileName = calcPdfBaseName(calc) + '.pdf';
       const file = new File([blob], fileName, { type: 'application/pdf' });
       const text = buildCalcSummaryText(calc);
       if (channel === 'whatsapp') {
@@ -12811,7 +12810,7 @@ document.getElementById('calc-client-select').addEventListener('change', (e) => 
   const calc = window.__editingCalc;
   calc.clientId = e.target.value;
   const c = clients.find(x => x.id === calc.clientId);
-  if (c) calc.clientName = c.name;
+  if (c) { calc.clientName = c.name; document.getElementById('calc-client-name').value = c.name; }
   if (c) {
     if (!(calc.clientPhone || '').trim()) calc.clientPhone = c.phone || '';
     if (!(calc.clientEmail || '').trim()) calc.clientEmail = c.email || '';
@@ -12849,6 +12848,26 @@ const CALC_ADDR_FIELDS = [['calc-client-phone', 'clientPhone'], ['calc-client-em
 function calcComposeAddress(calc) {
   const pc = (calc.clientPostcode || '').trim().toUpperCase().replace(/^(\d{4})\s*([A-Z]{2})$/, '$1 $2');
   return [[calc.clientStreet, calc.clientHouseNumber].map(v => (v || '').trim()).filter(Boolean).join(' '), [pc, (calc.clientCity || '').trim()].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+}
+function calcClientDisplayName(calc) {
+  if (!calc) return '';
+  const n = (calc.clientName || '').trim();
+  if (n && !/^Naamloze berekening/.test(n)) return n;
+  const c = clients.find(x => x.id === calc.clientId);
+  return c ? c.name : '';
+}
+function calcPdfBaseName(calc, prefix) {
+  const name = calcClientDisplayName(calc) || (calc && (calc.title || '').trim()) || '';
+  const base = (prefix ? prefix + (name ? ' - ' : '') : '') + name;
+  return (base || 'Calculatie').replace(/[\\/:*?"<>|]+/g, '').trim();
+}
+function printWithTitle(title) {
+  const old = document.title;
+  document.title = title;
+  const restore = () => { document.title = old; window.removeEventListener('afterprint', restore); };
+  window.addEventListener('afterprint', restore);
+  window.print();
+  setTimeout(restore, 3000);
 }
 function calcUpdateClientSummary(calc) {
   const el = document.getElementById('calc-client-summary');
@@ -13011,7 +13030,7 @@ function fillPsheetPreview(calc, open) {
   document.getElementById('psheet-total').textContent = fmtEUR((exclC + btwC) / 100);
   const vatSel = document.getElementById('psheet-vat-mode');
   if (vatSel) vatSel.value = vatMode();
-  document.getElementById('psheet-client-name').textContent = calc.clientName || (client ? client.name : '') || '\u2014';
+  document.getElementById('psheet-client-name').textContent = calcClientDisplayName(calc) || '\u2014';
   document.getElementById('psheet-client-addr').textContent = addr || '\u2014';
   document.getElementById('psheet-date').textContent = calc.date ? new Date(calc.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
   const logoSrc = document.querySelector('.sidebar .brand-mark');
@@ -13062,7 +13081,7 @@ function fillPlistPreview(calc, open) {
   document.getElementById('plist-excl').textContent = fmtEUR(exclC / 100);
   document.getElementById('plist-btw').textContent = fmtEUR(btwC / 100);
   document.getElementById('plist-total').textContent = fmtEUR((exclC + btwC) / 100);
-  document.getElementById('plist-client-name').textContent = calc.clientName || (client ? client.name : '') || '\u2014';
+  document.getElementById('plist-client-name').textContent = calcClientDisplayName(calc) || '\u2014';
   document.getElementById('plist-client-addr').textContent = addr || '\u2014';
   document.getElementById('plist-title').textContent = (calc.title || '').trim() || '\u2014';
   document.getElementById('plist-status').textContent = calc.status === 'definitief' ? 'Definitief' : 'Concept';
@@ -13094,7 +13113,7 @@ document.getElementById('calc-plist-btn').addEventListener('click', () => {
 document.getElementById('plist-close-btn').addEventListener('click', () => {
   document.getElementById('plist-backdrop').classList.remove('open');
 });
-document.getElementById('plist-print-btn').addEventListener('click', () => { window.print(); });
+document.getElementById('plist-print-btn').addEventListener('click', () => { printWithTitle(calcPdfBaseName(window.__editingCalc, 'Productenlijst')); });
 document.getElementById('plist-copy-btn').addEventListener('click', () => {
   const text = buildProductListText(window.__editingCalc);
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -13108,7 +13127,7 @@ document.getElementById('plist-share-btn').addEventListener('click', async () =>
   btn.textContent = 'PDF maken\u2026'; btn.disabled = true;
   try {
     const blob = await generatePlistPdfBlob(calc);
-    const fileName = 'Productenlijst' + ((calc.title || '').trim() ? ' ' + calc.title.trim() : '') + (calc.clientName ? ' - ' + calc.clientName : '') + '.pdf';
+    const fileName = calcPdfBaseName(calc, 'Productenlijst') + '.pdf';
     const file = new File([blob], fileName, { type: 'application/pdf' });
     const title = 'Productenlijst' + (calc.clientName ? ' - ' + calc.clientName : '');
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -13431,7 +13450,7 @@ document.getElementById('data-warning-open').addEventListener('click', openRecov
 document.getElementById('data-warning-close').addEventListener('click', () => {
   document.getElementById('data-warning').classList.remove('open');
 });
-document.getElementById('psheet-print-btn').addEventListener('click', () => { window.print(); });
+document.getElementById('psheet-print-btn').addEventListener('click', () => { printWithTitle(calcPdfBaseName(window.__editingCalc)); });
 document.getElementById('calc-copy-btn').addEventListener('click', () => {
   const calc = window.__editingCalc;
   const text = buildCalcSummaryText(calc);
