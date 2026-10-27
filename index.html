@@ -3880,6 +3880,22 @@ function tombstoneIds() {
   (trash || []).forEach(e => { const it = e && e.item; if (it && it.id != null) set[it.id] = e.t || 0; });
   return set;
 }
+// Elk item dat sinds de laatst bekende versie is gewijzigd (afgevinkt, subtaak,
+// tekst…) krijgt een nieuw tijdstip, zodat het bij samenvoegen van de oudere
+// versie op een ander apparaat wint.
+function stampChangedItems(arr, prevJson) {
+  if (!Array.isArray(arr) || typeof prevJson !== 'string') return;
+  let prev; try { prev = JSON.parse(prevJson); } catch (e) { return; }
+  if (!Array.isArray(prev)) return;
+  const map = {}; prev.forEach(p => { if (p && p.id != null) map[p.id] = p; });
+  const now = Date.now();
+  const strip = o => { const c = Object.assign({}, o); delete c.updatedAt; return JSON.stringify(c); };
+  arr.forEach(it => {
+    if (!it || it.id == null) return;
+    const old = map[it.id];
+    if (!old || strip(old) !== strip(it)) it.updatedAt = now;
+  });
+}
 function mergeArrays(localArr, remoteArr) {
   if (!Array.isArray(localArr) || !Array.isArray(remoteArr)) return null;
   const alleIds = a => a.every(x => x && typeof x === 'object' && x.id != null);
@@ -3887,7 +3903,7 @@ function mergeArrays(localArr, remoteArr) {
   const dood = tombstoneIds();
   const uit = [];
   const gezien = {};
-  const stamp = x => x.updatedAt || x.editedAt || x.createdAt || 0;
+  const stamp = x => Math.max(x.updatedAt || 0, x.editedAt || 0, x.doneAt || 0, x.createdAt || 0);
   remoteArr.forEach(r => {
     if (dood[r.id]) return;
     const l = localArr.find(x => x.id === r.id);
@@ -4338,6 +4354,7 @@ async function saveTasks() {
   setSaveStatus('saving', 'Opslaan…');
   pendingSaveCount++;
   try {
+    stampChangedItems(tasks, lastKnown['tasks-data']);
     await storageSet('tasks-data', JSON.stringify(tasks));
     setSaveStatus('saved', 'Opgeslagen');
   } catch (e) {
@@ -11594,6 +11611,11 @@ function calcGrandTotal(calc) {
   t += calcInstallatieAutoTotal(calc);
   return t;
 }
+CALC_CATALOG.forEach(s => { let g = null; s.items.forEach(it => {
+  if (it.group) { g = it.group; return; }
+  it.fullLabel = (g && !it.label.toLowerCase().includes(g.toLowerCase())) ? g + ' \u2014 ' + it.label : it.label;
+}); });
+function calcItemLabel(it) { return it.fullLabel || it.label; }
 let calcOpenSections = new Set();
 function buildCalcSearchIndex() {
   return CALC_CATALOG.flatMap(section => section.items.filter(it => it.key).map(it => ({ section: section.key, sectionLabel: section.label, key: it.key, label: it.label, price: it.price, diam: it.diam || '' })));
@@ -11932,7 +11954,7 @@ function buildCalcSummaryText(calc) {
   CALC_CATALOG.forEach(section => {
     const qty = calc.qty[section.key] || {};
     const sectionLines = [];
-    section.items.forEach(it => { if (it.key && qty[it.key]) sectionLines.push(`  ${it.label} x${qty[it.key]}: ${fmtEUR(qty[it.key]*it.price)}`); });
+    section.items.forEach(it => { if (it.key && qty[it.key]) sectionLines.push(`  ${calcItemLabel(it)} x${qty[it.key]}: ${fmtEUR(qty[it.key]*it.price)}`); });
     if (sectionLines.length) { lines.push('', section.label + ':'); lines.push(...sectionLines); }
   });
   lines.push('', `Totaal: ${fmtEUR(calcGrandTotal(calc))}`);
@@ -12352,7 +12374,7 @@ function calcSelectedLines() {
     const qty = calc.qty[s.key] || {};
     s.items.forEach(it => {
       const q = parseFloat(qty[it.key]);
-      if (it.key && q) lines.push({ section: s.key, sectionLabel: s.label, key: it.key, label: it.label, price: it.price, qty: q });
+      if (it.key && q) lines.push({ section: s.key, sectionLabel: s.label, key: it.key, label: calcItemLabel(it), price: it.price, qty: q });
     });
   });
   return lines;
@@ -13048,7 +13070,7 @@ function collectCalcProductLines(calc) {
   CALC_CATALOG.forEach(section => {
     const qty = (calc.qty && calc.qty[section.key]) || {};
     const items = section.items.filter(it => it.key && (parseFloat(qty[it.key]) || 0) > 0)
-      .map(it => { const n = parseFloat(qty[it.key]) || 0; return { label: it.label, qty: n, unit: it.price, total: n * it.price }; });
+      .map(it => { const n = parseFloat(qty[it.key]) || 0; return { label: calcItemLabel(it), qty: n, unit: it.price, total: n * it.price }; });
     if (section.key === 'installatie') {
       const auto = calcInstallatieAutoTotal(calc);
       if (auto > 0) items.push({ label: 'Toeslag klein materiaal en voorrijden (automatisch)', qty: 1, unit: auto, total: auto });
