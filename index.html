@@ -11607,6 +11607,7 @@ function calcMaterialsBasis(calc) {
   return t;
 }
 function calcInstallatieAutoTotal(calc) {
+  if (calc && calc.autoToeslagOff) return 0;
   const basis = calcMaterialsBasis(calc);
   return basis * 0.0178 + basis * 0.022;
 }
@@ -12626,8 +12627,14 @@ function renderCalcCatalogSections() {
     if (section.key === 'installatie') {
       const auto = document.createElement('div');
       auto.className = 'calc-auto-row';
-      auto.innerHTML = `<div>Milieutoeslag (1,78%) + WRAK-bijdrage (2,2%) over materiaalkosten</div><div id="calc-installatie-auto"></div>`;
+      auto.innerHTML = `<label style="display:flex; align-items:center; gap:10px; cursor:pointer; min-height:44px"><input type="checkbox" id="calc-auto-toeslag-toggle" style="width:20px; height:20px; flex:none"${calc.autoToeslagOff ? '' : ' checked'} /><span>Toeslag klein materiaal en voorrijden — milieutoeslag (1,78%) + WRAK-bijdrage (2,2%) over materiaalkosten</span></label><div id="calc-installatie-auto"${calc.autoToeslagOff ? ' style="opacity:0.4"' : ''}></div>`;
       rowsWrap.appendChild(auto);
+      auto.querySelector('#calc-auto-toeslag-toggle').addEventListener('change', (e) => {
+        calc.autoToeslagOff = !e.target.checked;
+        const el = document.getElementById('calc-installatie-auto');
+        if (el) el.style.opacity = calc.autoToeslagOff ? '0.4' : '';
+        updateCalcTotals();
+      });
     }
   });
 }
