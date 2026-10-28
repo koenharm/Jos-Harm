@@ -2765,6 +2765,11 @@
             <button class="btn btn-primary" id="calc-new-btn">+ Nieuwe berekening</button>
           </div>
         </div>
+        <div style="margin: 0 0 18px; max-width: 520px">
+          <div style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--smoke); margin-bottom:6px">Prijs opzoeken</div>
+          <div class="forms-search" style="margin:0"><input type="search" id="calc-price-lookup" placeholder="Zoek product — bijv. ‘bocht 45’ of ‘krans’" autocomplete="off" /></div>
+          <div id="calc-price-lookup-results" style="display:flex; flex-direction:column; gap:6px; margin-top:8px; max-height:360px; overflow-y:auto"></div>
+        </div>
         <div class="forms-search" style="margin: 0 0 14px; max-width: 360px"><input type="search" id="calc-list-search" placeholder="Zoek op naam van de calculatie…" autocomplete="off" /></div>
         <div class="calc-list" id="calc-list"></div>
       </div>
@@ -12779,6 +12784,34 @@ function scheduleCalcAutoSave() {
 })();
 document.getElementById('calc-new-btn').addEventListener('click', () => openCalcEditor(newCalc()));
 document.getElementById('calc-list-search').addEventListener('input', () => renderCalcList());
+function renderPriceLookup() {
+  const wrap = document.getElementById('calc-price-lookup-results');
+  const raw = (document.getElementById('calc-price-lookup').value || '').trim().toLowerCase();
+  if (!raw) { wrap.innerHTML = ''; return; }
+  const words = raw.split(/\s+/);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const rows = [];
+  CALC_CATALOG.forEach(s => s.items.forEach(it => {
+    if (!it.key) return;
+    const label = calcItemLabel(it);
+    const hay = (label + ' ' + s.label).toLowerCase();
+    if (words.every(w => hay.includes(w))) rows.push({ label, section: s.label, price: it.price });
+  }));
+  (typeof customProducts !== 'undefined' && Array.isArray(customProducts) ? customProducts : []).forEach(p => {
+    const label = p.name || p.label; if (!label) return;
+    if (words.every(w => label.toLowerCase().includes(w))) rows.push({ label, section: 'Eigen product', price: p.price });
+  });
+  if (!rows.length) { wrap.innerHTML = '<div class="calc-search-empty">Geen producten gevonden.</div>'; return; }
+  wrap.innerHTML = rows.slice(0, 40).map(it => `
+    <div class="calc-search-row">
+      <div class="calc-search-row-main">
+        <div class="calc-search-row-label">${esc(it.label)}</div>
+        <div class="calc-search-row-meta">${esc(it.section)}</div>
+      </div>
+      <div style="font-weight:700; white-space:nowrap">${fmtEUR(it.price)}</div>
+    </div>`).join('') + (rows.length > 40 ? '<div class="calc-search-empty">' + (rows.length - 40) + ' meer — typ verder om te verfijnen.</div>' : '');
+}
+document.getElementById('calc-price-lookup').addEventListener('input', renderPriceLookup);
 document.getElementById('calc-prices-btn').addEventListener('click', () => {
   document.getElementById('calc-list-panel').style.display = 'none';
   document.getElementById('calc-editor-panel').style.display = 'none';
