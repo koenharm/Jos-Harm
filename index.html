@@ -2762,6 +2762,8 @@
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn btn-ghost" id="calc-prices-btn">Prijzen beheren</button>
+            <button class="btn btn-ghost" id="calc-import-btn">CSV importeren</button>
+            <input type="file" id="calc-import-input" accept=".csv,text/csv,text/plain" multiple style="display:none" />
             <button class="btn btn-primary" id="calc-new-btn">+ Nieuwe berekening</button>
           </div>
         </div>
@@ -11854,6 +11856,166 @@ document.getElementById('calc-search-input').addEventListener('keydown', (e) => 
 document.addEventListener('pointerdown', (e) => {
   const box = document.querySelector('.calc-searchbox');
   if (box && !box.contains(e.target)) document.getElementById('calc-search-results').innerHTML = '';
+});
+// ---------- CSV-import (Numbers-export van oude calculatie, één bestand per tabel) ----------
+function csvParseRows(text) {
+  text = text.replace(/^\uFEFF/, '');
+  const sep = (text.split(/\r?\n/)[0].match(/;/g) || []).length >= (text.split(/\r?\n/)[0].match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === sep) { row.push(cell); cell = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += ch;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim()));
+}
+function csvNum(s) {
+  s = String(s || '').replace(/[€\s]/g, '');
+  if (!s) return 0;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(s); return isNaN(n) ? 0 : n;
+}
+function csvNorm(s) { return String(s || '').toLowerCase().replace(/[øö]/g, 'o').replace(/[^a-z0-9]+/g, ' ').trim(); }
+function csvDiamKey(s) { return (String(s || '').match(/\d+/g) || []).map(Number).sort((a, b) => a - b).join('-'); }
+const CSV_SECTION_HINTS = [
+  { re: /maatwerk/i, kw: 'maatwerk', prefixes: ['maatwerk'] },
+  { re: /dubbel|\bdw\b/i, kw: 'dubbelwandig', prefixes: ['dw_'] },
+  { re: /enkel|\bew\b/i, kw: 'enkelwandig', prefixes: ['ew_'] },
+  { re: /concentr|\bcc\b/i, kw: 'concentrisch', prefixes: ['cc_'] },
+  { re: /renovatie/i, kw: 'renovatie', prefixes: ['renovatie'] },
+  { re: /beton|boren|sparing/i, kw: 'beton', prefixes: ['beton'] },
+  { re: /afwerking/i, kw: 'afwerking', prefixes: ['afwerking'] },
+  { re: /installatie/i, kw: 'installatie', prefixes: ['installatie'] },
+];
+function csvHintFor(name) { return CSV_SECTION_HINTS.find(hh => hh.re.test(name)) || null; }
+function csvFindItem(label, diam, hint, zwartHint) {
+  const nl = csvNorm(label);
+  const dk = diam ? csvDiamKey(diam) : '';
+  const wantZwart = /zwart|gespoten/i.test(label) || zwartHint;
+  const sections = CALC_CATALOG.filter(s => !hint || hint.prefixes.some(p => s.key.startsWith(p)));
+  const pools = hint ? [sections, CALC_CATALOG] : [CALC_CATALOG];
+  for (const pool of pools) {
+    for (const s of pool) {
+      for (const it of s.items) {
+        if (!it.key) continue;
+        let base = it.label;
+        if (it.diam) { if (!dk || csvDiamKey(it.diam) !== dk) continue; base = it.label.split(' \u2014 ')[0]; }
+        else if (dk) continue;
+        if (csvNorm(base) === nl || csvNorm(calcItemLabel(it)) === nl) return { section: s.key, key: it.key, it };
+      }
+    }
+  }
+  return null;
+}
+async function importCalcFromCsvFiles(fileList) {
+  const files = [];
+  for (const f of fileList) files.push({ name: f.name.replace(/\.csv$/i, ''), rows: csvParseRows(await f.text()) });
+  const calc = newCalc();
+  calc.products = [];
+  const report = { matched: 0, extra: 0, lumps: [] };
+  const coveredKw = new Set();
+  let csvTotal = 0, summaryRows = null;
+  const addQty = (m, n) => { calc.qty[m.section] = calc.qty[m.section] || {}; calc.qty[m.section][m.key] = (calc.qty[m.section][m.key] || 0) + n; report.matched++; };
+  const addExtra = (label, n, price) => { if (!price && !n) return; calc.products.push({ label: n > 1 ? n + '\u00d7 ' + label : label, price: Math.round((n || 1) * price * 100) / 100 }); report.extra++; };
+  for (const f of files) {
+    const flat = f.rows.filter(r => r.some(c => c));
+    if (!flat.length) continue;
+    const first = flat[0].filter(Boolean);
+    if (flat.length === 1 && first.length === 1) {
+      const v = first[0];
+      const dm = /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/.exec(v);
+      if (dm) { const y = dm[3].length === 2 ? '20' + dm[3] : dm[3]; calc.date = y + '-' + dm[2].padStart(2, '0') + '-' + dm[1].padStart(2, '0'); }
+      const adv = CALC_ADVISORS.find(a => csvNorm(a.name) === csvNorm(v));
+      if (adv) calc.advisor = adv.id;
+      continue;
+    }
+    if (flat.some(r => /calculatie formulier|klant gegevens/i.test(r.join(' ')))) { summaryRows = f.rows; continue; }
+    const hdrIdx = f.rows.findIndex(r => r.some(c => /^beschrijving$/i.test(c)));
+    if (hdrIdx < 0) continue;
+    const hdr = f.rows[hdrIdx];
+    const descCol = hdr.findIndex(c => /^beschrijving$/i.test(c));
+    const qtyCols = hdr.map((c, i) => /^aantal$/i.test(c) ? i : -1).filter(i => i >= 0);
+    const diamRow = hdrIdx > 0 ? f.rows[hdrIdx - 1] : [];
+    const hint = csvHintFor(f.name);
+    const zwartHint = /zwart|gespoten/i.test(f.name);
+    let any = false;
+    for (const row of f.rows.slice(hdrIdx + 1)) {
+      const label = (row[descCol] || '').replace(/\s+/g, ' ').trim();
+      if (!label || /^totaal/i.test(label)) continue;
+      qtyCols.forEach(qc => {
+        const n = csvNum(row[qc]);
+        if (!n) return;
+        any = true;
+        const pc = hdr.findIndex((c, i) => i > qc && /^prijs/i.test(c));
+        const price = csvNum(row[pc >= 0 ? pc : qc + 1]);
+        const diam = qtyCols.length > 1 ? (diamRow[qc] || diamRow[qc + 1] || '') : '';
+        const m = csvFindItem(label, diam, hint, zwartHint);
+        if (m) addQty(m, n); else addExtra(label + (diam ? ' \u2014 ' + diam : ''), n, price);
+      });
+    }
+    if (hint) coveredKw.add(hint.kw);
+    void any;
+  }
+  if (summaryRows) {
+    const rows = summaryRows;
+    const ki = rows.findIndex(r => /klant gegevens/i.test(r[0] || ''));
+    if (ki >= 0) {
+      const block = [];
+      for (let i = ki; i < rows.length && i < ki + 8; i++) { if (i > ki && !rows[i].some(c => c)) break; block.push(rows[i].slice(1).filter(Boolean)); }
+      const cells = block.flat();
+      calc.clientName = (block[0] && block[0][0]) || '';
+      const email = cells.find(c => /@/.test(c)); if (email) calc.clientEmail = email;
+      const phone = cells.find(c => /^[+0][\d\s-]{8,}$/.test(c)); if (phone) calc.clientPhone = phone;
+      const pcIdx = cells.findIndex(c => /^\d{4}\s?[A-Za-z]{2}$/.test(c));
+      if (pcIdx >= 0) { calc.clientPostcode = cells[pcIdx].toUpperCase(); if (cells[pcIdx + 1] && !/@/.test(cells[pcIdx + 1])) calc.clientCity = cells[pcIdx + 1]; }
+      const streetCell = block[1] && block[1][0];
+      if (streetCell && !/@/.test(streetCell) && streetCell !== calc.clientPostcode) {
+        const sm = /^(.*?)\s+(\d+\s?[a-zA-Z]?(?:[-\s]\w+)?)$/.exec(streetCell);
+        if (sm) { calc.clientStreet = sm[1]; calc.clientHouseNumber = sm[2]; } else calc.clientStreet = streetCell;
+      }
+    }
+    const mi = rows.findIndex(r => r.some(c => /^model$/i.test(c)));
+    let inModels = mi >= 0;
+    for (let i = (mi >= 0 ? mi + 1 : 0); i < rows.length; i++) {
+      const r = rows[i];
+      const text = r.filter(c => c && !/€|^\d+([.,]\d+)?$/.test(c));
+      const amount = r.map(csvNum).reduce((a, b) => (b ? b : a), 0);
+      const name = (text[text.length - 1] || '').trim();
+      const label0 = (r[0] || '').trim();
+      if (/^totaal calculatie/i.test(label0)) { csvTotal = amount; continue; }
+      const hint = csvHintFor(label0);
+      if (label0 && hint && !/^haard/i.test(label0)) {
+        inModels = false;
+        if (amount && !coveredKw.has(hint.kw)) { calc.products.push({ label: label0.replace(/^totaal\s+/i, '').replace(/^\w/, c => c.toUpperCase()) + ' (totaal uit import)', price: amount }); report.lumps.push(label0); if (hint.kw === 'installatie') calc.autoToeslagOff = true; }
+        continue;
+      }
+      if (inModels && name && amount) calc.products.push({ label: name, price: amount });
+    }
+  }
+  if (!calc.products.length) calc.products = [{ label: 'Haard / model', price: 0 }];
+  calc.title = calc.clientName ? '' : 'Ge\u00efmporteerd';
+  return { calc, report, csvTotal };
+}
+document.getElementById('calc-import-btn').addEventListener('click', () => document.getElementById('calc-import-input').click());
+document.getElementById('calc-import-input').addEventListener('change', async (e) => {
+  const fl = Array.from(e.target.files || []);
+  e.target.value = '';
+  if (!fl.length) return;
+  try {
+    const { calc, report, csvTotal } = await importCalcFromCsvFiles(fl);
+    openCalcEditor(calc);
+    scheduleCalcAutoSave();
+    const ownTotal = (document.getElementById('calc-grand-total') || {}).textContent || '';
+    const msg = ['Import klaar' + (calc.clientName ? ' voor ' + calc.clientName : '') + '.',
+      report.matched + ' regel(s) gekoppeld aan je eigen producten, ' + report.extra + ' als losse regel toegevoegd.'];
+    if (report.lumps.length) msg.push('Alleen als totaalbedrag overgenomen (detailtabel ontbrak): ' + report.lumps.join(', ') + '.');
+    if (csvTotal) msg.push('Totaal in oude calculatie: ' + fmtEUR(csvTotal) + (ownTotal ? ' — nu: ' + ownTotal.trim() : '') + '.');
+    alert(msg.join('\n\n'));
+  } catch (err) { console.error(err); alert('Importeren mislukt: ' + (err && err.message ? err.message : err)); }
 });
 function newCalc() {
   return { id: 'calc-' + Date.now(), title: '', clientId: '', clientName: '', date: new Date().toISOString().slice(0,10), products: [{ label: 'Haard / model', price: 0 }], qty: {}, status: 'concept', createdAt: Date.now(), versions: [] };
