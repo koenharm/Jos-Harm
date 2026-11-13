@@ -1297,8 +1297,8 @@
     @page { margin: 12mm; }
     body { background: #fff; }
     .app, .mobile-topbar, .tabbar, .clock-widget, .toast { display: none !important; }
-    #psheet-backdrop.open, #plist-backdrop.open { position: static !important; display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; }
-    #psheet-backdrop:not(.open), #plist-backdrop:not(.open) { display: none !important; }
+    #psheet-backdrop.open, #plist-backdrop.open, #simar-backdrop.open { position: static !important; display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; }
+    #psheet-backdrop:not(.open), #plist-backdrop:not(.open), #simar-backdrop:not(.open) { display: none !important; }
     .psheet-preview-wrap { box-shadow: none !important; border-radius: 0 !important; max-width: none !important; margin: 0 !important; }
     .psheet-toolbar { display: none !important; }
     .psheet-page { padding: 0 !important; max-width: none !important; }
@@ -1317,6 +1317,38 @@
   .plist-count { font-size: 11px; color: var(--smoke); margin-top: 14px; }
   @media print {
     .plist-table th { color: #6b6b6b; }
+  }
+  /* ---- Simar-invoerblad ---- */
+  .simar-step { margin-top: 26px; }
+  .simar-step:first-of-type { margin-top: 0; }
+  .simar-step-head { display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid #2B2B2B; padding-bottom: 6px; margin-bottom: 4px; }
+  .simar-step-nr { font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ember); white-space: nowrap; }
+  .simar-step-title { font-family: 'Poppins', sans-serif; font-size: 13.5px; font-weight: 700; }
+  .simar-step-hint { font-size: 11.5px; color: var(--smoke); margin: 6px 0 4px; line-height: 1.5; }
+  .simar-table { width: 100%; border-collapse: collapse; }
+  .simar-table th { text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--smoke); font-weight: 700; padding: 8px 0 6px; border-bottom: 1px solid var(--hairline); }
+  .simar-table th.num, .simar-table td.num { text-align: right; white-space: nowrap; padding-left: 12px; }
+  .simar-table td { padding: 7px 0; border-bottom: 1px solid var(--hairline); font-size: 12.5px; vertical-align: top; }
+  .simar-table td.simar-label { color: var(--smoke); width: 34%; padding-right: 12px; }
+  .simar-table td.simar-check { width: 26px; }
+  .simar-table tr.simar-kop td { border-bottom: none; padding: 14px 0 2px; font-family: 'Poppins', sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ember); }
+  .simar-table tr.simar-done td { color: #A9A39B; }
+  .simar-table tr.simar-done .simar-copy { color: #A9A39B; text-decoration: line-through; }
+  .simar-copy { cursor: pointer; border-radius: 4px; padding: 1px 4px; margin: -1px -4px; transition: background 0.15s; }
+  .simar-copy:hover { background: #F3EEE6; }
+  .simar-copy.simar-copied { background: #DDEBD9; }
+  .simar-empty { color: #B9B2A8; }
+  .simar-total { font-size: 12px; color: var(--smoke); text-align: right; margin-top: 8px; }
+  .simar-total strong { color: #2B2B2B; }
+  .simar-text { width: 100%; box-sizing: border-box; font: inherit; font-size: 13px; line-height: 1.5; color: #2B2B2B; background: #FBF9F6; border: 1px solid var(--hairline); border-radius: 6px; padding: 9px 11px; resize: vertical; }
+  .simar-text-row { display: flex; align-items: center; gap: 8px; margin: 12px 0 5px; }
+  .simar-text-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--smoke); font-weight: 700; flex: 1; }
+  .simar-mini { font: inherit; font-size: 11.5px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--hairline); background: #fff; color: #2B2B2B; cursor: pointer; }
+  .simar-mini:hover { background: #F3EEE6; }
+  .simar-settings { font-size: 12.5px; line-height: 1.7; margin: 6px 0 0; padding-left: 18px; }
+  @media print {
+    .simar-mini, .simar-check { display: none !important; }
+    .simar-text { border: none; background: none; padding: 0; resize: none; }
   }
   /* ---- Databeveiliging: waarschuwing en herstel ---- */
   #data-warning { display: none; }
@@ -2920,6 +2952,7 @@
             </div>
             <button class="btn btn-ghost" id="calc-send-btn">Digitaal verzenden</button>
             <button class="btn btn-ghost" id="calc-plist-btn">Productenlijst</button>
+            <button class="btn btn-ghost" id="calc-simar-btn">Simar-invoerblad</button>
             <button class="btn btn-ghost" id="calc-draft-btn">Concept opslaan</button>
             <button class="btn btn-primary" id="calc-save-btn">Opslaan</button>
           </div>
@@ -3547,6 +3580,28 @@
         <div class="plist-count" id="plist-count"></div>
         <div class="psheet-note">
           <p style="margin:0">Prijzen komen uit de actuele prijslijst in de app. Stelposten en toeslagen staan als losse regel vermeld. Controleer aantallen voordat de offerte definitief wordt gemaakt.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="simar-backdrop">
+  <div class="psheet-preview-wrap">
+    <div class="psheet-toolbar">
+      <div class="psheet-toolbar-title">Simar-invoerblad</div>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="simar-close-btn">Sluiten</button>
+      <button class="btn btn-ghost" id="simar-copyall-btn">Alles kopiëren</button>
+      <button class="btn btn-primary" id="simar-print-btn">Printen / PDF</button>
+    </div>
+    <div class="print-sheet" id="simar-print-sheet">
+      <div class="psheet-page">
+        <div class="psheet-title">Simar-invoerblad</div>
+        <div class="psheet-sub" id="simar-sub"></div>
+        <div id="simar-body"></div>
+        <div class="psheet-note">
+          <p style="margin:0">Klik op een waarde om hem te kopiëren en plak hem in Simar. Vink een regel af zodra hij is ingevoerd. Bedragen worden zonder euroteken gekopieerd, zodat ze direct in het prijsveld passen.</p>
         </div>
       </div>
     </div>
@@ -13331,6 +13386,190 @@ function buildProductListText(calc) {
   lines.push('Totaal: ' + fmtEUR(calcGrandTotal(calc)));
   return lines.join('\n');
 }
+/* ---- Simar-invoerblad: calculatie in de volgorde van de Simar-schermen ---- */
+const SIMAR_INSTALL_SECTIONS = ['installatie', 'beton'];
+function simarEsc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function simarNum(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false }); }
+function simarQty(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('nl-NL', { useGrouping: false }); }
+function simarPrices(unit) {
+  const c = Math.round((unit || 0) * 100);
+  return vatMode() === 'incl' ? { incl: c / 100, excl: Math.round(c / 1.21) / 100 } : { incl: Math.round(c * 1.21) / 100, excl: c / 100 };
+}
+function simarGroups(calc) {
+  const artikelen = [], installatie = [];
+  const eigen = (calc.products || []).filter(p => p.label && p.price)
+    .map(p => ({ label: p.label, qty: 1, unit: parseFloat(p.price) || 0 }));
+  if (eigen.length) artikelen.push({ key: 'eigen', label: 'Haard en losse posten', items: eigen });
+  CALC_CATALOG.forEach(section => {
+    const qty = (calc.qty && calc.qty[section.key]) || {};
+    const items = section.items.filter(it => it.key && (parseFloat(qty[it.key]) || 0) > 0)
+      .map(it => ({ label: calcItemLabel(it), qty: parseFloat(qty[it.key]) || 0, unit: it.price }));
+    if (section.key === 'installatie') {
+      const auto = calcInstallatieAutoTotal(calc);
+      if (auto > 0) items.push({ label: 'Toeslag klein materiaal en voorrijden', qty: 1, unit: auto });
+    }
+    if (!items.length) return;
+    (SIMAR_INSTALL_SECTIONS.includes(section.key) ? installatie : artikelen).push({ key: section.key, label: section.label, items: items });
+  });
+  return { artikelen, installatie };
+}
+function simarJoin(list) {
+  if (list.length < 2) return list.join('');
+  return list.slice(0, -1).join(', ') + ' en ' + list[list.length - 1];
+}
+function simarDefaultBetreft(calc) {
+  const names = (calc.products || []).filter(p => p.label && p.price && !/^haard \/ model$/i.test(p.label.trim())).map(p => p.label.trim());
+  return names.length ? 'een ' + simarJoin(names) : '';
+}
+function simarDefaultTekst(calc) {
+  const g = simarGroups(calc);
+  const lines = [];
+  const geleverd = g.artikelen.filter(x => x.key !== 'eigen');
+  const eigen = g.artikelen.find(x => x.key === 'eigen');
+  if (eigen) lines.push('Wij leveren ' + simarJoin(eigen.items.map(i => i.label)) + '.');
+  geleverd.forEach(x => lines.push(x.label + ': ' + simarJoin(x.items.map(i => (i.qty !== 1 ? simarQty(i.qty) + ' x ' : '') + i.label)) + '.'));
+  const werk = [];
+  g.installatie.forEach(x => x.items.forEach(i => {
+    if (/toeslag|kosten|hulpmateriaal|montage uur|dagdeel|1 dag|per uur/i.test(i.label)) return;
+    werk.push(i.label);
+  }));
+  if (werk.length) lines.push('De werkzaamheden bestaan uit: ' + simarJoin(werk) + '.');
+  if (g.installatie.length) lines.push('De haard wordt door onze eigen monteurs geplaatst, aangesloten en in gebruik gesteld.');
+  return lines.join('\n');
+}
+function simarState(calc) {
+  if (!calc.simar || typeof calc.simar !== 'object') calc.simar = {};
+  if (!calc.simar.done || typeof calc.simar.done !== 'object') calc.simar.done = {};
+  return calc.simar;
+}
+function simarCopyCell(value, extraClass) {
+  const v = String(value == null ? '' : value).trim();
+  if (!v) return '<span class="simar-empty">—</span>';
+  return '<span class="simar-copy' + (extraClass ? ' ' + extraClass : '') + '" data-copy="' + simarEsc(v) + '" title="Klik om te kopiëren">' + simarEsc(v) + '</span>';
+}
+function simarFieldRows(rows) {
+  return '<table class="simar-table">' + rows.map(r => '<tr><td class="simar-label">' + simarEsc(r[0]) + '</td><td>' + simarCopyCell(r[1]) + '</td></tr>').join('') + '</table>';
+}
+function simarLineTable(groups, st, prefix) {
+  let total = 0;
+  let h = '<table class="simar-table"><thead><tr><th></th><th>Omschrijving</th><th class="num">Aantal</th><th class="num">Prijs incl.</th><th class="num">Excl. btw</th></tr></thead><tbody>';
+  groups.forEach(g => {
+    h += '<tr class="simar-kop"><td></td><td colspan="4">Tussenkopje: ' + simarCopyCell(g.label + ':') + '</td></tr>';
+    g.items.forEach((it, i) => {
+      const id = prefix + ':' + g.key + ':' + it.label;
+      const pr = simarPrices(it.unit);
+      total += Math.round(pr.excl * 100) * it.qty;
+      h += '<tr class="' + (st.done[id] ? 'simar-done' : '') + '"><td class="simar-check"><input type="checkbox" data-done="' + simarEsc(id) + '"' + (st.done[id] ? ' checked' : '') + ' title="Ingevoerd in Simar"></td>'
+        + '<td>' + simarCopyCell(it.label) + '</td><td class="num">' + simarCopyCell(simarQty(it.qty)) + '</td><td class="num">' + simarCopyCell(simarNum(pr.incl)) + '</td><td class="num">' + simarCopyCell(simarNum(pr.excl)) + '</td></tr>';
+    });
+  });
+  h += '</tbody></table>';
+  h += '<div class="simar-total">Controle: totaal van dit scherm in Simar moet uitkomen op <strong>' + fmtEUR(Math.round(total * 1.21) / 100) + '</strong> incl. btw (' + fmtEUR(total / 100) + ' excl.)</div>';
+  return h;
+}
+function simarSplitName(name) {
+  const n = String(name || '').trim().replace(/^(de heer|mevrouw|dhr\.?|mevr\.?|mw\.?|familie|fam\.?)\s+/i, '');
+  const parts = n.split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return { voor: '', tussen: '', achter: n };
+  const tv = ['van', 'de', 'der', 'den', 'het', 'ter', 'ten', 'te', 'op', 'in', "'t", 'la', 'le', 'du', 'el'];
+  let i = 1;
+  while (i < parts.length - 1 && tv.includes(parts[i].toLowerCase())) i++;
+  const tussen = parts.slice(1, i).join(' ');
+  if (!tussen && parts.length > 2) return { voor: parts[0], tussen: '', achter: parts.slice(1).join(' ') };
+  return { voor: parts[0], tussen: tussen, achter: parts.slice(i).join(' ') };
+}
+function fillSimarSheet(calc, open) {
+  const st = simarState(calc);
+  const ci = calcClientInfo(calc);
+  const name = calcClientDisplayName(calc);
+  const nm = simarSplitName(name);
+  const pc = (calc.clientPostcode || (ci.client && ci.client.postcode) || '').trim().toUpperCase().replace(/^(\d{4})\s*([A-Z]{2})$/, '$1 $2');
+  const straat = [calc.clientStreet || (ci.client && ci.client.street) || '', calc.clientHouseNumber || (ci.client && ci.client.houseNumber) || ''].map(v => String(v).trim()).filter(Boolean).join(' ');
+  const plaats = (calc.clientCity || (ci.client && ci.client.city) || '').trim();
+  const datum = calc.date ? calc.date.split('-').reverse().join('-') : '';
+  const g = simarGroups(calc);
+  document.getElementById('simar-sub').textContent = [name, (calc.title || '').trim(), 'calculatieprijzen ' + (vatMode() === 'incl' ? 'incl.' : 'excl.') + ' btw'].filter(Boolean).join(' · ');
+  let h = '';
+  h += '<div class="simar-step"><div class="simar-step-head"><span class="simar-step-nr">Scherm 1</span><span class="simar-step-title">Algemene en adresgegevens</span></div>';
+  h += simarFieldRows([['Voorletters / voornaam', nm.voor], ['Tussenvoegsel', nm.tussen], ['Achternaam', nm.achter], ['Postcode', pc], ['Adres', straat], ['Plaats', plaats.toUpperCase()], ['Telefoon', ci.phone], ['E-mail', ci.email], ['Datum offerte', datum], ['Adviseur', 'JH - ' + calcAdvisor(calc).name]]);
+  h += '</div>';
+  h += '<div class="simar-step"><div class="simar-step-head"><span class="simar-step-nr">Scherm 2</span><span class="simar-step-title">Sfeerverwarming — artikelen</span></div>';
+  h += g.artikelen.length ? '<div class="simar-step-hint">Artikel toevoegen → leverancier kiezen → code 9999 (vrij artikel), of het echte artikel als het in Simar staat. Omschrijving, aantal en prijs overnemen.</div>' + simarLineTable(g.artikelen, st, 'art') : '<div class="simar-step-hint">Geen artikelen in deze calculatie.</div>';
+  h += '</div>';
+  h += '<div class="simar-step"><div class="simar-step-head"><span class="simar-step-nr">Scherm 3</span><span class="simar-step-title">Installatie artikelen</span></div>';
+  h += g.installatie.length ? simarLineTable(g.installatie, st, 'inst') : '<div class="simar-step-hint">Geen installatieregels in deze calculatie.</div>';
+  h += '</div>';
+  h += '<div class="simar-step"><div class="simar-step-head"><span class="simar-step-nr">Scherm 4</span><span class="simar-step-title">Afdrukken — voorbladtekst</span></div>';
+  h += '<ul class="simar-settings"><li>Prijs tonen: <strong>Beperkt</strong></li><li>Btw prijzen: <strong>Inclusief</strong></li><li>Voorbladtekst → Bewerken, en vul onderstaande teksten in</li></ul>';
+  h += '<div class="simar-text-row"><span class="simar-text-label">Betreft — na “voor het leveren en installeren van”</span><button type="button" class="simar-mini" data-regen="betreft">Opnieuw voorstellen</button><button type="button" class="simar-mini" data-copytext="simar-betreft">Kopiëren</button></div>';
+  h += '<textarea class="simar-text" id="simar-betreft" rows="2"></textarea>';
+  h += '<div class="simar-text-row"><span class="simar-text-label">Variabele tekst</span><button type="button" class="simar-mini" data-regen="tekst">Opnieuw voorstellen</button><button type="button" class="simar-mini" data-copytext="simar-tekst">Kopiëren</button></div>';
+  h += '<textarea class="simar-text" id="simar-tekst" rows="6"></textarea>';
+  h += '</div>';
+  document.getElementById('simar-body').innerHTML = h;
+  document.getElementById('simar-betreft').value = typeof st.betreft === 'string' ? st.betreft : simarDefaultBetreft(calc);
+  document.getElementById('simar-tekst').value = typeof st.tekst === 'string' ? st.tekst : simarDefaultTekst(calc);
+  if (open) document.getElementById('simar-backdrop').classList.add('open');
+}
+function simarCopy(text, el) {
+  const done = () => { if (!el) return; el.classList.add('simar-copied'); setTimeout(() => el.classList.remove('simar-copied'), 700); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(() => alert(text));
+  else alert(text);
+}
+function buildSimarText(calc) {
+  const ci = calcClientInfo(calc);
+  const g = simarGroups(calc);
+  const lines = ['SIMAR-INVOERBLAD', '', 'KLANT', '  ' + (calcClientDisplayName(calc) || '—'), '  ' + (ci.addr || '—'), '  ' + (ci.phone || '—'), '  ' + (ci.email || '—'), ''];
+  [['SFEERVERWARMING — ARTIKELEN', g.artikelen], ['INSTALLATIE ARTIKELEN', g.installatie]].forEach(([title, groups]) => {
+    if (!groups.length) return;
+    lines.push(title);
+    groups.forEach(x => {
+      lines.push('  ' + x.label + ':');
+      x.items.forEach(it => { const pr = simarPrices(it.unit); lines.push('    ' + simarQty(it.qty) + ' x ' + it.label + ' — incl. ' + simarNum(pr.incl) + ' / excl. ' + simarNum(pr.excl)); });
+    });
+    lines.push('');
+  });
+  const b = document.getElementById('simar-betreft'), t = document.getElementById('simar-tekst');
+  lines.push('BETREFT', '  ' + (b ? b.value : simarDefaultBetreft(calc)), '', 'VARIABELE TEKST', (t ? t.value : simarDefaultTekst(calc)));
+  return lines.join('\n');
+}
+document.getElementById('calc-simar-btn').addEventListener('click', () => { fillSimarSheet(window.__editingCalc, true); });
+document.getElementById('simar-close-btn').addEventListener('click', () => { document.getElementById('simar-backdrop').classList.remove('open'); });
+document.getElementById('simar-print-btn').addEventListener('click', () => { printWithTitle(calcPdfBaseName(window.__editingCalc, 'Simar-invoerblad')); });
+document.getElementById('simar-copyall-btn').addEventListener('click', (e) => { simarCopy(buildSimarText(window.__editingCalc), e.currentTarget); });
+document.getElementById('simar-body').addEventListener('click', (e) => {
+  const calc = window.__editingCalc;
+  if (!calc) return;
+  const copy = e.target.closest('.simar-copy');
+  if (copy) { simarCopy(copy.dataset.copy, copy); return; }
+  const ct = e.target.closest('[data-copytext]');
+  if (ct) { simarCopy(document.getElementById(ct.dataset.copytext).value, ct); return; }
+  const regen = e.target.closest('[data-regen]');
+  if (regen) {
+    const st = simarState(calc);
+    if (regen.dataset.regen === 'betreft') { delete st.betreft; document.getElementById('simar-betreft').value = simarDefaultBetreft(calc); }
+    else { delete st.tekst; document.getElementById('simar-tekst').value = simarDefaultTekst(calc); }
+    scheduleCalcAutoSave();
+  }
+});
+document.getElementById('simar-body').addEventListener('change', (e) => {
+  const calc = window.__editingCalc;
+  const cb = e.target.closest('[data-done]');
+  if (!calc || !cb) return;
+  const st = simarState(calc);
+  if (cb.checked) st.done[cb.dataset.done] = 1; else delete st.done[cb.dataset.done];
+  cb.closest('tr').classList.toggle('simar-done', cb.checked);
+  scheduleCalcAutoSave();
+});
+document.getElementById('simar-body').addEventListener('input', (e) => {
+  const calc = window.__editingCalc;
+  if (!calc) return;
+  const st = simarState(calc);
+  if (e.target.id === 'simar-betreft') st.betreft = e.target.value;
+  else if (e.target.id === 'simar-tekst') st.tekst = e.target.value;
+  else return;
+  scheduleCalcAutoSave();
+});
 document.getElementById('calc-plist-btn').addEventListener('click', () => {
   fillPlistPreview(window.__editingCalc, true);
 });
