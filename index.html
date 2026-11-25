@@ -1345,13 +1345,6 @@
   .simar-text-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--smoke); font-weight: 700; flex: 1; }
   .simar-mini { font: inherit; font-size: 11.5px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--hairline); background: #fff; color: #2B2B2B; cursor: pointer; }
   .simar-mini:hover { background: #F3EEE6; }
-  .simar-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin: 8px 0 10px; }
-  .simar-opt { display: flex; flex-direction: column; gap: 3px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--smoke); font-weight: 700; }
-  .simar-opt input, .simar-opt select { font: inherit; font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: none; color: #2B2B2B; background: #FBF9F6; border: 1px solid var(--hairline); border-radius: 6px; padding: 7px 9px; width: 100%; box-sizing: border-box; }
-  .simar-optchecks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 12.5px; margin-bottom: 4px; }
-  .simar-optcheck { display: flex; align-items: center; gap: 7px; cursor: pointer; }
-  @media (max-width: 560px) { .simar-opts, .simar-optchecks { grid-template-columns: 1fr; } }
-  @media print { .simar-opts, .simar-optchecks, #simar-manual-note { display: none !important; } }
   .simar-settings { font-size: 12.5px; line-height: 1.7; margin: 6px 0 0; padding-left: 18px; }
   @media print {
     .simar-mini, .simar-check { display: none !important; }
@@ -13424,160 +13417,25 @@ function simarJoin(list) {
   if (list.length < 2) return list.join('');
   return list.slice(0, -1).join(', ') + ' en ' + list[list.length - 1];
 }
-const SIMAR_TYPES = [
-  { id: 'hout_inzet', label: 'Hout inzethaard', betreft: 'een hout inzethaard', zin: 'een houtgestookte inzethaard', noun: 'haard' },
-  { id: 'houtkachel', label: 'Houtkachel', betreft: 'een houtkachel', zin: 'een houtgestookte kachel', noun: 'kachel' },
-  { id: 'gas_gesloten', label: 'Gesloten gashaard', betreft: 'een gesloten gashaard', zin: 'een gesloten gashaard', noun: 'haard' },
-  { id: 'gas_inzet', label: 'Gas inzethaard', betreft: 'een gas inzethaard', zin: 'een gasgestookte inzethaard', noun: 'haard' },
-  { id: 'gaskachel_open', label: 'Gaskachel — open systeem', betreft: 'een gaskachel', zin: 'een gaskachel met open systeem', noun: 'kachel' },
-  { id: 'gaskachel_gesloten', label: 'Gaskachel — gesloten systeem', betreft: 'een gaskachel', zin: 'een gaskachel met gesloten systeem', noun: 'kachel' },
-  { id: 'bio', label: 'Bio-ethanolhaard', betreft: 'een bio-ethanolhaard', zin: 'een bio-ethanolhaard', noun: 'haard' },
-  { id: 'elek', label: 'Elektrische haard', betreft: 'een elektrische haard', zin: 'een elektrische haard', noun: 'haard' }
-];
-const SIMAR_BRANDS = [['kal fire', 'Kalfire'], ['kalfire', 'Kalfire'], ['element 4', 'Element4'], ['element4', 'Element4'], ['jotul', 'Jøtul'], ['jøtul', 'Jøtul'], ['barbas', 'Barbas'], ['bocal', 'Bocal'], ['deco flame', 'Decoflame'], ['decoflame', 'Decoflame']];
-const SIMAR_ACCESSORY = /kader|mantel|binnen ?werk|interieur|houtset|aansluit|materiaal|vloerplaat|krans/i;
-function simarLines(calc) {
-  const out = [];
-  CALC_CATALOG.forEach(section => {
-    const qty = (calc.qty && calc.qty[section.key]) || {};
-    section.items.forEach(it => { if (it.key && (parseFloat(qty[it.key]) || 0) > 0) out.push({ section: section.key, label: calcItemLabel(it), diam: it.diam || '' }); });
-  });
-  return out;
-}
-function simarProducts(calc) { return (calc.products || []).filter(p => p.label && p.price).map(p => p.label.trim()); }
-function simarMainProduct(calc) { return simarProducts(calc).find(l => !SIMAR_ACCESSORY.test(l) && !/^haard \/ model$/i.test(l)) || ''; }
-function simarSplitBrand(label) {
-  const l = String(label || '').trim();
-  if (!l) return { fabrikaat: '', model: '' };
-  const low = l.toLowerCase();
-  for (const [k, name] of SIMAR_BRANDS) if (low.startsWith(k)) return { fabrikaat: name, model: l.slice(k.length).trim() };
-  const parts = l.split(/\s+/);
-  return { fabrikaat: parts[0].charAt(0).toUpperCase() + parts[0].slice(1), model: parts.slice(1).join(' ') };
-}
-function simarDiam(d) { return String(d || '').replace(/mm$/i, ' mm').replace(/\s+/g, ' ').trim(); }
-function simarFacts(calc) {
-  const L = simarLines(calc), P = simarProducts(calc);
-  const inSec = (re) => L.filter(x => re.test(x.section));
-  const has = (re, list) => (list || L).some(x => re.test(x.label));
-  const cc = inSec(/^cc_/), dw = inSec(/^dw_/), ew = inSec(/^ew_/), reno = inSec(/^renovatie$/), afw = inSec(/^afwerking$/), inst = inSec(/^installatie$/);
-  const flex = reno.find(x => /flex \d+ per meter/i.test(x.label));
-  return {
-    L, P, cc, dw, ew,
-    flexDiam: flex ? (flex.label.match(/flex (\d+)/i) || [])[1] : '',
-    korrels: has(/vermiculiet/i, reno),
-    gevel: has(/gevel/i, cc.concat(dw)), dak: has(/dak/i, cc.concat(dw)),
-    regenrand: has(/regenrand|stormkraag/i, dw), kapVonk: has(/kap met vonkengaas/i, dw), kap: has(/kap/i, dw),
-    zwart: L.some(x => /_zwart$/.test(x.section)),
-    boezem: has(/schoorsteenboezem/i, afw.filter(x => !/nis/i.test(x.label))),
-    tvnis: has(/tv-nis/i, afw), tvnisGroot: has(/tv-nis groot/i, afw), nis: has(/(kleine|grote) nis/i, afw),
-    roosters: has(/convectierooster/i, afw), stuc: has(/stucwerk/i, afw),
-    gasElektra: has(/gasleiding|elektra per meter|wandcontactdoos/i, inst),
-    krans: has(/krans/i) || P.some(l => /krans/i.test(l)), nisbusKrans: has(/nisbus krans/i),
-    kader: P.some(l => /kader/i.test(l)) || has(/kader/i),
-    mantel: P.some(l => /mantel/i.test(l) && !/con[vf]ectie/i.test(l)),
-    designInterieur: P.some(l => /design (binnen ?werk|interieur)/i.test(l)),
-    houtset: P.some(l => /houtset/i.test(l)),
-    convectiemantel: P.some(l => /con[vf]ectie ?mantel/i.test(l))
-  };
-}
-function simarOpts(calc) {
-  const st = simarState(calc), f = simarFacts(calc);
-  const brand = simarSplitBrand(simarMainProduct(calc));
-  const type = f.cc.length ? 'gas_gesloten' : f.dw.length ? 'houtkachel' : f.flexDiam ? 'hout_inzet' : '';
-  const o = Object.assign({
-    type: type, fabrikaat: brand.fabrikaat, model: brand.model, werkadres: '',
-    bestaand: !!f.flexDiam, afvoeren: false, controle: !!f.flexDiam, dakdekker: false,
-    exStuc: f.boezem && !f.stuc, exGas: false
-  }, st.opts || {});
-  if (!(st.opts && 'exGas' in st.opts)) o.exGas = /^gas_/.test(o.type) && f.boezem && !f.gasElektra && !o.bestaand;
-  return o;
-}
-function simarType(o) { return SIMAR_TYPES.find(t => t.id === o.type) || null; }
 function simarDefaultBetreft(calc) {
-  const o = simarOpts(calc), t = simarType(o);
-  if (!t) return '';
-  const wa = (o.werkadres || '').trim();
-  return t.betreft + (wa ? ' t.b.v. het werkadres ' + wa : '');
+  const names = (calc.products || []).filter(p => p.label && p.price && !/^haard \/ model$/i.test(p.label.trim())).map(p => p.label.trim());
+  return names.length ? 'een ' + simarJoin(names) : '';
 }
 function simarDefaultTekst(calc) {
-  const o = simarOpts(calc), t = simarType(o), f = simarFacts(calc);
-  const noun = t ? t.noun : 'haard', Noun = noun.charAt(0).toUpperCase() + noun.slice(1);
-  let haard = 'Het leveren en installeren van ' + (t ? t.zin : 'een haard');
-  const fab = (o.fabrikaat || '').trim(), model = (o.model || '').trim();
-  if (fab) haard += ', fabrikaat ' + fab + (model ? ' model ' + model : '');
-  const extra = [];
-  if (f.designInterieur) extra.push('een design interieur');
-  if (f.houtset) extra.push('een exclusieve houtset');
-  if (f.convectiemantel) extra.push('een convectiemantel');
-  if (extra.length) haard += ' voorzien van ' + simarJoin(extra);
-  haard += '.';
-  const z = [];
-  if (o.afvoeren) z.push('De werkzaamheden bestaan uit het afvoeren van de oude ' + noun + ' en het installeren van de nieuwe ' + noun + ' op dezelfde locatie.');
-  let open = '';
-  if (f.flexDiam) {
-    z.push('De ' + noun + ' wordt aangesloten op het bestaande kanaal. Hiervoor wordt het kanaal gerenoveerd door middel van een flexibele RVS buis met een diameter van ' + f.flexDiam + ' mm' + (f.korrels ? ', die wordt afgestort met isolerende korrels' : '') + '.');
-  } else if (f.cc.length) {
-    if (o.bestaand) z.push('Middels een concentrische RVS buis wordt de ' + noun + ' aangesloten op het bestaande schoorsteenkanaal.');
-    else open = 'Middels een RVS concentrisch kanaal wordt de ' + noun + (f.gevel ? ' rechtstreeks op de gevel aangesloten' : f.dak ? ' via een doorvoer door het dak aangesloten' : ' aangesloten');
-  } else if (f.dw.length) {
-    const d = simarDiam((f.dw.find(x => x.diam) || {}).diam);
-    const via = f.dak ? 'door het dak' : f.gevel ? 'door de gevel' : '';
-    z.push('De ' + noun + ' wordt aangesloten op een nieuw door ons aangelegd kanaal.' + (via
-      ? ' Hiervoor maken wij een doorvoer ' + via + ', waarbij wij door middel van een dubbelwandig kanaal ' + d + ' naar buiten gaan.'
-      : ' Hiervoor plaatsen wij een dubbelwandig kanaal ' + d + '.'));
-    const af = [];
-    if (f.regenrand) af.push('regenrand');
-    if (f.kapVonk) af.push('trekkende kap', 'vonkengaas'); else if (f.kap) af.push('kap');
-    if (af.length) z.push('Dit wordt afgewerkt met een ' + simarJoin(af) + '.');
-    if (f.ew.length) z.push('Binnen sluiten wij de ' + noun + ' aan met een enkelwandig kanaal ' + simarDiam((f.ew.find(x => x.diam) || {}).diam) + '.');
-  } else if (f.ew.length) {
-    const d = simarDiam((f.ew.find(x => x.diam) || {}).diam);
-    z.push(o.bestaand ? 'De ' + noun + ' wordt met een enkelwandig kanaal ' + d + ' aangesloten op het bestaande kanaal.' : 'De ' + noun + ' wordt aangesloten met een enkelwandig kanaal ' + d + '.');
-  } else if (o.bestaand) {
-    z.push('De ' + noun + ' wordt aangesloten op het bestaande kanaal.');
-  }
-  if (f.boezem) {
-    if (open) { z.push(open + ' en afgewerkt met een brandwerende schoorsteenboezem.'); open = ''; }
-    else z.push('De ' + noun + ' wordt afgewerkt met een brandwerende schoorsteenboezem.');
-    const nis = f.tvnis ? 'een ' + (f.tvnisGroot ? 'grote ' : '') + 'TV nis' : f.nis ? 'een nis' : '';
-    if (nis && f.roosters) z.push('In deze boezem is ' + nis + ' opgenomen en worden roosters geplaatst t.b.v. de convectielucht.');
-    else if (nis) z.push('In deze boezem is ' + nis + ' opgenomen.');
-    else if (f.roosters) z.push('In deze boezem worden roosters geplaatst t.b.v. de convectielucht.');
-  }
-  if (open) z.push(open + '.');
-  if (f.krans) z.push('Op de plek waar het kanaal door het plafond gaat, wordt het plafond afgewerkt met een ' + (f.nisbusKrans ? 'opgedikte ' : '') + 'maatwerk krans.');
-  if (f.zwart) z.push('Alle kanalen worden in het zwart geleverd.');
-  if (f.mantel) z.push('Rond de ' + noun + ' plaatsen wij een schoorsteenmantel.');
-  if (f.kader) z.push('Aansluitend aan de ' + noun + (f.mantel ? ' en de mantel' : '') + ' plaatsen wij ter afwerking een kader op maat.');
-  if (o.controle) z.push('Voorafgaand aan de werkzaamheden voeren wij een schoorsteencontrole uit.');
-  const paras = extra.length && z.length ? [haard, z.join(' ')] : [[haard].concat(z).join(' ')];
-  if (o.dakdekker) paras.push('De dakplaat zal worden dicht gebrand door een dakdekker, ook deze kosten zijn in de offerte verwerkt.');
-  const ex = [];
-  if (o.exStuc) ex.push('- Stuc- en schilderwerkzaamheden.');
-  if (o.exGas) ex.push('- Aanleg van gas- en elektra tot bij het punt van de ' + noun + '.');
-  if (ex.length) paras.push('Niet in deze offerte opgenomen:\n' + ex.join('\n'));
-  return paras.join('\n\n');
-}
-function simarOptsHtml(calc) {
-  const o = simarOpts(calc);
-  const inp = (key, label, ph) => '<label class="simar-opt"><span>' + label + '</span><input type="text" data-opt="' + key + '" value="' + simarEsc(o[key]) + '" placeholder="' + simarEsc(ph || '') + '"></label>';
-  const chk = (key, label) => '<label class="simar-optcheck"><input type="checkbox" data-opt="' + key + '"' + (o[key] ? ' checked' : '') + '> ' + label + '</label>';
-  let h = '<div class="simar-opts">';
-  h += '<label class="simar-opt"><span>Soort haard</span><select data-opt="type"><option value="">Kies…</option>' + SIMAR_TYPES.map(t => '<option value="' + t.id + '"' + (t.id === o.type ? ' selected' : '') + '>' + t.label + '</option>').join('') + '</select></label>';
-  h += inp('fabrikaat', 'Fabrikaat', 'bijv. Barbas') + inp('model', 'Model', 'bijv. Unilux 65');
-  h += inp('werkadres', 'Werkadres', 'alleen als het afwijkt van het klantadres');
-  h += '</div><div class="simar-optchecks">';
-  h += chk('bestaand', 'Aansluiten op bestaand kanaal') + chk('afvoeren', 'Oude haard/kachel afvoeren') + chk('controle', 'Schoorsteencontrole vooraf') + chk('dakdekker', 'Dakdekker brandt dakplaat dicht');
-  h += chk('exStuc', 'Niet opgenomen: stuc- en schilderwerk') + chk('exGas', 'Niet opgenomen: aanleg gas en elektra');
-  h += '</div><div class="simar-step-hint" id="simar-manual-note" style="display:none">De tekst is handmatig aangepast. Klik op “Opnieuw voorstellen” om je keuzes erin te verwerken.</div>';
-  return h;
-}
-function simarApplyOpts(calc) {
-  const st = simarState(calc);
-  const b = document.getElementById('simar-betreft'), t = document.getElementById('simar-tekst');
-  if (typeof st.betreft !== 'string') b.value = simarDefaultBetreft(calc);
-  if (typeof st.tekst !== 'string') t.value = simarDefaultTekst(calc);
-  document.getElementById('simar-manual-note').style.display = (typeof st.betreft === 'string' || typeof st.tekst === 'string') ? '' : 'none';
+  const g = simarGroups(calc);
+  const lines = [];
+  const geleverd = g.artikelen.filter(x => x.key !== 'eigen');
+  const eigen = g.artikelen.find(x => x.key === 'eigen');
+  if (eigen) lines.push('Wij leveren ' + simarJoin(eigen.items.map(i => i.label)) + '.');
+  geleverd.forEach(x => lines.push(x.label + ': ' + simarJoin(x.items.map(i => (i.qty !== 1 ? simarQty(i.qty) + ' x ' : '') + i.label)) + '.'));
+  const werk = [];
+  g.installatie.forEach(x => x.items.forEach(i => {
+    if (/toeslag|kosten|hulpmateriaal|montage uur|dagdeel|1 dag|per uur/i.test(i.label)) return;
+    werk.push(i.label);
+  }));
+  if (werk.length) lines.push('De werkzaamheden bestaan uit: ' + simarJoin(werk) + '.');
+  if (g.installatie.length) lines.push('De haard wordt door onze eigen monteurs geplaatst, aangesloten en in gebruik gesteld.');
+  return lines.join('\n');
 }
 function simarState(calc) {
   if (!calc.simar || typeof calc.simar !== 'object') calc.simar = {};
@@ -13643,11 +13501,10 @@ function fillSimarSheet(calc, open) {
   h += '</div>';
   h += '<div class="simar-step"><div class="simar-step-head"><span class="simar-step-nr">Scherm 4</span><span class="simar-step-title">Afdrukken — voorbladtekst</span></div>';
   h += '<ul class="simar-settings"><li>Prijs tonen: <strong>Beperkt</strong></li><li>Btw prijzen: <strong>Inclusief</strong></li><li>Voorbladtekst → Bewerken, en vul onderstaande teksten in</li></ul>';
-  h += '<div class="simar-step-hint">Controleer de keuzes hieronder; de betreft-regel en de tekst worden daaruit en uit de calculatieregels samengesteld.</div>' + simarOptsHtml(calc);
   h += '<div class="simar-text-row"><span class="simar-text-label">Betreft — na “voor het leveren en installeren van”</span><button type="button" class="simar-mini" data-regen="betreft">Opnieuw voorstellen</button><button type="button" class="simar-mini" data-copytext="simar-betreft">Kopiëren</button></div>';
   h += '<textarea class="simar-text" id="simar-betreft" rows="2"></textarea>';
   h += '<div class="simar-text-row"><span class="simar-text-label">Variabele tekst</span><button type="button" class="simar-mini" data-regen="tekst">Opnieuw voorstellen</button><button type="button" class="simar-mini" data-copytext="simar-tekst">Kopiëren</button></div>';
-  h += '<textarea class="simar-text" id="simar-tekst" rows="10"></textarea>';
+  h += '<textarea class="simar-text" id="simar-tekst" rows="6"></textarea>';
   h += '</div>';
   document.getElementById('simar-body').innerHTML = h;
   document.getElementById('simar-betreft').value = typeof st.betreft === 'string' ? st.betreft : simarDefaultBetreft(calc);
@@ -13692,21 +13549,11 @@ document.getElementById('simar-body').addEventListener('click', (e) => {
     const st = simarState(calc);
     if (regen.dataset.regen === 'betreft') { delete st.betreft; document.getElementById('simar-betreft').value = simarDefaultBetreft(calc); }
     else { delete st.tekst; document.getElementById('simar-tekst').value = simarDefaultTekst(calc); }
-    simarApplyOpts(calc);
     scheduleCalcAutoSave();
   }
 });
 document.getElementById('simar-body').addEventListener('change', (e) => {
   const calc = window.__editingCalc;
-  const opt = e.target.closest('[data-opt]');
-  if (calc && opt && (opt.type === 'checkbox' || opt.tagName === 'SELECT')) {
-    const sto = simarState(calc);
-    if (!sto.opts) sto.opts = {};
-    sto.opts[opt.dataset.opt] = opt.type === 'checkbox' ? opt.checked : opt.value;
-    simarApplyOpts(calc);
-    scheduleCalcAutoSave();
-    return;
-  }
   const cb = e.target.closest('[data-done]');
   if (!calc || !cb) return;
   const st = simarState(calc);
@@ -13718,12 +13565,7 @@ document.getElementById('simar-body').addEventListener('input', (e) => {
   const calc = window.__editingCalc;
   if (!calc) return;
   const st = simarState(calc);
-  if (e.target.dataset && e.target.dataset.opt && e.target.type === 'text') {
-    if (!st.opts) st.opts = {};
-    st.opts[e.target.dataset.opt] = e.target.value;
-    simarApplyOpts(calc);
-  }
-  else if (e.target.id === 'simar-betreft') st.betreft = e.target.value;
+  if (e.target.id === 'simar-betreft') st.betreft = e.target.value;
   else if (e.target.id === 'simar-tekst') st.tekst = e.target.value;
   else return;
   scheduleCalcAutoSave();
